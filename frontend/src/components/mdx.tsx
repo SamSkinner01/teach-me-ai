@@ -1,7 +1,7 @@
 // Every component a lesson (.mdx) can use without importing it.
 
 import type { MDXComponents } from "mdx/types";
-import type { AnchorHTMLAttributes } from "react";
+import type { AnchorHTMLAttributes, ComponentType } from "react";
 import { Link } from "react-router-dom";
 import { BroadcastViz } from "../viz/BroadcastViz";
 import { ChainRuleGraph } from "../viz/ChainRuleGraph";
@@ -18,6 +18,7 @@ import { SoftmaxViz } from "../viz/SoftmaxViz";
 import { StrideExplorer } from "../viz/StrideExplorer";
 import { VectorPlayground } from "../viz/VectorPlayground";
 import { MatrixCheck, NumericCheck, Quiz } from "./Checks";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { Exercise } from "./Exercise";
 import { Callout, KeyIdea, Lang, LangName, PerLang, Term, Wide } from "./LessonBits";
 import { Tex } from "./RichText";
@@ -31,20 +32,18 @@ function A({ href = "", children, ...rest }: AnchorHTMLAttributes<HTMLAnchorElem
   );
 }
 
-export const mdxComponents: MDXComponents = {
-  a: A,
-  Exercise,
-  Quiz,
-  NumericCheck,
-  MatrixCheck,
-  Lang,
-  LangName,
-  PerLang,
-  Term,
-  Callout,
-  KeyIdea,
-  Wide,
-  Tex,
+/** Wrap a lesson component so a failure shows a message in its place instead of breaking the lesson. */
+function guard<P extends object>(C: ComponentType<P>, what: string): ComponentType<P> {
+  const Guarded = (props: P) => (
+    <ErrorBoundary what={what}>
+      <C {...props} />
+    </ErrorBoundary>
+  );
+  Guarded.displayName = `Guarded(${C.displayName ?? C.name})`;
+  return Guarded;
+}
+
+const figures = {
   VectorPlayground,
   MatrixTransformer,
   MatmulStepper,
@@ -62,4 +61,21 @@ export const mdxComponents: MDXComponents = {
   RngQuality,
   NormalViz,
   InitViz,
+};
+
+export const mdxComponents: MDXComponents = {
+  a: A,
+  Exercise: guard(Exercise, "this exercise"),
+  Quiz,
+  NumericCheck,
+  MatrixCheck,
+  Lang,
+  LangName,
+  PerLang,
+  Term,
+  Callout,
+  KeyIdea,
+  Wide,
+  Tex,
+  ...Object.fromEntries(Object.entries(figures).map(([name, C]) => [name, guard(C as ComponentType<object>, "this figure")])),
 };

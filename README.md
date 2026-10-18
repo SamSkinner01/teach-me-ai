@@ -77,7 +77,10 @@ A learner *can* forge their own test results from inside the sandbox (the harnes
 cd backend && uv run pytest              # API, auth, grading, runner (local + Docker)
 cd frontend && npm test && npm run typecheck
 uv run --project backend python scripts/verify_content.py
+cd e2e && npm install && npm test        # browser test; needs the app running (see below)
 ```
+
+The e2e test drives a real Chrome (`CHROME_PATH`, default `/usr/bin/google-chrome`) against `E2E_BASE_URL` (default the Vite dev server on `:5173`). It signs up a new learner, completes lessons in order through the UI with lesson locking **on**, passes an exercise in the sandbox, and fails on any page error or blank lesson. Run it against both the dev server and a production build before releasing.
 
 `verify_content.py` runs every exercise's reference solution, in all three languages, through the real sandbox (it must pass every test), and checks that each starter compiles but passes nothing.
 

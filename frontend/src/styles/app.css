@@ -752,3 +752,34 @@ a.lesson-row:hover {
   margin: 2px 0 0;
   color: var(--text-muted);
 }
+
+/* ------------------------------------------------------------------
+   Error boundary
+   ------------------------------------------------------------------ */
+
+.error-box {
+  margin: 1.4em 0;
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+}
+.error-box-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: var(--danger);
+}
+.error-box details {
+  margin: 8px 0 12px;
+}
+.error-box pre {
+  white-space: pre-wrap;
+  font-size: 0.8rem;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--code-bg);
+}
+.exercise-editor .error-box {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
