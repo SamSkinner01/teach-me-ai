@@ -51,15 +51,19 @@ const CPP_RET: Record<string, string> = {
   ivec: "std::vector<std::size_t>",
 };
 
+/** Each parameter as it appears in the learner's language, e.g. "a: &[f64]". */
+export function paramStrings(lang: Language, params: Param[]): string[] {
+  if (lang === "python") return params.map((p) => `${p.name}: ${PY[p.type]}`);
+  if (lang === "rust") return params.map((p) => `${p.name}: ${RS_PARAM[p.type]}`);
+  return params.map((p) => `${CPP_PARAM[p.type]} ${p.name}`);
+}
+
 /** The function signature the learner must keep, written in their language. */
 export function signature(lang: Language, fn: string, params: Param[], returns: string): string {
-  if (lang === "python") {
-    return `def ${fn}(${params.map((p) => `${p.name}: ${PY[p.type]}`).join(", ")}) -> ${PY[returns]}`;
-  }
-  if (lang === "rust") {
-    return `pub fn ${fn}(${params.map((p) => `${p.name}: ${RS_PARAM[p.type]}`).join(", ")}) -> ${RS_RET[returns]}`;
-  }
-  return `${CPP_RET[returns]} ${fn}(${params.map((p) => `${CPP_PARAM[p.type]} ${p.name}`).join(", ")})`;
+  const args = paramStrings(lang, params).join(", ");
+  if (lang === "python") return `def ${fn}(${args}) -> ${PY[returns]}`;
+  if (lang === "rust") return `pub fn ${fn}(${args}) -> ${RS_RET[returns]}`;
+  return `${CPP_RET[returns]} ${fn}(${args})`;
 }
 
 /** How each language signals "invalid input". */

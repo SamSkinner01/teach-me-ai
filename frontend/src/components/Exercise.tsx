@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, ApiError, LANGUAGE_NAMES, type ExerciseData, type Report, type Submission } from "../api";
+import { parseDiagnostics, type Diagnostic } from "../editor/diagnostics";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { useSession } from "../state/session";
 import { Icon } from "./Icon";
@@ -61,6 +62,7 @@ export function Exercise({ id, children }: { id: string; children?: ReactNode })
   const [modal, setModal] = useState<null | "solution" | "history">(null);
   const [solution, setSolution] = useState<string | null>(null);
   const [history, setHistory] = useState<Submission[] | null>(null);
+  const [diagnostics, setDiagnostics] = useState<Diagnostic[]>([]);
 
   const codeRef = useRef(code);
   const saveTimer = useRef<number | undefined>(undefined);
@@ -116,6 +118,7 @@ export function Exercise({ id, children }: { id: string; children?: ReactNode })
     try {
       const res = kind === "run" ? await api.run(id, codeRef.current) : await api.submit(id, codeRef.current);
       setReport({ report: res.report, submitted: res.submitted });
+      setDiagnostics(data ? parseDiagnostics(data.language, res.report) : []);
       setSave("saved");
       setData((d) => d && { ...d, passed: res.passed, attempts: res.attempts, solution_available: res.solution_available });
       if (kind === "submit") {
@@ -249,6 +252,8 @@ export function Exercise({ id, children }: { id: string; children?: ReactNode })
                 onChange={onChange}
                 onRun={() => execute("run")}
                 onSubmit={() => execute("submit")}
+                library={data.library_functions}
+                diagnostics={diagnostics}
               />
             </Suspense>
           </ErrorBoundary>

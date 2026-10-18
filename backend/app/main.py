@@ -372,6 +372,17 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
             "hidden_count": len(ex.tests) - len(visible),
             "hints": ex.hints,
             "library": [e.function for e in course.library_before(ex.id)],
+            # Signatures for editor completions, hover docs and signature help.
+            "library_functions": [
+                {
+                    "function": e.function,
+                    "title": e.title,
+                    "params": e.params,
+                    "returns": e.returns,
+                    "lesson_id": e.lesson_id,
+                }
+                for e in course.library_before(ex.id)
+            ],
             **exercise_state_payload(state),
         }
 

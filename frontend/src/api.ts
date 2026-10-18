@@ -72,6 +72,14 @@ export interface Param {
   type: string;
 }
 
+export interface LibrarySignature {
+  function: string;
+  title: string;
+  params: Param[];
+  returns: string;
+  lesson_id: string;
+}
+
 export interface ExerciseData {
   id: string;
   title: string;
@@ -86,6 +94,7 @@ export interface ExerciseData {
   hidden_count: number;
   hints: string[];
   library: string[];
+  library_functions: LibrarySignature[];
   passed: boolean;
   attempts: number;
   solution_available: boolean;
