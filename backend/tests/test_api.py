@@ -157,6 +157,18 @@ def test_exercise_payload_hides_hidden_tests(python_learner):
     assert ex["hidden_count"] > 0
     assert all("expected" in t for t in ex["tests"])
     assert "solution" not in ex
+    assert ex["library_functions"] == [], "the first exercise has no earlier library functions"
+
+
+def test_exercise_payload_includes_library_signatures(tmp_path):
+    app = create_app(make_settings(tmp_path, unlock_all=True), sandbox=LocalSandbox())
+    with TestClient(app) as c:
+        register(c)
+        c.post("/api/tracks", json={"language": "rust"})
+        ex = c.get("/api/exercises/la-norm").json()
+        dot = next(f for f in ex["library_functions"] if f["function"] == "dot")
+        assert dot["params"] == [{"name": "a", "type": "vec"}, {"name": "b", "type": "vec"}]
+        assert dot["returns"] == "float" and dot["title"] == "Dot product"
 
 
 def test_run_submit_pass_and_complete(python_learner):
@@ -245,3 +257,14 @@ def test_code_size_limit(python_learner):
 
 def test_unknown_api_route_is_404(client):
     assert client.get("/api/nope").status_code == 404
+
+
+def test_index_html_is_not_cached(tmp_path):
+    static = tmp_path / "dist"
+    (static / "assets").mkdir(parents=True)
+    (static / "index.html").write_text("<!doctype html><title>t</title>")
+    app = create_app(make_settings(tmp_path, static_dir=static), sandbox=LocalSandbox())
+    with TestClient(app) as c:
+        r = c.get("/learn/vectors")
+        assert r.status_code == 200 and "<title>t</title>" in r.text
+        assert r.headers["cache-control"] == "no-cache"

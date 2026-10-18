@@ -1,0 +1,62 @@
+## Your network, in your browser
+
+In the very first lesson you drew a digit for a network someone else trained. This time, it's yours. The weights below are the ones your `train_cnn` saved with `save_tensor`, and the browser runs them through the same convolution, ReLU, max-pool and dense layer you implemented:
+
+<YourModelViz />
+
+Before your drawing reaches the network it's prepared the way the MNIST digits were: cropped to the ink, scaled so the longer side is 20 pixels, and centred by its centre of mass in a 28 × 28 frame. Then it's standardized with the same mean and standard deviation as your training data.
+
+## When it gets your handwriting wrong
+
+It probably will sometimes, even though it scored well on the test set. Your drawings aren't MNIST digits: you draw with a mouse or a finger instead of a pen, your strokes are a different thickness, and your 7s and 1s may follow different conventions from those of 1990s American writers.
+
+This is called <Term t="distribution shift">distribution shift</Term>, and it's the most common reason a model that tests well disappoints in the real world. The test set only predicts performance on data **like the training data**. Experiments to try:
+
+- Draw a digit very small, off-centre or rotated. The preprocessing undoes the size and position, but nothing undoes the rotation.
+- Draw a 7 with a cross-bar, or a 1 with a base. Both are common outside the US.
+- Switch to the demo model and draw the same thing. It has a second convolution layer and was trained for longer. Is it more reliable on your handwriting, or does it fail on the same drawings?
+
+<Quiz
+  id="ym-shift"
+  question="Your network gets 97% on the MNIST test set but only about 70% on digits written by people in another country. What would most likely help?"
+  options={[
+    "Training for more epochs on MNIST",
+    "A higher learning rate",
+    "Adding labelled examples of their handwriting to the training data",
+    "Testing on more MNIST images"
+  ]}
+  answer={2}
+  explain="The network has learned MNIST-style handwriting very well, so more of the same won't fix it. It needs to see examples like the ones it will face. More (and more varied) training data is the most reliable cure for distribution shift."
+/>
+
+## What you built
+
+Every number in that network was learned with code you wrote, and every function it calls is one you wrote and tested:
+
+- **Linear algebra**: vectors, dot products, matrix–vector and matrix–matrix products, transposes, reshaping and strides.
+- **Calculus**: derivatives, the chain rule, gradients, and numerical gradient checking to make sure they're right.
+- **Probability**: a random number generator from scratch, normal samples, softmax and cross-entropy, He initialization.
+- **Optimization**: gradient descent, mini-batches and shuffling, momentum.
+- **Neural networks**: dense layers, ReLU, and backpropagation through all of it.
+- **Convolutional networks**: convolution, pooling and their gradients.
+- **The capstone**: a file parser, data preparation, a CNN, a training loop that reads 60,000 real images, and an evaluation.
+
+That's 78 library functions, and together they're a small deep-learning framework.
+
+## Where to go next
+
+What separates this network from the state of the art is mostly scale and a handful of ideas, each a small step from what you know:
+
+- **Deeper networks.** Stack two or more convolution layers, like the demo model (98.4% on the test set), so later layers combine the earlier layers' strokes into shapes.
+- **Better optimizers.** Adam, the default in most of deep learning, is momentum plus a separate, automatically adapted step size for each parameter.
+- **Regularization.** Data augmentation (training on slightly shifted, rotated and scaled copies of each image) and dropout both fight overfitting.
+- **Batch normalization.** It re-standardizes activations inside the network, the way you standardized the inputs.
+- **Frameworks and GPUs.** PyTorch and JAX do exactly what your library does, but compute the backward pass for you (automatic differentiation) and run the loops on hardware that does trillions of multiply-adds a second.
+
+When you use one of them, you'll know what each call does inside, because you've written it yourself.
+
+<KeyIdea>
+
+You built a convolutional neural network from nothing but arithmetic, trained it on real data, measured it honestly, and ran it on your own handwriting. Everything in modern deep learning grows from the pieces you now understand.
+
+</KeyIdea>

@@ -1,6 +1,49 @@
 // Definitions shown when hovering a <Term> in a lesson, and on the glossary page.
 
 export const GLOSSARY: Record<string, string> = {
+  byte: "The basic unit of computer memory and files: 8 bits, so a whole number from 0 to 255. Each MNIST pixel and label is one byte.",
+  "big-endian":
+    "Storing a multi-byte number with its most significant byte first, the way we write digits. IDX files use it; most CPUs store numbers the other way round (little-endian).",
+  "magic number": "A fixed sequence of bytes at the start of a file that identifies its format, such as 0, 0, 8, d for IDX files or 0x1f 0x8b for gzip.",
+  standardization:
+    "Rescaling data to mean 0 and standard deviation 1 with x′ = (x − μ) / σ, using the μ and σ of the training set for all data.",
+  hyperparameter:
+    "A setting you choose rather than learn, such as the learning rate, batch size, number of epochs or network size.",
+  overfitting:
+    "When a model learns its training examples too specifically (memorizing them) and does noticeably worse on new data. The sign is a large gap between training and test accuracy.",
+  "test set": "Examples held back from training and used only to measure how well a model works on data it has never seen.",
+  "confusion matrix":
+    "A table of a classifier's predictions: row i, column j counts the examples of class i predicted as class j. The diagonal holds the correct predictions.",
+  "distribution shift":
+    "When the data a model is used on differs from the data it was trained on, such as new handwriting styles. Test-set accuracy no longer predicts how well it will do.",
+  "feature map": "The output of one convolution filter: a grid showing how strongly the filter's pattern appears at each position of its input.",
+  kernel: "The small grid of weights a convolution slides across its input. Also called a filter.",
+  padding: "Extra rows and columns (usually zeros) added around an input so a convolution can be applied at the edges and keep the output larger.",
+  pooling: "Shrinking a feature map by keeping one value (the maximum or the average) per small window.",
+  channel: "One of several stacked 2-D grids in a tensor, like the red, green and blue planes of a colour image, or one feature map per filter.",
+  im2col: "A trick that copies every patch of an image into a row of a matrix, so a whole convolution becomes one matrix multiplication.",
+  "dense layer":
+    "A layer in which every neuron is connected to every input: z = x·Wᵀ + b. Also called a fully connected or linear layer.",
+  logits: "The raw, unnormalized scores a classifier outputs, one per class, before softmax turns them into probabilities.",
+  "multi-layer perceptron":
+    "A neural network made of dense layers with non-linear activations between them. Even one hidden layer can represent curved decision boundaries.",
+  relu: "The rectified linear unit, relu(x) = max(0, x): the most common activation function for hidden layers.",
+  "hidden layer": "Any layer between a network's input and its output. Its values aren't observed directly; the network learns what they should represent.",
+  "decision boundary": "The border in input space where a classifier switches from predicting one class to another.",
+  accuracy: "The fraction of examples a classifier gets right: its most probable class matches the true label.",
+  epoch: "One full pass through the training data. Training usually runs for many epochs.",
+  "learning rate":
+    "The step size η in gradient descent, w ← w − η∇L. Too small and training crawls; too large and it oscillates or blows up.",
+  "mean squared error":
+    "The standard regression loss: the average of the squared differences between predictions and targets, (1/n) Σ (ŷᵢ − yᵢ)².",
+  "mini-batch":
+    "A small random subset of the training data (often 32–256 examples) used to estimate the gradient for one update step.",
+  momentum:
+    "A gradient-descent variant that keeps a decaying running sum of past gradients (a velocity) and steps along it, which speeds up progress along consistent directions and damps oscillation.",
+  "stochastic gradient descent":
+    "Gradient descent where each step uses the gradient on a random mini-batch instead of the whole dataset: noisier steps, but far cheaper ones.",
+  "fisher-yates shuffle":
+    "The standard algorithm for shuffling a list uniformly at random: walk from the end, swapping each position with a random earlier (or the same) position.",
   "box-muller transform":
     "A way to turn two independent uniform random numbers u₁, u₂ into two independent standard normal ones: r = √(−2 ln u₁), θ = 2πu₂, then r·cos θ and r·sin θ.",
   "cross-entropy":
@@ -89,7 +132,7 @@ export const GLOSSARY: Record<string, string> = {
   sigmoid:
     "The S-shaped function σ(x) = 1 / (1 + e⁻ˣ). It squashes any number into the range (0, 1), and its derivative is σ(x)(1 − σ(x)).",
   stride:
-    "How many elements to skip in flat memory to move one step along an axis of a tensor. For a row-major 2×3 matrix the strides are [3, 1].",
+    "Two related meanings. In memory: how many elements to skip in flat storage to move one step along a tensor axis (a row-major 2×3 matrix has strides [3, 1]). In a convolution or pooling layer: how many cells the window moves between positions (stride 2 roughly halves the output size).",
   tensor:
     "A multi-dimensional array of numbers. A scalar is a 0-D tensor, a vector is 1-D, a matrix is 2-D, and a stack of colour images is 4-D.",
   transpose: "Flipping a matrix over its diagonal so rows become columns: (Aᵀ)ᵢⱼ = Aⱼᵢ.",

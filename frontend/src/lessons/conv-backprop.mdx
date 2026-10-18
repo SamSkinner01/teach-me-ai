@@ -1,0 +1,75 @@
+## Two gradients to find
+
+To train a convolution layer, backpropagation needs two things from the incoming gradient $G = \partial L/\partial\,\text{out}$ (the same shape as the feature map):
+
+- $\partial L/\partial K$, to update the kernel,
+- $\partial L/\partial X$, to pass back to the previous layer.
+
+(And $\partial L/\partial b$: the bias was added to every output, so its gradient is just the sum of $G$, as with dense layers.)
+
+Both of the others turn out to be convolutions themselves, so your `conv2d` does most of the work.
+
+## The kernel's gradient
+
+Kernel weight $K_{uv}$ multiplies the pixel $X_{i+u,\,j+v}$ when computing output $(i, j)$, and it does this for **every** output position. Add up its effect over all of them:
+
+$$
+\frac{\partial L}{\partial K_{uv}} = \sum_{i,j} G_{ij}\; X_{i+u,\,j+v}
+$$
+
+Compare that with the convolution formula: it's exactly `conv2d(X, G)`, the input convolved with the gradient map acting as the kernel. A weight's gradient is the correlation between the input and how much each output mattered.
+
+<MatrixCheck
+  id="cb-dk"
+  question="$X = \begin{bmatrix} 1&2&3 \\ 4&5&6 \\ 7&8&9 \end{bmatrix}$, a 2×2 kernel, and $G = \begin{bmatrix} 1&0 \\ 0&0 \end{bmatrix}$ (only the top-left output matters). What is $\partial L/\partial K$?"
+  answer={[[1, 2], [4, 5]]}
+  explain="Only output (0, 0) has a gradient, and it was computed from the top-left 2×2 patch. So each weight's gradient is the pixel it multiplied there."
+/>
+
+## The input's gradient
+
+Pixel $X_{ab}$ was used by every output whose window covered it, each time multiplied by a different kernel weight: output $(i, j)$ used it with weight $K_{a-i,\,b-j}$. So
+
+$$
+\frac{\partial L}{\partial X_{ab}} = \sum_{i,j} G_{ij}\; K_{a-i,\,b-j}
+$$
+
+Click around this figure to see which outputs each pixel feeds, and through which weight:
+
+<ConvGradViz />
+
+The indices run backwards ($a - i$ instead of $i + u$), which is a convolution with the kernel **rotated 180°**. And pixels near the edge were used by fewer outputs, which is what you'd get by padding $G$ with zeros. Putting those together:
+
+$$
+\frac{\partial L}{\partial X} = \texttt{conv2d}\big(\texttt{pad}(G,\ k - 1),\ \texttt{rot180}(K)\big)
+$$
+
+This is called a "full" convolution, and it's the reason the kernel flip from the first lesson matters after all.
+
+<Callout type="tip" title="Gradient-check your layers">
+
+These index manipulations are exactly where bugs hide. When you assemble your CNN in the capstone, use your `gradient_check` on a tiny layer (a 4×4 input, a 2×2 kernel) and make sure the relative error is below $10^{-7}$ before training anything.
+
+</Callout>
+
+With multiple channels nothing new happens: each weight slice $W[o, c]$ gets `conv2d(X[c], G[o])`, and each input channel's gradient sums the full convolutions over the output channels that used it.
+
+<KeyIdea>
+
+For out = conv2d(X, K) with incoming gradient G: the kernel gradient is conv2d(X, G); the input gradient is a full convolution, conv2d(pad(G, k−1), rot180(K)); the bias gradient is the sum of G.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="cnn-conv-back-kernel">
+
+Return $\partial L/\partial K = $ `conv2d(image, grad_out)`.
+
+</Exercise>
+
+<Exercise id="cnn-conv-back-input">
+
+Return $\partial L/\partial X$ for a square kernel: pad the gradient by $k-1$ and convolve it with the kernel rotated 180° (both its rows and its columns reversed).
+
+</Exercise>

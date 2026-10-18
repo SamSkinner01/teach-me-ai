@@ -1,0 +1,93 @@
+{
+  "title": "Per-class accuracy",
+  "function": "class_accuracy",
+  "params": [
+    {
+      "name": "confusion",
+      "type": "mat"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Row i lists every example whose true class is i; the diagonal entry is how many were right.",
+    "Divide the diagonal entry by the row's sum, using vec_sum.",
+    "Guard against a zero row sum."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            1,
+            0
+          ],
+          [
+            0,
+            1,
+            1
+          ]
+        ]
+      ],
+      "description": "the third class is right half the time",
+      "expected": [
+        1.0,
+        1.0,
+        0.5
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            0
+          ]
+        ]
+      ],
+      "description": "class 1 has no examples",
+      "expected": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            90,
+            5,
+            5
+          ],
+          [
+            10,
+            80,
+            10
+          ],
+          [
+            0,
+            0,
+            100
+          ]
+        ]
+      ],
+      "description": "larger counts",
+      "hidden": true,
+      "expected": [
+        0.9,
+        0.8,
+        1.0
+      ]
+    }
+  ]
+}

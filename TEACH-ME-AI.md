@@ -181,17 +181,32 @@ An interactive web app that teaches the math behind AI from first principles. Th
 - **Where code runs:** on the server, in a throwaway Docker container per run (no network, read-only filesystem, resource limits)
 - **Audience:** built for multiple users (accounts, sessions, sandboxing), currently run by me
 
-## Status (updated 2026-10-17)
+## Status (updated 2026-10-18)
+
+The whole course is built: modules 0–7, 39 lessons, 79 exercises (each in Python, Rust and C++), 34 interactive figures.
 
 **Built**
 - Accounts, language tracks (separate progress per language), lesson unlocking, progress tracking
 - Sandboxed runner for all three languages: generated test harnesses, hidden tests, friendly compile/crash/timeout messages, shared JSON test fixtures
-- Coding workspace: Monaco editor, Run/Submit, autosaved drafts, staged hints, reference solution after 3 submissions, submission history, My Library page
-- Modules 0–3: 18 lessons, 36 exercises (each in Python, Rust and C++), quizzes and hand-calculation checks, glossary
-- Visualizations: vector playground (add / dot / scale), matrix transformer, matmul stepper, stride explorer, broadcasting, derivative explorer, computational-graph backprop, gradient field with gradient descent, sampling and the law of large numbers, softmax with temperature, −ln p loss curve, cross-entropy gradient-step trainer, xorshift bit stepper, generator quality (pairs test), Box–Muller, deep-network initialization lab, draw-a-digit CNN demo
+- Coding workspace: Monaco editor with completions, signature help, hover docs and inline compiler errors; Run/Submit, autosaved drafts, staged hints, reference solution after 3 submissions, submission history, My Library page
+- Modules 0–6 as planned, with quizzes, numeric and matrix hand-calculation checks, and a glossary with hover definitions
+- Module 7, the capstone:
+  - **Data and model:** IDX parsing (big-endian integers, header validation), standardization, mini-batch gathering, and the CNN's forward and backward passes assembled from the learner's library. The backward pass is gradient-checked against numerical gradients.
+  - **Training runs:** the learner's `train_cnn` runs on the real MNIST files as a background job in the sandbox. Rust and C++ train on all 60,000 images (the reference gets 97.5% in about 15 s); Python trains on 5,000 (93% in about 1.5 min).
+  - **Live dashboard:** loss and accuracy curves, epoch and step progress with a time estimate, hyperparameter controls (training images, epochs, learning rate, batch size, seed), stop, and run history.
+  - **Grading:** test accuracy is computed on the server from the learner's reported predictions. The pass mark is 95% for Rust/C++ and 85% for Python.
+  - **After training:** a dataset viewer (images and their raw bytes); an interactive confusion matrix with per-class accuracy and a gallery of the actual misclassified digits, each with the model's confidence; and a draw-a-digit canvas running the learner's own saved weights, with their learned filters and feature maps next to the demo model's.
+- Visualizations: vector playground, matrix transformer, matmul stepper, stride explorer, broadcasting, derivative explorer, computational-graph backprop, gradient field, sampling, softmax, loss curves, xorshift and generator quality, Box–Muller, initialization lab, line fitting with GD/SGD, learning-rate and momentum explorers, activations, single-neuron boundary, XOR network, backprop shapes, MLP playground, convolution and feature maps, stride/padding, pooling, convolution gradients, im2col, training curves, confusion matrix, dataset viewer, draw-a-digit (demo model and the learner's own)
 - Light/dark mode, mobile layout
+- Tests: backend (API, grading, runner on local and Docker sandboxes, training runs), frontend unit tests, content verification of every exercise in every language, and browser end-to-end tests for course progression and the capstone
+
+**Different from the plan**
+- Training progress is polled about once a second rather than pushed over a WebSocket. It's simpler, works through any proxy, and is plenty for curves that update ten times a second at most.
+- Number of filters and kernel size aren't dashboard controls (the `train_cnn` signature is fixed). Learners change them in their code, and the dashboard and in-browser model adapt to whatever shapes they save.
+- Learners save their weights (`save_tensor`) for the browser to load, but don't write a loader in their own language.
 
 **Not built yet**
-- Modules 4–7 (shown as "coming soon" on the roadmap), including the training dashboard, dataset viewer and capstone features
-- Running learner code for long training jobs (needs background jobs and streaming metrics)
-- Compile caching for Rust/C++ (single-file compiles currently take under a second)
+- The optional language refresher in Module 0. There's a short conventions section for each language instead.
+- Compile caching for Rust/C++ (single-file compiles take one to two seconds)
+- Notes and bookmarks
+- The optional extras listed above (AI tutor, autograd, Adam/batch norm/dropout, performance track, WebAssembly export, cross-track comparisons)

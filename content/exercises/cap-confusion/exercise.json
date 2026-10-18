@@ -1,0 +1,136 @@
+{
+  "title": "Confusion matrix",
+  "function": "confusion_matrix",
+  "params": [
+    {
+      "name": "predicted",
+      "type": "ivec"
+    },
+    {
+      "name": "actual",
+      "type": "ivec"
+    },
+    {
+      "name": "classes",
+      "type": "int"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Start with a classes × classes matrix of zeros.",
+    "For each example, add 1 at row = actual class, column = predicted class.",
+    "Validate lengths and class ranges first."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          1,
+          1,
+          2
+        ],
+        [
+          0,
+          1,
+          2,
+          2
+        ],
+        3
+      ],
+      "description": "one 2 mistaken for a 1",
+      "expected": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          0
+        ],
+        2
+      ],
+      "description": "every 0 predicted as 1",
+      "expected": [
+        [
+          0.0,
+          2.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [],
+        [],
+        2
+      ],
+      "description": "no examples",
+      "hidden": true,
+      "expected": [
+        [
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          3
+        ],
+        [
+          0,
+          1
+        ],
+        3
+      ],
+      "description": "class 3 doesn't exist when there are 3 classes",
+      "expect_error": true,
+      "hidden": true
+    },
+    {
+      "args": [
+        [
+          0
+        ],
+        [
+          0,
+          1
+        ],
+        2
+      ],
+      "description": "one prediction per example",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

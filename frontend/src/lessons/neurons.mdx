@@ -1,0 +1,92 @@
+## A neuron, in math
+
+Artificial neurons were loosely inspired by brain cells, but the math is simple. A <Term>neuron</Term> takes a vector of inputs $\mathbf{x}$, computes a weighted sum plus a bias, and passes the result through an <Term t="activation function">activation function</Term> $\varphi$:
+
+$$
+a = \varphi(\mathbf{w}\cdot\mathbf{x} + b)
+$$
+
+You've met every piece: the dot product (Module 1), the sigmoid (Module 2), and how to train weights (Module 4). With $\varphi = \sigma$, a single neuron is a complete classifier called **logistic regression**: it outputs the probability that $\mathbf{x}$ belongs to class 1.
+
+## One neuron draws one line
+
+Where does a neuron switch from "class 0" to "class 1"? Where $\sigma(z) = \tfrac12$, which happens exactly when $z = \mathbf{w}\cdot\mathbf{x} + b = 0$. For two inputs that's the equation of a **straight line**; in more dimensions, a flat plane. So whatever its weights, one neuron can only ever separate classes with a straight boundary.
+
+<NeuronViz />
+
+Some problems simply aren't separable by a line. The classic example is **XOR**: output 1 when exactly one of two inputs is on. Try it above. You can't get more than 6 of the 8 points right, and the 1969 discovery of this limitation famously stalled neural-network research for years. The fix is to use more than one layer of neurons.
+
+<Quiz
+  id="neuron-boundary"
+  question="A neuron has weights $\mathbf{w} = (1, 1)$ and bias $b = -1$. Which input lies exactly on its decision boundary?"
+  options={["$(0, 0)$", "$(0.5, 0.5)$", "$(1, 1)$", "$(-1, 1)$"]}
+  answer={1}
+  explain="The boundary is $x + y - 1 = 0$, and $0.5 + 0.5 - 1 = 0$."
+/>
+
+## Why the activation function matters
+
+Here's a surprise. Stack two layers **without** an activation function and you gain nothing:
+
+$$
+W_2(W_1\mathbf{x} + \mathbf{b}_1) + \mathbf{b}_2 = (W_2W_1)\,\mathbf{x} + (W_2\mathbf{b}_1 + \mathbf{b}_2)
+$$
+
+That's just another single linear layer, with weight matrix $W_2W_1$. A product of matrices is still one matrix, so a hundred linear layers are no more powerful than one. The non-linear $\varphi$ between layers is what lets deep networks bend their decision boundaries into any shape.
+
+<Quiz
+  id="neuron-linear-stack"
+  question="A network has 10 layers but no activation functions anywhere. What can it represent?"
+  options={["Anything a 10-layer network with ReLUs can", "Only what a single linear layer can", "Nothing: it always outputs 0", "Only XOR"]}
+  answer={1}
+  explain="Composing linear maps gives a linear map: multiply all the weight matrices together and you get one layer that does the same thing."
+/>
+
+## Choosing an activation
+
+<ActivationViz />
+
+For hidden layers, the modern default is the <Term>relu</Term> (rectified linear unit):
+
+$$
+\mathrm{relu}(z) = \max(0, z), \qquad \mathrm{relu}'(z) = \begin{cases} 1 & z > 0 \\ 0 & z \le 0 \end{cases}
+$$
+
+It's almost embarrassingly simple, but it works well. It's cheap to compute, and its slope is exactly 1 for positive inputs, so gradients flow back through many layers without shrinking, unlike the sigmoid, whose slope is at most $\tfrac14$. (At exactly $z = 0$ the slope isn't defined; by convention we use 0.)
+
+## ReLU in the backward pass
+
+During backpropagation, a gradient $\partial L/\partial a$ arrives at the neuron's output, and the chain rule multiplies it by the activation's slope:
+
+$$
+\frac{\partial L}{\partial z} = \frac{\partial L}{\partial a}\cdot \mathrm{relu}'(z)
+$$
+
+For ReLU that's a gate: the gradient passes through unchanged where $z$ was positive, and is blocked (set to 0) where it wasn't. Note that the backward pass needs $z$ from the forward pass, so the network has to remember it.
+
+<NumericCheck
+  id="relu-back-hand"
+  question="A ReLU saw input $z = -0.3$ in the forward pass. The gradient arriving at its output is $4.2$. What gradient flows back to $z$?"
+  answer={0}
+  explain="$z \le 0$, so ReLU's slope there is 0 and the gradient is blocked."
+/>
+
+<KeyIdea>
+
+A neuron computes $\varphi(\mathbf{w}\cdot\mathbf{x} + b)$, and on its own it can only draw a straight decision boundary. Non-linear activations between layers are what make depth useful. ReLU, $\max(0, z)$, passes gradients through where its input was positive and blocks them elsewhere.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="nn-relu">
+
+Return $\max(0, x)$ for every entry of $\mathbf{v}$.
+
+</Exercise>
+
+<Exercise id="nn-relu-backward">
+
+Given the forward-pass input $\mathbf{z}$ and the incoming gradient, return $\partial L/\partial \mathbf{z}$: the gradient where $z_i > 0$, and $0$ elsewhere.
+
+</Exercise>

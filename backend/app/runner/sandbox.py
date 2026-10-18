@@ -21,7 +21,7 @@ import tempfile
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Callable, Protocol
 
 from .codegen import Job
 
@@ -62,22 +62,51 @@ def _parse(raw: bytes, stderr: bytes) -> JobResult:
     return JobResult(steps=[StepResult(**s) for s in data["steps"]])
 
 
+LineCallback = Callable[[str], None]
+
+
 class Sandbox(Protocol):
     name: str
+    # Where the MNIST files live, as seen from inside this sandbox.
+    data_dir: str
 
     async def execute(self, job: Job) -> JobResult: ...
+
+    async def execute_stream(self, job: Job, on_line: LineCallback) -> JobResult: ...
 
     async def check(self) -> tuple[bool, str]: ...
 
 
-def _job_payload(job: Job, workdir: str, apply_rlimits: bool) -> bytes:
+def _job_payload(job: Job, workdir: str, apply_rlimits: bool, stream: bool = False) -> bytes:
     payload: dict[str, Any] = {
         "workdir": workdir,
         "files": job.files,
         "steps": job.steps,
         "apply_rlimits": apply_rlimits,
+        "stream": stream,
     }
     return json.dumps(payload).encode("utf-8")
+
+
+async def _read_stream(proc: asyncio.subprocess.Process, on_line: LineCallback) -> JobResult:
+    """Consume the driver's streamed events until the final "done" event."""
+    assert proc.stdout is not None
+    while True:
+        raw = await proc.stdout.readline()
+        if not raw:
+            break
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if event.get("event") == "line":
+            on_line(event["line"])
+        elif event.get("event") == "done":
+            await proc.wait()
+            return JobResult(steps=[StepResult(**st) for st in event["steps"]])
+    await proc.wait()
+    err = (await proc.stderr.read()).decode("utf-8", errors="replace")[-2000:] if proc.stderr else ""
+    raise SandboxError(f"the sandbox stopped without finishing (exit {proc.returncode}): {err}")
 
 
 def _total_timeout(job: Job) -> float:
@@ -86,6 +115,8 @@ def _total_timeout(job: Job) -> float:
 
 class DockerSandbox:
     name = "docker"
+
+    data_dir = "/data/mnist"
 
     def __init__(
         self,
@@ -101,13 +132,14 @@ class DockerSandbox:
         self.pids = pids
         self.docker = docker_bin
 
-    def _command(self, container: str) -> list[str]:
+    def _command(self, container: str, memory: str | None = None) -> list[str]:
+        memory = memory or self.memory
         return [
             self.docker, "run", "--rm", "-i",
             "--name", container,
             "--network", "none",
-            "--memory", self.memory,
-            "--memory-swap", self.memory,
+            "--memory", memory,
+            "--memory-swap", memory,
             "--cpus", self.cpus,
             "--pids-limit", str(self.pids),
             "--read-only",
@@ -145,6 +177,29 @@ class DockerSandbox:
             )
         return _parse(out, err)
 
+    async def execute_stream(self, job: Job, on_line: LineCallback) -> JobResult:
+        container = f"tmai-train-{uuid.uuid4().hex[:12]}"
+        proc = await asyncio.create_subprocess_exec(
+            *self._command(container, job.extra.get("memory")),
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            limit=32 * 1024 * 1024,
+        )
+        assert proc.stdin is not None
+        proc.stdin.write(_job_payload(job, "/tmp/job", apply_rlimits=False, stream=True))
+        await proc.stdin.drain()
+        proc.stdin.close()
+        try:
+            return await asyncio.wait_for(_read_stream(proc, on_line), timeout=_total_timeout(job))
+        except (TimeoutError, asyncio.CancelledError) as exc:
+            await self._kill(container)
+            proc.kill()
+            await proc.wait()
+            if isinstance(exc, asyncio.CancelledError):
+                raise
+            raise SandboxError("the sandbox did not finish in time") from None
+
     async def _kill(self, container: str) -> None:
         killer = await asyncio.create_subprocess_exec(
             self.docker, "kill", container,
@@ -173,6 +228,9 @@ class LocalSandbox:
 
     name = "local"
 
+    def __init__(self, data_dir: str | Path | None = None) -> None:
+        self.data_dir = str(data_dir or Path(__file__).resolve().parents[3] / "data" / "mnist" / "raw")
+
     async def execute(self, job: Job) -> JobResult:
         workdir = tempfile.mkdtemp(prefix="tmai-job-")
         try:
@@ -192,6 +250,36 @@ class LocalSandbox:
                 await proc.wait()
                 raise SandboxError("the sandbox did not finish in time") from None
             return _parse(out, err)
+        finally:
+            shutil.rmtree(workdir, ignore_errors=True)
+
+    async def execute_stream(self, job: Job, on_line: LineCallback) -> JobResult:
+        workdir = tempfile.mkdtemp(prefix="tmai-train-")
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                sys.executable, "-I", "-c", DRIVER_SOURCE,
+                stdin=asyncio.subprocess.PIPE,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                limit=32 * 1024 * 1024,
+            )
+            assert proc.stdin is not None
+            proc.stdin.write(_job_payload(job, workdir, apply_rlimits=True, stream=True))
+            await proc.stdin.drain()
+            proc.stdin.close()
+            try:
+                return await asyncio.wait_for(_read_stream(proc, on_line), timeout=_total_timeout(job))
+            except (TimeoutError, asyncio.CancelledError) as exc:
+                # SIGTERM lets the driver kill the learner's process group first.
+                proc.terminate()
+                try:
+                    await asyncio.wait_for(proc.wait(), timeout=5)
+                except TimeoutError:
+                    proc.kill()
+                    await proc.wait()
+                if isinstance(exc, asyncio.CancelledError):
+                    raise
+                raise SandboxError("the sandbox did not finish in time") from None
         finally:
             shutil.rmtree(workdir, ignore_errors=True)
 

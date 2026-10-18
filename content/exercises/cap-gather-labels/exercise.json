@@ -1,0 +1,75 @@
+{
+  "title": "Gather a batch of labels",
+  "function": "gather_labels",
+  "params": [
+    {
+      "name": "labels",
+      "type": "ivec"
+    },
+    {
+      "name": "idx",
+      "type": "ivec"
+    }
+  ],
+  "returns": "ivec",
+  "library": true,
+  "hints": [
+    "The same as gather_rows, for a list of integers.",
+    "[labels[i] for i in idx], with a bounds check.",
+    "Rust panics on a bad index automatically; Python raises IndexError; in C++ use .at(i)."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          7,
+          2,
+          1,
+          0
+        ],
+        [
+          3,
+          0
+        ]
+      ],
+      "description": "labels 3 and 0",
+      "expected": [
+        0,
+        7
+      ]
+    },
+    {
+      "args": [
+        [
+          5,
+          9
+        ],
+        [
+          1,
+          1,
+          0
+        ]
+      ],
+      "description": "repeats are fine",
+      "expected": [
+        9,
+        9,
+        5
+      ]
+    },
+    {
+      "args": [
+        [
+          5,
+          9
+        ],
+        [
+          2
+        ]
+      ],
+      "description": "out of range",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

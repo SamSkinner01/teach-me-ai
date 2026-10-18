@@ -1,0 +1,155 @@
+{
+  "title": "Fit a line with gradient descent",
+  "function": "fit_line",
+  "params": [
+    {
+      "name": "xs",
+      "type": "vec"
+    },
+    {
+      "name": "ys",
+      "type": "vec"
+    },
+    {
+      "name": "lr",
+      "type": "float"
+    },
+    {
+      "name": "epochs",
+      "type": "int"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "The model is ŷᵢ = w·xᵢ + b, the loss is mse_loss(ŷ, ys), and w and b both start at 0.",
+    "Let g = mse_grad(ŷ, ys). By the chain rule ∂L/∂w = Σ gᵢ·xᵢ = dot(g, xs), and ∂L/∂b = Σ gᵢ = vec_sum(g).",
+    "Each epoch: compute ŷ, then g, then w −= lr·dot(g, xs) and b −= lr·vec_sum(g) (both from the same g). Return [w, b]."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          1,
+          3,
+          5,
+          7,
+          9
+        ],
+        0.05,
+        1000
+      ],
+      "description": "points on y = 2x + 1: recovers w ≈ 2, b ≈ 1",
+      "expected": [
+        2.0000000000000067,
+        0.9999999999999818
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        [
+          1,
+          3,
+          5,
+          7,
+          9
+        ],
+        0.05,
+        1
+      ],
+      "description": "after a single step",
+      "expected": [
+        1.4000000000000001,
+        0.5
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0.5,
+          1,
+          1.5,
+          2,
+          2.5,
+          3,
+          3.5,
+          4,
+          4.5
+        ],
+        [
+          -0.9,
+          -0.85,
+          -0.4,
+          -0.3,
+          0.1,
+          0.2,
+          0.55,
+          0.8,
+          1.05,
+          1.2
+        ],
+        0.02,
+        2000
+      ],
+      "description": "noisy points around y = 0.5x − 1",
+      "hidden": true,
+      "expected": [
+        0.49515151492080345,
+        -0.9690909083872195
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          2,
+          2
+        ],
+        0.1,
+        500
+      ],
+      "description": "a flat line: w ≈ 0, b ≈ 2",
+      "hidden": true,
+      "expected": [
+        3.834601471771505e-06,
+        1.999991283049533
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          1
+        ],
+        0.1,
+        10
+      ],
+      "description": "one y per x",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

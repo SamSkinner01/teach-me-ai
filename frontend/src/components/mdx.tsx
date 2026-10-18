@@ -5,13 +5,22 @@ import type { AnchorHTMLAttributes, ComponentType } from "react";
 import { Link } from "react-router-dom";
 import { BroadcastViz } from "../viz/BroadcastViz";
 import { ChainRuleGraph } from "../viz/ChainRuleGraph";
+import { ConvolutionViz, FeatureMapsViz } from "../viz/CnnViz";
+import { ConvGradViz, Im2colViz, PoolingViz, StridePaddingViz } from "../viz/ConvMechanicsViz";
 import { CrossEntropyTrainer, LogLossCurve } from "../viz/CrossEntropyViz";
 import { DerivativeExplorer } from "../viz/DerivativeExplorer";
+import { DatasetViewer } from "../viz/DatasetViewer";
 import { DigitDemo } from "../viz/DigitDemo";
+import { ConfusionMatrixViz, YourModelViz } from "../viz/EvaluationViz";
 import { GradientField } from "../viz/GradientField";
 import { InitViz, NormalViz } from "../viz/InitViz";
+import { LineFitViz } from "../viz/LineFitViz";
 import { MatmulStepper } from "../viz/MatmulStepper";
 import { MatrixTransformer } from "../viz/MatrixTransformer";
+import { BackpropShapesViz, XorNetViz } from "../viz/MLPViz";
+import { ActivationViz, NeuronViz } from "../viz/NeuronViz";
+import { LearningRateViz, MomentumViz } from "../viz/OptimizerViz";
+import { PlaygroundViz } from "../viz/PlaygroundViz";
 import { RngQuality, XorshiftViz } from "../viz/RngViz";
 import { SamplingViz } from "../viz/SamplingViz";
 import { SoftmaxViz } from "../viz/SoftmaxViz";
@@ -20,6 +29,7 @@ import { VectorPlayground } from "../viz/VectorPlayground";
 import { MatrixCheck, NumericCheck, Quiz } from "./Checks";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { Exercise } from "./Exercise";
+import { TrainingLab } from "./TrainingLab";
 import { Callout, KeyIdea, Lang, LangName, PerLang, Term, Wide } from "./LessonBits";
 import { Tex } from "./RichText";
 
@@ -61,11 +71,29 @@ const figures = {
   RngQuality,
   NormalViz,
   InitViz,
+  LineFitViz,
+  LearningRateViz,
+  MomentumViz,
+  ActivationViz,
+  NeuronViz,
+  XorNetViz,
+  BackpropShapesViz,
+  PlaygroundViz,
+  ConvolutionViz,
+  FeatureMapsViz,
+  StridePaddingViz,
+  PoolingViz,
+  ConvGradViz,
+  Im2colViz,
+  ConfusionMatrixViz,
+  YourModelViz,
+  DatasetViewer,
 };
 
 export const mdxComponents: MDXComponents = {
   a: A,
   Exercise: guard(Exercise, "this exercise"),
+  TrainingLab: guard(TrainingLab, "the training lab"),
   Quiz,
   NumericCheck,
   MatrixCheck,

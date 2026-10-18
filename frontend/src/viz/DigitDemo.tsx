@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type PointerEvent as RPointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type PointerEvent as RPointerEvent, type ReactNode } from "react";
 import { Icon } from "../components/Icon";
 import { loadModel, mnistify, predict, type Model, type ModelFile, type Prediction, type Tensor } from "./cnn";
 
 const SIZE = 280;
 let modelPromise: Promise<Model> | null = null;
 
-function getModel(): Promise<Model> {
+export function getModel(): Promise<Model> {
   modelPromise ??= fetch("/models/demo-cnn.json")
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
@@ -42,19 +42,37 @@ function FeatureMap({ t, channel }: { t: Tensor; channel: number }) {
   return <canvas ref={ref} width={w} height={h} className="fmap" aria-label={`Feature map ${channel + 1}`} />;
 }
 
-export function DigitDemo({ compact = false }: { compact?: boolean }) {
+/**
+ * Draw a digit and watch a CNN classify it. Uses the demo model unless a ``model``
+ * is given (null while the caller is still loading it).
+ */
+export function DigitDemo({
+  compact = false,
+  model: given,
+  title = "Draw a digit",
+  caption,
+  controls,
+}: {
+  compact?: boolean;
+  model?: Model | null;
+  title?: string;
+  caption?: ReactNode;
+  controls?: ReactNode;
+}) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const preview = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const last = useRef<[number, number] | null>(null);
   const pending = useRef<number | undefined>(undefined);
-  const [model, setModel] = useState<Model | null>(null);
+  const [demo, setDemo] = useState<Model | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pred, setPred] = useState<Prediction | null>(null);
+  const usesDemo = given === undefined;
+  const model = usesDemo ? demo : given;
 
   useEffect(() => {
-    getModel().then(setModel, (e) => setError(String(e)));
-  }, []);
+    if (usesDemo) getModel().then(setDemo, (e) => setError(String(e)));
+  }, [usesDemo]);
 
   const clear = useCallback(() => {
     const ctx = canvas.current?.getContext("2d");
@@ -84,6 +102,11 @@ export function DigitDemo({ compact = false }: { compact?: boolean }) {
     for (let i = 0; i < 784; i++) input[i] = (digit[i] - model.mean) / model.std;
     setPred(predict(model, { shape: [1, 28, 28], data: input }));
   }, [model]);
+
+  // Re-read the drawing when the model changes (e.g. switching between models).
+  useEffect(() => {
+    classify();
+  }, [classify]);
 
   const schedule = () => {
     if (pending.current === undefined) pending.current = window.setTimeout(classify, 60);
@@ -115,8 +138,9 @@ export function DigitDemo({ compact = false }: { compact?: boolean }) {
     <figure className={`viz card digit-demo ${compact ? "compact" : ""}`}>
       <div className="viz-head">
         <span className="viz-kicker">Interactive</span>
-        <span className="viz-title">Draw a digit</span>
+        <span className="viz-title">{title}</span>
       </div>
+      {controls && <div className="viz-controls">{controls}</div>}
       <div className="dd-body">
         <div className="dd-draw">
           <canvas
@@ -160,7 +184,7 @@ export function DigitDemo({ compact = false }: { compact?: boolean }) {
 
         <div className="dd-result">
           {error ? (
-            <div className="alert alert-error">Couldn't load the demo model ({error}).</div>
+            <div className="alert alert-error">Couldn't load the model ({error}).</div>
           ) : !model ? (
             <div className="muted">
               <span className="spinner" /> Loading the network…
@@ -194,7 +218,7 @@ export function DigitDemo({ compact = false }: { compact?: boolean }) {
               <canvas ref={preview} width={28} height={28} className="dd-preview" aria-label="Downscaled 28 by 28 input" />
             </div>
             <div>
-              <div className="small muted">What its 8 first-layer filters respond to</div>
+              <div className="small muted">What its {conv1?.shape[0] ?? 8} first-layer filters respond to</div>
               <div className="fmaps">
                 {conv1
                   ? Array.from({ length: conv1.shape[0] }, (_, c) => <FeatureMap key={c} t={conv1} channel={c} />)
@@ -205,9 +229,13 @@ export function DigitDemo({ compact = false }: { compact?: boolean }) {
         )}
       </div>
       <figcaption className="viz-caption">
-        A small convolutional network (about 5,000 numbers, {model ? `${(model.accuracy * 100).toFixed(1)}%` : "≈98%"}{" "}
-        accurate on MNIST's test set) running in your browser. Every number in it was learned with the math you're about
-        to study.
+        {caption ?? (
+          <>
+            A small convolutional network (about 5,000 numbers,{" "}
+            {model ? `${(model.accuracy * 100).toFixed(1)}%` : "≈98%"} accurate on MNIST's test set) running in your
+            browser. Every number in it was learned with the math you're about to study.
+          </>
+        )}
       </figcaption>
     </figure>
   );

@@ -1,0 +1,12 @@
+#include <cstddef>
+#include <stdexcept>
+#include <vector>
+
+// Return `image` surrounded by a border of zeros `p` cells wide on every side.
+// An H x W image becomes (H + 2p) x (W + 2p).
+//
+// pad2d([[1, 2]], 1) == [[0, 0, 0, 0], [0, 1, 2, 0], [0, 0, 0, 0]]
+std::vector<std::vector<double>> pad2d(const std::vector<std::vector<double>>& image, std::size_t p) {
+    // TODO
+    throw std::logic_error("not implemented");
+}

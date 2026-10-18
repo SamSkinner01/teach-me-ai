@@ -1,0 +1,102 @@
+{
+  "title": "Accuracy",
+  "function": "accuracy",
+  "params": [
+    {
+      "name": "logits",
+      "type": "mat"
+    },
+    {
+      "name": "labels",
+      "type": "ivec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "A prediction is the argmax of its row of logits.",
+    "Count the rows where argmax(row) == label, then divide by the number of rows.",
+    "Your `argmax` already picks the first index on ties."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            0.1,
+            0.9
+          ],
+          [
+            0.8,
+            0.2
+          ],
+          [
+            0.3,
+            0.7
+          ]
+        ],
+        [
+          1,
+          0,
+          0
+        ]
+      ],
+      "description": "two of three right",
+      "expected": 0.6666666666666666
+    },
+    {
+      "args": [
+        [
+          [
+            5,
+            1,
+            0
+          ]
+        ],
+        [
+          0
+        ]
+      ],
+      "description": "one example, correct",
+      "expected": 1.0
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            1
+          ],
+          [
+            0,
+            3
+          ]
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      "description": "ties go to the first index, so both are wrong",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "one label per row",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

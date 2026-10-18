@@ -1,0 +1,106 @@
+{
+  "title": "Output size",
+  "function": "conv_output_size",
+  "params": [
+    {
+      "name": "n",
+      "type": "int"
+    },
+    {
+      "name": "k",
+      "type": "int"
+    },
+    {
+      "name": "stride",
+      "type": "int"
+    },
+    {
+      "name": "padding",
+      "type": "int"
+    }
+  ],
+  "returns": "int",
+  "library": true,
+  "hints": [
+    "Padding adds `padding` cells on both sides, so the padded size is n + 2·padding.",
+    "The kernel can start at positions 0, stride, 2·stride, … as long as it still fits: there are (n + 2p − k) // stride + 1 of them.",
+    "Check stride > 0 and k ≤ n + 2p first. Use integer division."
+  ],
+  "tests": [
+    {
+      "args": [
+        28,
+        3,
+        1,
+        0
+      ],
+      "description": "a 3×3 kernel shrinks 28 to 26",
+      "expected": 26
+    },
+    {
+      "args": [
+        28,
+        3,
+        1,
+        1
+      ],
+      "description": "padding 1 keeps the size: “same” convolution",
+      "expected": 28
+    },
+    {
+      "args": [
+        28,
+        2,
+        2,
+        0
+      ],
+      "description": "2×2 with stride 2 halves it",
+      "hidden": true,
+      "expected": 14
+    },
+    {
+      "args": [
+        7,
+        3,
+        2,
+        0
+      ],
+      "description": "stride 2 on an odd size rounds down",
+      "hidden": true,
+      "expected": 3
+    },
+    {
+      "args": [
+        5,
+        5,
+        1,
+        0
+      ],
+      "description": "the kernel exactly fits",
+      "hidden": true,
+      "expected": 1
+    },
+    {
+      "args": [
+        5,
+        3,
+        0,
+        0
+      ],
+      "description": "stride 0 is meaningless",
+      "expect_error": true,
+      "hidden": true
+    },
+    {
+      "args": [
+        2,
+        5,
+        1,
+        1
+      ],
+      "description": "the kernel doesn't fit even with padding",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

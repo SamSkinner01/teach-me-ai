@@ -1,0 +1,102 @@
+{
+  "title": "Standardize the inputs",
+  "function": "standardize",
+  "params": [
+    {
+      "name": "images",
+      "type": "mat"
+    },
+    {
+      "name": "mean",
+      "type": "float"
+    },
+    {
+      "name": "std",
+      "type": "float"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Subtract the mean, then divide by the standard deviation, for every pixel.",
+    "Python: [[(x - mean) / std for x in row] for row in images].",
+    "Check std > 0 first."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            1
+          ]
+        ],
+        0.5,
+        0.5
+      ],
+      "description": "maps 0 and 1 to −1 and +1",
+      "expected": [
+        [
+          -1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0.5,
+            1
+          ],
+          [
+            0.2,
+            0.2,
+            0.2
+          ]
+        ],
+        0.1307,
+        0.3081
+      ],
+      "description": "the MNIST mean and standard deviation",
+      "expected": [
+        [
+          -0.424212917883804,
+          1.198636806231743,
+          2.82148653034729
+        ],
+        [
+          0.2249269717624148,
+          0.2249269717624148,
+          0.2249269717624148
+        ]
+      ]
+    },
+    {
+      "args": [
+        [],
+        0,
+        1
+      ],
+      "description": "no images",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        0,
+        0
+      ],
+      "description": "a zero standard deviation is rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

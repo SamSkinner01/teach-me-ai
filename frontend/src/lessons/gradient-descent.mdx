@@ -1,0 +1,97 @@
+## The algorithm
+
+You met <Term t="gradient descent">gradient descent</Term> in Module 2. Now it's time to use it for real:
+
+$$
+\mathbf{w} \leftarrow \mathbf{w} - \eta\, \nabla L(\mathbf{w})
+$$
+
+Compute the gradient, take a small step against it, repeat. The step size $\eta$ (eta) is the <Term t="learning rate">learning rate</Term>, and it's the single most important setting in all of deep learning.
+
+## The learning rate
+
+Gradient descent on the simplest bowl, $f(x) = x^2$, shows everything that can go wrong. The gradient is $2x$, so each step is
+
+$$
+x \leftarrow x - \eta \cdot 2x = (1 - 2\eta)\, x
+$$
+
+Every step multiplies $x$ by the same factor $1 - 2\eta$. If that factor is between 0 and 1, $x$ shrinks steadily towards the minimum. Between $-1$ and $0$, it flips sign every step but still shrinks: overshooting, then zig-zagging in. Below $-1$, it grows every step: divergence.
+
+<LearningRateViz />
+
+The same story holds for any smooth loss, with the curvature playing the role of the 2: along a direction where the loss curves with second derivative $\lambda$, gradient descent is stable only if $\eta < 2/\lambda$.
+
+<NumericCheck
+  id="gd-one-step"
+  question="Gradient descent on $f(x) = x^2$ with $\eta = 0.25$, starting from $x = 4$. Where is $x$ after one step?"
+  answer={2}
+  explain="The gradient is $2 \cdot 4 = 8$, so $x \leftarrow 4 - 0.25 \cdot 8 = 2$. The factor $1 - 2\eta = 0.5$ halves $x$ every step."
+/>
+
+<NumericCheck
+  id="gd-max-lr"
+  question="What is the largest stable learning rate for $f(x) = 5x^2$? (Its curvature is $f''(x) = 10$.)"
+  answer={0.2}
+  tolerance={1e-6}
+  explain="Stable when $\eta < 2/\lambda = 2/10 = 0.2$. Steeper losses need smaller steps."
+/>
+
+## Why one learning rate is hard to pick
+
+Real loss surfaces curve differently in different directions. Remember the tilted bowl from the last lesson: the loss is very sensitive to the slope $w$ and much less to the intercept $b$. The steepest direction limits how big $\eta$ can be, and then progress along the shallow direction is painfully slow. This mismatch is called *ill-conditioning*.
+
+Watch it happen while gradient descent fits the line:
+
+<LineFitViz mode="gd" />
+
+The path drops quickly into the valley, then crawls along it. Raise the learning rate to speed up the crawl and the steep direction starts to zig-zag, then blows up. Two common remedies:
+
+- **Normalize the inputs.** The slope's gradient scales with $x$, and here $x$ goes up to 8.5. If the inputs had mean 0 and standard deviation 1, the bowl would be much rounder. That's exactly why the MNIST demo network subtracted the mean pixel value and divided by the standard deviation.
+- **Better optimizers**, like momentum (the last lesson in this module).
+
+<Quiz
+  id="gd-diagnose"
+  question="Your training loss jumps around wildly and sometimes becomes NaN. What should you try first?"
+  options={["Increase the learning rate", "Decrease the learning rate", "Train for more epochs", "Use more data"]}
+  answer={1}
+  explain="Wild oscillation and NaNs are the classic signs of a learning rate past the stability limit."
+/>
+
+## Your first learning algorithm
+
+Fitting a line by gradient descent is a complete machine-learning algorithm in miniature:
+
+1. Start with weights $w = 0$, $b = 0$.
+2. Make predictions $\hat y_i = w x_i + b$ for the whole dataset.
+3. Compute the gradient of the loss, $\mathbf{g} = \text{mse\_grad}(\hat{\mathbf{y}}, \mathbf{y})$, and from it $\partial L/\partial w = \mathbf{g}\cdot\mathbf{x}$ and $\partial L/\partial b = \sum_i g_i$.
+4. Step both weights against their gradients.
+5. Repeat. Each full pass over the data is one <Term>epoch</Term>.
+
+Training a neural network is the same five steps, with millions of weights and a much bigger chain rule in step 3.
+
+<KeyIdea>
+
+Gradient descent repeats $\mathbf{w} \leftarrow \mathbf{w} - \eta\nabla L(\mathbf{w})$. Along a direction with curvature $\lambda$ it's stable only for $\eta < 2/\lambda$, so the steepest direction caps the learning rate and the shallow directions converge slowly.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="opt-gd-step">
+
+Return $\mathbf{w} - \eta\,\mathbf{g}$.
+
+</Exercise>
+
+<Exercise id="opt-gradient-descent">
+
+Minimize $f$ starting from $\mathbf{x}_0$: take `steps` gradient-descent steps, using your numerical gradient with $h = 10^{-5}$, and return the final point.
+
+</Exercise>
+
+<Exercise id="opt-fit-line">
+
+Fit $\hat y = wx + b$ to the data by full-batch gradient descent on the MSE, starting from $w = b = 0$, for `epochs` updates. Return $[w, b]$.
+
+</Exercise>

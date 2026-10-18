@@ -1,0 +1,27 @@
+{
+  "title": "Train your CNN on MNIST",
+  "kind": "training",
+  "function": "train_cnn",
+  "params": [
+    {"name": "data_dir", "type": "str"},
+    {"name": "train_limit", "type": "int"},
+    {"name": "test_limit", "type": "int"},
+    {"name": "epochs", "type": "int"},
+    {"name": "lr", "type": "float"},
+    {"name": "batch_size", "type": "int"},
+    {"name": "seed", "type": "int"}
+  ],
+  "returns": "float",
+  "library": false,
+  "hints": [
+    "Work through the numbered steps in the starter code in order. Every step is one or two calls to functions already in your library.",
+    "A training step: for each index in the batch, add cnn_gradients(...) into a running total (and cnn_forward + cross_entropy_loss for the reported loss). Then divide by the batch size and gd_step each parameter with its slice of the averaged gradient.",
+    "The gradient vector is laid out as [conv_w (72) | conv_b (8) | dense_w (13,520, row-major) | dense_b (10)]. Slice it at 72, 80 and 13,600. Flatten dense_w before its gd_step and reshape it back to 10 × 1352 afterwards."
+  ],
+  "training": {
+    "python": {"train_limit": 5000, "max_train_limit": 10000, "test_limit": 1000, "epochs": 1, "max_epochs": 3, "lr": 0.05, "batch_size": 10, "threshold": 0.85, "time_limit": 1200},
+    "rust":   {"train_limit": 60000, "max_train_limit": 60000, "test_limit": 10000, "epochs": 1, "max_epochs": 5, "lr": 0.05, "batch_size": 32, "threshold": 0.95, "time_limit": 600},
+    "cpp":    {"train_limit": 60000, "max_train_limit": 60000, "test_limit": 10000, "epochs": 1, "max_epochs": 5, "lr": 0.05, "batch_size": 32, "threshold": 0.95, "time_limit": 600}
+  },
+  "tests": []
+}

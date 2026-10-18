@@ -1,0 +1,111 @@
+{
+  "title": "Batch cross-entropy",
+  "function": "batch_cross_entropy",
+  "params": [
+    {
+      "name": "logits",
+      "type": "mat"
+    },
+    {
+      "name": "labels",
+      "type": "ivec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "Average your cross_entropy_loss over the rows.",
+    "Loop over i, add cross_entropy_loss(logits[i], labels[i]), divide by the number of rows.",
+    "Check len(logits) == len(labels) and that it isn't zero."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "two 50/50 guesses: ln 2",
+      "expected": 0.6931471805599453
+    },
+    {
+      "args": [
+        [
+          [
+            2,
+            1,
+            0.1
+          ],
+          [
+            0.5,
+            2.5,
+            0
+          ]
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "two mostly-right predictions",
+      "expected": 0.30688205659872536
+    },
+    {
+      "args": [
+        [
+          [
+            2,
+            1,
+            0.1
+          ],
+          [
+            0.5,
+            2.5,
+            0
+          ],
+          [
+            1000,
+            0,
+            0
+          ]
+        ],
+        [
+          2,
+          0,
+          1
+        ]
+      ],
+      "description": "mostly wrong, including one confidently wrong",
+      "hidden": true,
+      "expected": 334.8379213710658
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ]
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "one label per row",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

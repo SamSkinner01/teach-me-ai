@@ -1,0 +1,132 @@
+{
+  "title": "Gather a batch of rows",
+  "function": "gather_rows",
+  "params": [
+    {
+      "name": "m",
+      "type": "mat"
+    },
+    {
+      "name": "idx",
+      "type": "ivec"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Build a new matrix by copying m[i] for each i in idx.",
+    "Check every index is less than the number of rows.",
+    "In C++, m[i] with a bad i is undefined behaviour (it may crash or return garbage), so check explicitly or use m.at(i)."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ],
+        [
+          2,
+          0
+        ]
+      ],
+      "description": "rows 2 and 0",
+      "expected": [
+        [
+          3.0,
+          3.0
+        ],
+        [
+          1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ],
+          [
+            3,
+            3
+          ]
+        ],
+        [
+          1,
+          1,
+          1
+        ]
+      ],
+      "description": "the same row can repeat",
+      "expected": [
+        [
+          2.0,
+          2.0
+        ],
+        [
+          2.0,
+          2.0
+        ],
+        [
+          2.0,
+          2.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        []
+      ],
+      "description": "an empty batch",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            1
+          ],
+          [
+            2,
+            2
+          ]
+        ],
+        [
+          2
+        ]
+      ],
+      "description": "index 2 is out of range",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+## The real dataset
+
+Everything so far ran on small made-up inputs. The capstone uses the real thing: <Term>MNIST</Term>, 70,000 handwritten digits written by US Census Bureau employees and high-school students, collected by NIST and turned into MNIST in the 1990s. By the end of this module, a network built entirely from your own library will read them.
+
+The dataset is four files:
+
+| File | What's in it | Size in bytes |
+| --- | --- | --- |
+| `train-images-idx3-ubyte` | 60,000 training images, 28 × 28 pixels each | 47,040,016 |
+| `train-labels-idx1-ubyte` | the digit (0–9) each training image shows | 60,008 |
+| `t10k-images-idx3-ubyte` | 10,000 test images | 7,840,016 |
+| `t10k-labels-idx1-ubyte` | their labels | 10,008 |
+
+These aren't images you could open, and they aren't CSV or JSON. They're raw bytes in a simple format called **IDX**, and before you can train on them you need to read them. That's this lesson.
+
+## Bytes and big-endian numbers
+
+A file is a sequence of <Term>byte</Term>s, each a whole number from 0 to 255. A pixel fits in one byte (0 is blank paper, 255 is full ink), and so does a label. But the file also has to record how many images it holds. 60,000 doesn't fit in one byte, so IDX stores sizes as four bytes each: an unsigned 32-bit integer.
+
+Read four bytes $b_0, b_1, b_2, b_3$ as the digits of a number in base 256:
+
+$$
+n = b_0 \cdot 256^3 + b_1 \cdot 256^2 + b_2 \cdot 256 + b_3
+$$
+
+Putting the most significant byte first, the way we write decimal numbers, is called <Term t="big-endian">big-endian</Term>. Most CPUs today store integers the other way round (little-endian), so a file format has to say which order it uses. Reinterpreting the bytes directly in memory would give the wrong number on your machine.
+
+<NumericCheck
+  id="idx-u32"
+  question="The label file starts 0, 0, 8, 1, then 0, 0, 234, 96. What number do those last four bytes encode?"
+  answer={60000}
+  explain="0·256³ + 0·256² + 234·256 + 96 = 59,904 + 96 = 60,000: the number of labels in the file."
+/>
+
+<Exercise id="cap-u32">
+
+Read the four bytes at `offset` as one big-endian unsigned integer.
+
+<Lang only="python">
+
+Python has `int.from_bytes(data[offset:offset + 4], "big")`, which does exactly this. Write it with multiplications (or shifts, `b << 24`) instead, so you see what it does.
+
+</Lang>
+<Lang only="rust">
+
+Rust has `u32::from_be_bytes`, which does exactly this. Write it with multiplications or shifts (`(b as usize) << 24`) instead, so you see what it does. Indexing past the end of a slice panics, which counts as signalling the error, but a clear `assert!` with a message is friendlier.
+
+</Lang>
+<Lang only="cpp">
+
+Write it with multiplications or shifts. Careful: shifting a `std::uint8_t` promotes it to `int`, and `255 << 24` doesn't fit in a 32-bit `int`. Convert each byte to `std::size_t` before shifting.
+
+</Lang>
+
+</Exercise>
+
+## The IDX header
+
+Every IDX file starts with a header that describes the data that follows:
+
+```text
+bytes 0, 1    0, 0         always zero
+byte  2       0x08         the data type: 8 means unsigned bytes
+byte  3       d            the number of dimensions
+next 4·d      the sizes    one big-endian u32 per dimension
+the rest      the data     (product of the sizes) bytes, last dimension fastest
+```
+
+The training images file starts `0 0 8 3`, then the sizes 60,000, 28 and 28, then 47,040,000 pixel bytes. The labels file starts `0 0 8 1`, then 60,000, then one byte per label.
+
+Those first four bytes are a <Term t="magic number">magic number</Term>: a fixed signature identifying the file type. MNIST is distributed gzip-compressed, and a compressed file starts with the bytes `0x1f 0x8b` instead. If you forget to decompress, the magic check gives you a clear error instead of 47 million bytes of garbage.
+
+The header also tells you exactly how long the file must be: $4 + 4d + \prod_i \text{size}_i$ bytes. Checking that catches a truncated download before it turns into a mysterious crash halfway through training.
+
+<NumericCheck
+  id="idx-length"
+  question="How many bytes long must the test-images file be? (10,000 images of 28 × 28, so d = 3.)"
+  answer={7840016}
+  explain="4 bytes of magic, 3 × 4 bytes of sizes, then 10,000 × 28 × 28 = 7,840,000 pixels: 7,840,016 bytes, the size in the table above."
+/>
+
+<Exercise id="cap-idx-dims">
+
+Validate an IDX header and return its sizes. The tests include a file with the wrong data type and a truncated one, and both must be rejected.
+
+</Exercise>
+
+## Images and labels
+
+With three dimensions (count, rows, columns), image $k$ occupies the 784 bytes starting at offset $16 + 784k$, row by row. Here are the real test images, exactly as stored:
+
+<DatasetViewer />
+
+ Each image becomes one row of your matrix: 784 numbers in the same flat, row-major layout your Module 6 functions use with shape $[1, 28, 28]$. Dividing each byte by 255 gives pixel values in $[0, 1]$.
+
+<NumericCheck
+  id="idx-offset"
+  question="At what byte offset in the training-images file is the pixel in row 3, column 5 of image 2 (all counted from 0)?"
+  answer={1673}
+  explain="16 bytes of header, plus 2 × 784 for the two images before it, plus 3 × 28 for the three rows above, plus 5: 16 + 1,568 + 84 + 5 = 1,673."
+/>
+
+<Exercise id="cap-idx-images">
+
+Parse an image file into a matrix, keeping only the first `limit` images. The training runs use `limit` to train on part of the dataset.
+
+</Exercise>
+
+<Exercise id="cap-idx-labels">
+
+The same for a label file: one dimension, one byte per label, starting right after the 8-byte header.
+
+</Exercise>
+
+<Callout type="lang">
+
+<Lang only="python">
+
+All 60,000 training images are 47 million pixels. As a list of lists of Python floats, each number costs about 32 bytes (the float object plus a pointer to it), so the whole set would need around 1.5 GB of memory, and one epoch over it in pure Python would take about 20 minutes. That's why the Python track trains on a slice of 5,000 images (about 125 MB). You'll still get above 90% accuracy.
+
+</Lang>
+<Lang only={["rust", "cpp"]}>
+
+All 60,000 training images are 47 million pixels, which comes to 376 MB as 64-bit floats. That fits comfortably, and compiled code is fast enough to train on all of them in well under a minute per epoch.
+
+</Lang>
+
+</Callout>
+
+<KeyIdea>
+
+A file is just bytes. IDX describes its own layout: a magic number (0, 0, type, number of dimensions), one big-endian 32-bit size per dimension, then the data. Validating the header and the length up front turns a corrupt file into a clear error.
+
+</KeyIdea>

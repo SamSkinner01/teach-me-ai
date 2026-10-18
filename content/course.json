@@ -192,52 +192,218 @@
     {
       "id": "optimization",
       "title": "Optimization",
-      "summary": "Walking downhill on a loss surface, one gradient step at a time.",
-      "coming_soon": true,
-      "planned": [
-        "Loss functions",
-        "Gradient descent & learning rates",
-        "Stochastic gradient descent & mini-batches",
-        "Momentum"
+      "summary": "Walking downhill on a loss surface, one gradient step at a time: the loop that trains every network.",
+      "lessons": [
+        {
+          "id": "loss-functions",
+          "title": "Loss functions",
+          "summary": "Turning \"how wrong is the model?\" into one number you can minimize.",
+          "exercises": [
+            "opt-mse",
+            "opt-mse-grad"
+          ]
+        },
+        {
+          "id": "gradient-descent",
+          "title": "Gradient descent & learning rates",
+          "summary": "Step downhill, repeat. Your first learning algorithm, and the one setting that makes or breaks it.",
+          "exercises": [
+            "opt-gd-step",
+            "opt-gradient-descent",
+            "opt-fit-line"
+          ]
+        },
+        {
+          "id": "sgd",
+          "title": "Stochastic gradient descent & mini-batches",
+          "summary": "Why networks learn from a few examples at a time, in a shuffled order.",
+          "exercises": [
+            "opt-shuffle",
+            "opt-sgd"
+          ]
+        },
+        {
+          "id": "momentum",
+          "title": "Momentum",
+          "summary": "Giving gradient descent some inertia so it rolls through narrow valleys instead of zig-zagging.",
+          "exercises": [
+            "opt-momentum-step",
+            "opt-momentum"
+          ]
+        }
       ]
     },
     {
       "id": "neural-networks",
       "title": "Neural Networks",
-      "summary": "Layers of neurons, backpropagation, and your first MNIST classifier.",
-      "coming_soon": true,
-      "planned": [
-        "Neurons & activation functions",
-        "The multi-layer perceptron",
-        "Computational graphs & backpropagation",
-        "Milestone: an MLP on MNIST"
+      "summary": "Layers of neurons, backpropagation, and training your first neural network end to end.",
+      "lessons": [
+        {
+          "id": "neurons",
+          "title": "Neurons & activation functions",
+          "summary": "One neuron draws one straight line. The non-linearity is what makes stacking them worthwhile.",
+          "exercises": [
+            "nn-relu",
+            "nn-relu-backward"
+          ]
+        },
+        {
+          "id": "mlp",
+          "title": "Layers & the multi-layer perceptron",
+          "summary": "Many neurons side by side make a layer; layers stacked make a network that can bend its decisions.",
+          "exercises": [
+            "nn-dense-forward",
+            "nn-mlp-forward"
+          ]
+        },
+        {
+          "id": "batch-loss",
+          "title": "Losses & accuracy over a batch",
+          "summary": "Scoring a whole batch of predictions at once, and the gradient that starts backpropagation.",
+          "exercises": [
+            "nn-batch-ce",
+            "nn-batch-ce-grad",
+            "nn-accuracy"
+          ]
+        },
+        {
+          "id": "backprop",
+          "title": "Backpropagation through a layer",
+          "summary": "Three matrix products give the gradient for a layer's inputs, weights and biases.",
+          "exercises": [
+            "nn-dense-back-input",
+            "nn-dense-back-weights",
+            "nn-dense-back-bias"
+          ]
+        },
+        {
+          "id": "train-mlp",
+          "title": "Milestone: training a neural network",
+          "summary": "Put it all together: initialize, forward, backward, update, repeat.",
+          "exercises": [
+            "nn-train-mlp"
+          ]
+        }
       ]
     },
     {
       "id": "cnn",
       "title": "Convolutional Neural Networks",
-      "summary": "Sliding filters that detect edges, then shapes, then digits.",
-      "coming_soon": true,
-      "planned": [
-        "Convolution",
-        "Stride, padding & output size",
-        "Channels & feature maps",
-        "Pooling",
-        "Backprop through conv & pooling",
-        "im2col"
+      "summary": "Sliding filters that detect edges, then shapes, then digits, and how to train them.",
+      "lessons": [
+        {
+          "id": "convolution",
+          "title": "Convolution",
+          "summary": "Slide a small grid of weights across an image to find a pattern wherever it appears.",
+          "exercises": [
+            "cnn-conv2d"
+          ]
+        },
+        {
+          "id": "stride-padding",
+          "title": "Stride, padding & output size",
+          "summary": "Controlling how far the filter jumps and what happens at the edges.",
+          "exercises": [
+            "cnn-output-size",
+            "cnn-pad2d",
+            "cnn-conv2d-strided"
+          ]
+        },
+        {
+          "id": "channels",
+          "title": "Channels & feature maps",
+          "summary": "Many filters, many input channels: a convolution layer as a whole.",
+          "exercises": [
+            "cnn-conv2d-multi"
+          ]
+        },
+        {
+          "id": "pooling",
+          "title": "Pooling",
+          "summary": "Shrinking feature maps to the strongest responses, and routing gradients back through them.",
+          "exercises": [
+            "cnn-maxpool",
+            "cnn-maxpool-backward"
+          ]
+        },
+        {
+          "id": "conv-backprop",
+          "title": "Backprop through convolution",
+          "summary": "The kernel's gradient is a convolution, and so is the input's.",
+          "exercises": [
+            "cnn-conv-back-kernel",
+            "cnn-conv-back-input"
+          ]
+        },
+        {
+          "id": "im2col",
+          "title": "im2col: convolution as matrix multiplication",
+          "summary": "The trick real libraries use to make convolution fast.",
+          "exercises": [
+            "cnn-im2col",
+            "cnn-conv-im2col"
+          ]
+        }
       ]
     },
     {
       "id": "capstone",
       "title": "Capstone: MNIST CNN",
-      "summary": "Load the real dataset, train your own CNN to about 99%, and test it on your own handwriting.",
-      "coming_soon": true,
-      "planned": [
-        "Parsing the IDX format",
-        "Batching & normalization",
-        "Training your CNN",
-        "Evaluation & the confusion matrix",
-        "Draw a digit with your own model"
+      "summary": "Load the real dataset, train your own CNN on it, evaluate it, and test it on your own handwriting.",
+      "lessons": [
+        {
+          "id": "idx-format",
+          "title": "Parsing the MNIST files",
+          "summary": "Raw bytes to images: big-endian integers and the IDX file format.",
+          "exercises": [
+            "cap-u32",
+            "cap-idx-dims",
+            "cap-idx-images",
+            "cap-idx-labels"
+          ]
+        },
+        {
+          "id": "preparing-data",
+          "title": "Preparing the data",
+          "summary": "Standardizing pixels and pulling out mini-batches.",
+          "exercises": [
+            "cap-standardize",
+            "cap-gather-rows",
+            "cap-gather-labels"
+          ]
+        },
+        {
+          "id": "cnn-model",
+          "title": "Assembling the CNN",
+          "summary": "Your Module 6 pieces combined into one network's forward and backward pass.",
+          "exercises": [
+            "cap-cnn-forward",
+            "cap-cnn-gradients"
+          ]
+        },
+        {
+          "id": "training-cnn",
+          "title": "Training your CNN",
+          "summary": "Write the training loop, run it on 60,000 real images, and watch it learn.",
+          "exercises": [
+            "cap-train"
+          ]
+        },
+        {
+          "id": "evaluation",
+          "title": "Evaluation & the confusion matrix",
+          "summary": "How good is it really, and what does it get wrong?",
+          "exercises": [
+            "cap-confusion",
+            "cap-class-accuracy"
+          ]
+        },
+        {
+          "id": "your-model",
+          "title": "Your model, your handwriting",
+          "summary": "Draw a digit and watch the network you built read it.",
+          "exercises": []
+        }
       ]
     }
   ]

@@ -71,3 +71,26 @@ export function useTheme(): ThemeValue {
 export function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
+
+let colorCtx: CanvasRenderingContext2D | null = null;
+
+/**
+ * A theme colour as [r, g, b]. Lets the browser normalize the value, so any CSS
+ * colour syntax works (the CSS minifier turns "#ffffff" into "#fff", for one).
+ */
+export function cssRgb(name: string): [number, number, number] {
+  colorCtx ??= document.createElement("canvas").getContext("2d");
+  const raw = cssVar(name);
+  if (colorCtx) {
+    colorCtx.fillStyle = "#808080";
+    colorCtx.fillStyle = raw;
+    const hex = String(colorCtx.fillStyle).match(/^#([0-9a-f]{6})$/i);
+    if (hex) {
+      const n = parseInt(hex[1], 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    }
+    const nums = String(colorCtx.fillStyle).match(/\d+(\.\d+)?/g);
+    if (nums && nums.length >= 3) return [Number(nums[0]), Number(nums[1]), Number(nums[2])];
+  }
+  return [128, 128, 128];
+}

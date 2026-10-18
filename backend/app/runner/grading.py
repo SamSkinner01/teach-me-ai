@@ -315,3 +315,54 @@ def build_report(
     if report.passed != report.total:
         report.status = "failed"
     return report
+
+
+# --------------------------------------------------------------------------
+# Training runs (the capstone): one call, graded on what it reports
+# --------------------------------------------------------------------------
+
+
+@dataclass
+class TrainingOutcome:
+    # "ok" (the function returned) | "compile_error" | "load_error" | "error" | "crashed" | "timeout"
+    status: str
+    message: str = ""
+    value: Any = None
+    compile_output: str = ""
+    detail: str = ""
+    stdout: str = ""
+    stderr: str = ""
+    time_ms: int = 0
+
+
+def grade_training(spec: dict[str, Any], job_result: JobResult, lines: list[dict[str, Any]]) -> TrainingOutcome:
+    """Work out how a training run ended from its steps and its result lines
+    (the "case" / "load_error" lines; progress and tensors are handled by the caller)."""
+    compile_step = job_result.step("compile")
+    if compile_step is not None and (compile_step.exit_code != 0 or compile_step.timed_out):
+        output, blames_harness = _compiler_output(compile_step.stderr + compile_step.stdout)
+        msg = "Compilation took too long and was stopped." if compile_step.timed_out else "Your code didn't compile."
+        if blames_harness and not compile_step.timed_out:
+            msg += " " + SIGNATURE_HINT
+        return TrainingOutcome("compile_error", msg, compile_output=output)
+
+    run = job_result.step("run")
+    if run is None:
+        return TrainingOutcome("crashed", "The program never ran.")
+    common = {"stdout": _clip(run.stdout), "stderr": _clip(run.stderr), "time_ms": run.time_ms}
+
+    load_error = next((line for line in lines if line.get("kind") == "load_error"), None)
+    if load_error:
+        where = "an earlier library function" if load_error.get("where") == "library" else "your code"
+        return TrainingOutcome("load_error", f"There is an error in {where}, so training never started.",
+                               compile_output=_clip(load_error.get("message", "")), **common)
+
+    case = next((line for line in lines if line.get("kind") == "case"), None)
+    if case is not None:
+        if case.get("status") == "ok":
+            return TrainingOutcome("ok", value=case.get("value"), **common)
+        return TrainingOutcome("error", _error_message(case), detail=_clip(case.get("detail") or "", 4000), **common)
+    if run.timed_out:
+        return TrainingOutcome("timeout", f"Training didn't finish within the time limit ({spec.get('time_limit')} s). "
+                               "Try fewer images or epochs.", **common)
+    return TrainingOutcome("crashed", _signal_message(run.signal, run.exit_code), **common)

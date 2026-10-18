@@ -1,8 +1,8 @@
 // Self-hosted Monaco (no CDN): the core API, the editor features, and the
 // Python / Rust / C++ syntax highlighters. Imported only by lazy chunks.
 import { loader } from "@monaco-editor/react";
-import * as monaco from "monaco-esm/editor/editor.api.js";
-import EditorWorker from "monaco-esm/editor/editor.worker.js?worker";
+import * as monaco from "~monaco/editor/editor.api.js";
+import EditorWorker from "~monaco/editor/editor.worker.js?worker";
 import "./monaco-features";
 
 self.MonacoEnvironment = { getWorker: () => new EditorWorker() };

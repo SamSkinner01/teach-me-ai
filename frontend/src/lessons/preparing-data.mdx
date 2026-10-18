@@ -1,0 +1,87 @@
+## Standardizing the inputs
+
+Your pixels are now numbers in $[0, 1]$, but they aren't spread evenly: most of every image is blank background. Over the whole training set, the mean pixel value is $0.1307$ and the standard deviation is $0.3081$.
+
+Before training, every pixel is <Term t="standardization">standardized</Term>:
+
+$$
+x' = \frac{x - \mu}{\sigma} = \frac{x - 0.1307}{0.3081}
+$$
+
+so the inputs have mean 0 and standard deviation 1. There are two reasons, both of which you've met before:
+
+- **Initialization assumes it.** He initialization (Module 3) picks the weights' spread so that signals keep roughly the same size from layer to layer, and that calculation assumes inputs with variance about 1.
+- **Gradient descent likes round valleys.** If every input is positive, the gradients for all of a neuron's weights are pushed the same way at once, and the loss surface becomes a long, narrow valley like the one in the momentum lesson. Centring the inputs makes the valley rounder, so plain gradient descent goes more directly downhill.
+
+<NumericCheck
+  id="prep-ink"
+  question="What does a pixel of full ink (1.0) become after standardizing with μ = 0.1307 and σ = 0.3081? (Two decimal places is enough.)"
+  answer={2.8215}
+  tolerance={0.01}
+  explain="(1 − 0.1307) / 0.3081 = 0.8693 / 0.3081 ≈ 2.82. A blank pixel becomes (0 − 0.1307) / 0.3081 ≈ −0.42."
+/>
+
+<Callout type="warning" title="Use the training set's numbers everywhere">
+
+The mean and standard deviation come from the **training** images, and the same two numbers are then used for the test images and for anything you draw yourself. Computing them separately on the test set would quietly use information the model isn't supposed to have. And if the inputs are prepared differently from what the network was trained on, its predictions are meaningless.
+
+</Callout>
+
+<Exercise id="cap-standardize">
+
+Apply $(x - \mu)/\sigma$ to every pixel of every image.
+
+</Exercise>
+
+## Mini-batches by index
+
+Training uses mini-batch stochastic gradient descent from Module 4. Each <Term>epoch</Term>:
+
+1. Shuffle the numbers $0, 1, \dots, n-1$ with your `shuffled_indices` (Module 3).
+2. Walk through them in chunks of the batch size. Each chunk is one <Term>mini-batch</Term>.
+3. For each chunk, pull out those images and labels, compute the average gradient over them, and take one step.
+
+```text
+order = [41203, 7, 5590, 18, 33017, ...]        shuffled 0 .. 59,999
+batch 0 = rows order[0 .. 31],   batch 1 = rows order[32 .. 63],   ...
+```
+
+Shuffling indices instead of the data is much cheaper: 60,000 integers instead of 47 million pixels. It also keeps every label with its image automatically, because images and labels are gathered with the **same** indices.
+
+<Quiz
+  id="prep-shuffle"
+  question="By mistake, you shuffle the images with one call to shuffled_indices and the labels with another call that uses a different seed. What happens when you train?"
+  options={[
+    "Training works as usual, since both lists were shuffled",
+    "Accuracy stays near 10%: images and labels no longer match, so there's no pattern to learn",
+    "The loss becomes NaN",
+    "Training is slower but reaches the same accuracy"
+  ]}
+  answer={1}
+  explain="Each image now comes with a random label. The best the network can do is guess the most common digit, so it scores about 10% (chance, with 10 classes) however long it trains. If your loss sits stuck near ln 10 ≈ 2.30, check that images and labels still line up."
+/>
+
+<NumericCheck
+  id="prep-steps"
+  question="How many gradient steps are in one epoch over 60,000 images with batch size 32?"
+  answer={1875}
+  explain="60,000 / 32 = 1,875 batches, so 1,875 steps. When n isn't a multiple of the batch size, the last batch is just smaller: ⌈n / batch size⌉ steps."
+/>
+
+<Exercise id="cap-gather-rows">
+
+Return the rows of `m` listed in `idx`, in that order.
+
+</Exercise>
+
+<Exercise id="cap-gather-labels">
+
+The same for labels.
+
+</Exercise>
+
+<KeyIdea>
+
+Standardize every input with the training set's mean and standard deviation, and use those same two numbers for everything the network ever sees. Shuffle indices, not data, so images and labels stay matched.
+
+</KeyIdea>

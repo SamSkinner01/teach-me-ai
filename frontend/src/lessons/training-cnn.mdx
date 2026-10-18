@@ -1,0 +1,87 @@
+## The training loop
+
+This is the moment the whole course has been building towards. The loop is the same one you wrote for the MLP in Module 5, now with mini-batches and real data:
+
+```text
+load the four files, standardize the images
+initialize: conv weights ~ He (fan-in 9), dense weights ~ He (fan-in 1,352), biases 0
+for each epoch:
+    order = shuffled_indices(seed + epoch, n)
+    for each mini-batch of indices in order:
+        total = sum of cnn_gradients(image, label, ...) over the batch
+        g = total / batch size                        the average gradient
+        each parameter ← gd_step(parameter, its slice of g, η)
+        report_progress(epoch, step, steps, batch loss, batch accuracy)
+predict every test image: argmax of cnn_forward
+report_predictions(predictions);  save_tensor(...) for each parameter
+return the test accuracy
+```
+
+Your code runs in the sandbox with the MNIST files available at `data_dir`, as a background job. You don't have to watch it, but you'll want to.
+
+## Talking to the dashboard
+
+Besides your library, your code can call three functions provided by the course:
+
+| Function | What it does |
+| --- | --- |
+| `report_progress(epoch, step, total_steps, loss, accuracy)` | Feeds the live charts. Call it after every step: it sends an update at most ten times a second, averaged over the steps in between. |
+| `report_predictions(predicted)` | One predicted digit for each test image, in order. **This is what's graded**: the server compares it with the true test labels, which your code never needs to read. |
+| `save_tensor(name, shape, values)` | Hands back your trained weights. With the names in the starter code, the next two lessons can run your network in the browser. |
+
+## The settings
+
+<Term>Hyperparameter</Term>s are the numbers you choose rather than learn. The defaults below are good ones:
+
+| Setting | Default on the <LangName /> track | What it controls |
+| --- | --- | --- |
+| Training images | <PerLang python="5,000" rust="60,000 (all of them)" cpp="60,000 (all of them)" /> | More data means better generalization and slower epochs |
+| Epochs | 1 | How many passes over the training images |
+| Learning rate η | 0.05 | The size of each step |
+| Batch size | <PerLang python="10" rust="32" cpp="32" /> | Images averaged per step |
+| Seed | 42 | The starting weights and the shuffling order |
+
+With the defaults, the reference solution reaches about <PerLang python="93% in a minute and a half" rust="97.5% in about 15 seconds" cpp="97.5% in about 15 seconds" />. To pass, your network needs <PerLang python="85%" rust="95%" cpp="95%" /> on the test images.
+
+## Train it
+
+<TrainingLab id="cap-train">
+
+Fill in steps 3 to 6 of `train_cnn`. Loading the data and initializing the weights are already written for you, because they're exactly what the last two lessons covered.
+
+</TrainingLab>
+
+## Things to try
+
+Once you've passed, run a few experiments. These are the results the Rust reference got on all 60,000 images (Python on 5,000 images behaves the same way, with lower numbers):
+
+| Change | Test accuracy | What happened |
+| --- | --- | --- |
+| Defaults (η = 0.05, batch 32, 1 epoch) | 97.5% | The baseline |
+| η = 0.2 | 97.0% | Still fine, a bit noisier |
+| η = 0.005 | 94.1% | Too timid: one epoch isn't enough at this step size |
+| η = 0.5 | 11.4% | Collapse. The loss sticks at 2.30 and the network says "1" for every image |
+| 3 epochs | 98.1% | More passes help, with diminishing returns |
+| Batch size 1 | 86.5% | Pure SGD: 60,000 noisy steps, too big for η = 0.05 |
+| Batch size 128 | 96.3% | Smoother steps, but only 469 of them per epoch |
+| 500 images, 5 epochs, batch 10 | 85.5% | Overfitting: see below |
+| 16 filters instead of 8 | 97.6% | Twice the work for 0.1 points. Change every 8 (and 72) in your initialization and `save_tensor` calls |
+
+The η = 0.5 row is worth a closer look. 11.35% isn't random: it's exactly the fraction of test images that are 1s. A few huge early steps pushed the convolution's outputs negative everywhere, ReLU turned them all to zero, and zero activations pass back zero gradient, so the filters can never recover. All that's left is the dense layer's biases, which learn to always say the most common digit.
+
+The last row is <Term>overfitting</Term> in action. On only 500 images, after five epochs the training loss is down to 0.004 and the network gets **100%** of its training images right. But on the 10,000 test images it has never seen, it gets 85.5%. It has partly memorized its 500 examples instead of learning what makes a 7 a 7. More data is the most reliable cure, and on all 60,000 images the gap between training and test accuracy almost disappears.
+
+<Callout type="note" title="If it isn't learning">
+
+- **Loss stuck at 2.30** (that's ln 10, the loss of a uniform guess over 10 digits): the parameters aren't changing. Check that you assign the result of `gd_step` back, that the gradient slices start at 0, 72, 80 and 13,600, and that η isn't too high.
+- **Loss becomes NaN**: the learning rate is too high, or a gradient is far too large. Try η = 0.01, and gradient-check `cnn_gradients` again.
+- **Training accuracy is fine but the test accuracy is ~10%**: the predictions are in the wrong order, or the test images weren't standardized the same way as the training images.
+- **It's far slower than the estimate**: check you aren't recomputing something per image that only needs computing once per batch, like flattening the dense weights.
+
+</Callout>
+
+<KeyIdea>
+
+Training is the loop you already know: shuffle, then for each mini-batch average the gradients and take a step. What changes with real data is scale (millions of multiply-adds per step) and the need to measure accuracy on test images the network has never seen.
+
+</KeyIdea>

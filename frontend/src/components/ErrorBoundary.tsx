@@ -19,6 +19,25 @@ function isChunkLoadError(error: Error): boolean {
   );
 }
 
+const RELOAD_KEY = "tmai-chunk-reload";
+
+/**
+ * After a deploy, an open tab can ask for code files that no longer exist.
+ * Reload once to pick up the new build; if that already happened in the last
+ * minute, give up and show the error instead of looping.
+ */
+export function reloadOnceForNewBuild(): boolean {
+  try {
+    const last = Number(sessionStorage.getItem(RELOAD_KEY) ?? 0);
+    if (Date.now() - last < 60_000) return false;
+    sessionStorage.setItem(RELOAD_KEY, String(Date.now()));
+  } catch {
+    return false;
+  }
+  window.location.reload();
+  return true;
+}
+
 /**
  * Catches render and lazy-loading errors so one broken component shows a
  * message instead of unmounting the whole app.
@@ -32,6 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("Caught by ErrorBoundary:", error, info.componentStack);
+    if (isChunkLoadError(error)) reloadOnceForNewBuild();
   }
 
   componentDidUpdate(prev: Props) {

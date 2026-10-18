@@ -31,6 +31,8 @@ def to_arg(type_, value):
         return [[float(x) for x in row] for row in value]
     if type_ == "float":
         return float(value)
+    if type_ == "bytes":
+        return bytes(value)
     return value
 
 

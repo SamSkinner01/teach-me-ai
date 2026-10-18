@@ -1,0 +1,128 @@
+{
+  "title": "IDX labels",
+  "function": "idx_labels",
+  "params": [
+    {
+      "name": "data",
+      "type": "bytes"
+    },
+    {
+      "name": "limit",
+      "type": "int"
+    }
+  ],
+  "returns": "ivec",
+  "library": true,
+  "hints": [
+    "Validate with idx_dims and check there's exactly one dimension.",
+    "The labels start at offset 4 + 4·1 = 8, one byte each.",
+    "Return the first min(limit, count) bytes as integers."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          1,
+          0,
+          0,
+          0,
+          3,
+          7,
+          2,
+          1
+        ],
+        10
+      ],
+      "description": "all three labels",
+      "expected": [
+        7,
+        2,
+        1
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          1,
+          0,
+          0,
+          0,
+          3,
+          7,
+          2,
+          1
+        ],
+        2
+      ],
+      "description": "the first two",
+      "expected": [
+        7,
+        2
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          3,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          3,
+          0,
+          51,
+          102,
+          153,
+          204,
+          255,
+          255,
+          0,
+          128,
+          64,
+          32,
+          16
+        ],
+        5
+      ],
+      "description": "an image file isn't a label file",
+      "expect_error": true,
+      "hidden": true
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          1,
+          0,
+          0,
+          0,
+          5,
+          1,
+          2
+        ],
+        5
+      ],
+      "description": "a truncated file is rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

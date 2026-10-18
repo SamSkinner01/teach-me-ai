@@ -1,0 +1,66 @@
+## From a neuron to a layer
+
+Put many neurons side by side, all looking at the same input, and you have a layer. You saw in Module 1 that a layer of neurons is a matrix: stack each neuron's weight vector as a row of $W$, and the whole layer is
+
+$$
+\mathbf{z} = W\mathbf{x} + \mathbf{b}
+$$
+
+Networks process a **batch** of examples at once, stored one per row in a matrix $X$ ($N$ examples × $n_{\text{in}}$ features). Then the whole layer for the whole batch is one matrix product plus a broadcast bias:
+
+$$
+Z = X\,W^\mathsf{T} + \mathbf{b} \qquad (N \times n_{\text{in}})(n_{\text{in}} \times n_{\text{out}}) \to N \times n_{\text{out}}
+$$
+
+Row $i$ of $Z$ is the layer's output for example $i$. A layer like this, where every neuron sees every input, is called a <Term t="dense layer">dense</Term> (or fully connected) layer.
+
+## The multi-layer perceptron
+
+Alternate dense layers with activation functions and you get a <Term t="multi-layer perceptron">multi-layer perceptron</Term> (MLP). The smallest interesting one has one <Term t="hidden layer">hidden layer</Term>:
+
+$$
+H = \mathrm{relu}(X W_1^\mathsf{T} + \mathbf{b}_1), \qquad \text{logits} = H W_2^\mathsf{T} + \mathbf{b}_2
+$$
+
+The final layer has one neuron per class, and its outputs are the logits that softmax turns into probabilities. There's no activation on the last layer: softmax plays that role.
+
+Each hidden neuron draws one line (or plane) through the input space, and the output layer combines those half-spaces. That's how two layers carve out regions no single line could. Here's a tiny network, with weights chosen by hand, that solves the XOR problem from the last lesson:
+
+<XorNetViz />
+
+Real networks learn their own hidden features, and with enough hidden neurons a single hidden layer can approximate *any* continuous function as closely as you like (the **universal approximation theorem**). In practice, deeper networks with more layers learn the same things with far fewer neurons.
+
+<NumericCheck
+  id="mlp-params"
+  question="An MLP maps a flattened MNIST image (784 inputs) through 128 hidden neurons to 10 outputs. How many weights and biases does it have in total?"
+  answer={101770}
+  explain="Layer 1: $784 \times 128 + 128 = 100{,}480$. Layer 2: $128 \times 10 + 10 = 1{,}290$. Total $101{,}770$. Almost all of them are in the first layer."
+/>
+
+<Quiz
+  id="mlp-shapes"
+  question="A batch of 32 images (784 pixels each) goes through a layer with $W$ of shape $128 \times 784$. What shape is the output?"
+  options={["$784 \\times 128$", "$32 \\times 128$", "$128 \\times 32$", "$32 \\times 784$"]}
+  answer={1}
+  explain="$(32 \times 784)(784 \times 128) = 32 \times 128$: one row of 128 neuron outputs per image."
+/>
+
+<KeyIdea>
+
+A dense layer on a batch is $XW^\mathsf{T} + \mathbf{b}$. An MLP alternates dense layers with non-linear activations; the hidden layers learn features, and the last layer outputs one logit per class.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="nn-dense-forward">
+
+Return $XW^\mathsf{T} + \mathbf{b}$ for a batch $X$ (one example per row), weights $W$ (one neuron per row) and bias $\mathbf{b}$. Your library already has every piece.
+
+</Exercise>
+
+<Exercise id="nn-mlp-forward">
+
+Return the logits of the two-layer network: dense, ReLU on every row, dense.
+
+</Exercise>

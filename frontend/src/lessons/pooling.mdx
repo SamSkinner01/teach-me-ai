@@ -1,0 +1,58 @@
+## Shrinking feature maps
+
+After a convolution and a ReLU, a CNN usually **pools**: it splits each feature map into small windows (typically 2×2, with stride 2) and keeps one number per window. **Max pooling** keeps the largest; **average pooling** keeps the mean.
+
+<PoolingViz />
+
+<Term>Pooling</Term> does three useful things:
+
+- **It shrinks the data.** 2×2 pooling quarters the number of values, so later layers are cheaper.
+- **It widens the view.** After pooling, a 3×3 filter in the next layer covers a 6×6 region of the original image.
+- **It adds a little tolerance to position.** A stroke that moves by one pixel usually stays in the same window, so the max doesn't change.
+
+Max pooling asks "did this pattern appear anywhere in this window?", which is usually exactly the right question, and it's the most common choice.
+
+<NumericCheck
+  id="pool-size"
+  question="A 26×26 feature map goes through 2×2 max pooling with stride 2. What size is the result (along each axis)?"
+  answer={13}
+  explain="$26 / 2 = 13$. For an odd size like 11, the last row and column are dropped: $\lfloor 11/2 \rfloor = 5$."
+/>
+
+## Pooling in the backward pass
+
+Max pooling has no weights, but gradients still have to pass through it. Only one value in each window, the maximum, actually affected the output. If it changed slightly, the output would change by the same amount; any other value could change slightly without affecting anything. So the derivative is 1 for the winner and 0 for the rest:
+
+$$
+\frac{\partial L}{\partial x_{\text{winner}}} = \frac{\partial L}{\partial \text{out}}, \qquad \frac{\partial L}{\partial x_{\text{others}}} = 0
+$$
+
+The backward pass needs to remember **which** position won each window, either by storing those positions or by recomputing them from the input. (Average pooling, by contrast, spreads the gradient evenly: each of the 4 inputs gets a quarter.) Switch the figure above to "gradient" to see both.
+
+<Quiz
+  id="pool-grad"
+  question="In 2×2 max pooling, how many of the 4 values in a window receive a nonzero gradient?"
+  options={["All 4, a quarter each", "Exactly 1 (the maximum), unless the gradient itself is zero", "None: pooling has no weights", "2"]}
+  answer={1}
+  explain="Only the maximum influenced the output, so it alone carries the gradient back."
+/>
+
+<KeyIdea>
+
+Max pooling keeps the largest value in each window, shrinking feature maps and adding tolerance to small shifts. In the backward pass, each window's gradient goes entirely to the position that held the maximum.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="cnn-maxpool">
+
+Return the max-pooled map, with non-overlapping `size`×`size` windows; drop leftover rows and columns.
+
+</Exercise>
+
+<Exercise id="cnn-maxpool-backward">
+
+Route each window's gradient to the position of its maximum (the first one in row-major order on ties). Everything else gets 0.
+
+</Exercise>

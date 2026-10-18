@@ -1,0 +1,115 @@
+{
+  "title": "Shuffle with Fisher–Yates",
+  "function": "shuffled_indices",
+  "params": [
+    {
+      "name": "seed",
+      "type": "int"
+    },
+    {
+      "name": "n",
+      "type": "int"
+    }
+  ],
+  "returns": "ivec",
+  "library": true,
+  "hints": [
+    "Start with [0, 1, …, n−1]. Walk i from n−1 down to 1, swapping position i with a random position j between 0 and i.",
+    "For each i: advance the state with `xorshift32`, then j = state mod (i + 1).",
+    "Validate the seed the same way `random_uniforms` does (1 ≤ seed ≤ 2³² − 1), since state 0 never changes."
+  ],
+  "tests": [
+    {
+      "args": [
+        2463534242,
+        5
+      ],
+      "description": "a shuffle of 0…4",
+      "expected": [
+        1,
+        4,
+        3,
+        2,
+        0
+      ]
+    },
+    {
+      "args": [
+        42,
+        10
+      ],
+      "description": "a shuffle of 0…9",
+      "expected": [
+        8,
+        9,
+        1,
+        5,
+        4,
+        0,
+        6,
+        3,
+        7,
+        2
+      ]
+    },
+    {
+      "args": [
+        42,
+        1
+      ],
+      "description": "one item can only go one place",
+      "hidden": true,
+      "expected": [
+        0
+      ]
+    },
+    {
+      "args": [
+        42,
+        0
+      ],
+      "description": "nothing to shuffle",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        12345,
+        20
+      ],
+      "description": "twenty items",
+      "hidden": true,
+      "expected": [
+        16,
+        18,
+        7,
+        5,
+        15,
+        1,
+        9,
+        2,
+        11,
+        17,
+        6,
+        12,
+        4,
+        8,
+        0,
+        3,
+        13,
+        19,
+        14,
+        10
+      ]
+    },
+    {
+      "args": [
+        0,
+        5
+      ],
+      "description": "seed 0 must be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

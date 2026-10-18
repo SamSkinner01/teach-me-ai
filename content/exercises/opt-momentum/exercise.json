@@ -1,0 +1,139 @@
+{
+  "title": "Gradient descent with momentum",
+  "function": "momentum_descent",
+  "params": [
+    {
+      "name": "f",
+      "type": "fnv"
+    },
+    {
+      "name": "x0",
+      "type": "vec"
+    },
+    {
+      "name": "lr",
+      "type": "float"
+    },
+    {
+      "name": "beta",
+      "type": "float"
+    },
+    {
+      "name": "steps",
+      "type": "int"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Start with x = x0 and a velocity of all zeros, the same length as x0.",
+    "Each step: g = numerical_gradient(f, x, 1e-5), then [x, v] = momentum_step(x, v, g, lr, beta).",
+    "momentum_step returns a 2-row matrix; row 0 is the new x and row 1 is the new velocity."
+  ],
+  "tolerance": {
+    "abs": 1e-07,
+    "rel": 1e-06
+  },
+  "tests": [
+    {
+      "args": [
+        {
+          "fn": "valley"
+        },
+        [
+          5,
+          1
+        ],
+        0.2,
+        0.9,
+        50
+      ],
+      "description": "momentum gets much further along the slow direction of the valley than plain gradient descent",
+      "expected": [
+        -0.3407301295393137,
+        -0.04774528564182201
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          0,
+          0
+        ],
+        0.1,
+        0.0,
+        30
+      ],
+      "description": "β = 0 is plain gradient descent",
+      "expected": [
+        0.9987620599606838,
+        -1.9999995578521605
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          0,
+          0
+        ],
+        0.05,
+        0.8,
+        100
+      ],
+      "description": "the bowl with momentum",
+      "hidden": true,
+      "expected": [
+        0.9999855226226173,
+        -2.0000207075329377
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "sum_squares"
+        },
+        [
+          3,
+          -4,
+          1
+        ],
+        0.1,
+        0.5,
+        40
+      ],
+      "description": "three dimensions",
+      "hidden": true,
+      "expected": [
+        -3.249485944332647e-06,
+        4.332647925844721e-06,
+        -1.083161981436954e-06
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "valley"
+        },
+        [
+          5,
+          1
+        ],
+        0.2,
+        0.9,
+        0
+      ],
+      "description": "zero steps",
+      "hidden": true,
+      "expected": [
+        5.0,
+        1.0
+      ]
+    }
+  ]
+}

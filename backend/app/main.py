@@ -6,12 +6,15 @@ Run with:  uv run uvicorn --factory app.main:create_app --reload
 from __future__ import annotations
 
 import asyncio
+import base64
+import json
 import re
 import sqlite3
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -21,6 +24,7 @@ from .config import Settings
 from .course import Course, Exercise
 from .runner import DockerSandbox, LibraryEntry, LocalSandbox, Runner, Sandbox, SandboxError
 from .runner.codegen import describe_arg
+from .training import Mnist, TrainingManager, TrainingUnavailable
 
 MAX_CODE = 100_000
 CHECK_ID = re.compile(r"^[a-z0-9][a-z0-9-]{0,63}$")
@@ -47,6 +51,15 @@ class ActiveTrackBody(BaseModel):
     track_id: int
 
 
+class TrainBody(BaseModel):
+    code: str = Field(max_length=MAX_CODE)
+    train_limit: int = Field(ge=100)
+    epochs: int = Field(ge=1)
+    lr: float = Field(gt=0, le=1)
+    batch_size: int = Field(ge=1, le=512)
+    seed: int = Field(ge=0, le=2**31 - 1)
+
+
 def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None) -> FastAPI:
     settings = settings or Settings.from_env()
     db.init(settings.db_path)
@@ -55,16 +68,33 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
         if settings.sandbox == "docker":
             sandbox = DockerSandbox(settings.runner_image, memory=settings.sandbox_memory)
         elif settings.sandbox == "local":
-            sandbox = LocalSandbox()
+            sandbox = LocalSandbox(settings.mnist_dir)
         else:
             raise ValueError(f"TMAI_SANDBOX must be 'docker' or 'local', not {settings.sandbox!r}")
     runner = Runner(sandbox, settings.max_concurrent_runs)
     throttle = auth.LoginThrottle()
     run_locks: dict[int, asyncio.Lock] = {}
+    mnist = Mnist(settings.mnist_dir)
+    training = TrainingManager(
+        sandbox, settings.db_path, mnist, settings.training_memory, settings.max_concurrent_trainings
+    )
+    startup_conn = db.connect(settings.db_path)
+    try:
+        training.recover(startup_conn)
+    finally:
+        startup_conn.close()
 
-    app = FastAPI(title="TEACH-ME-AI", docs_url="/api/docs", openapi_url="/api/openapi.json", redoc_url=None)
+    @asynccontextmanager
+    async def lifespan(_app: FastAPI):
+        yield
+        await training.shutdown()
+
+    app = FastAPI(
+        title="TEACH-ME-AI", docs_url="/api/docs", openapi_url="/api/openapi.json", redoc_url=None, lifespan=lifespan
+    )
     app.state.settings = settings
     app.state.course = course
+    app.state.training = training
 
     # ------------------------------------------------------------------
     # Request plumbing
@@ -244,6 +274,9 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
     ):
         if not auth.verify_password(body.password, user["password_hash"]):
             raise HTTPException(401, "Wrong password.")
+        active = training.active_for_user(user["id"])
+        if active is not None:
+            training.cancel(active.run_id)
         conn.execute("DELETE FROM users WHERE id = ?", (user["id"],))
         conn.commit()
         response.delete_cookie(auth.SESSION_COOKIE, path="/")
@@ -256,7 +289,7 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
     @app.get("/api/health")
     async def health():
         ok, detail = await sandbox.check()
-        return {"ok": ok, "sandbox": sandbox.name, "detail": detail}
+        return {"ok": ok, "sandbox": sandbox.name, "detail": detail, "mnist": mnist.available()}
 
     @app.get("/api/course")
     def get_course():
@@ -361,6 +394,8 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
         return {
             "id": ex.id,
             "title": ex.title,
+            "kind": ex.kind,
+            "training": ex.training.get(lang),
             "lesson_id": ex.lesson_id,
             "language": lang,
             "function": ex.function,
@@ -372,6 +407,17 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
             "hidden_count": len(ex.tests) - len(visible),
             "hints": ex.hints,
             "library": [e.function for e in course.library_before(ex.id)],
+            # Signatures for editor completions, hover docs and signature help.
+            "library_functions": [
+                {
+                    "function": e.function,
+                    "title": e.title,
+                    "params": e.params,
+                    "returns": e.returns,
+                    "lesson_id": e.lesson_id,
+                }
+                for e in course.library_before(ex.id)
+            ],
             **exercise_state_payload(state),
         }
 
@@ -412,6 +458,8 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
 
     async def execute(exercise_id: str, code: str, user: sqlite3.Row, conn: sqlite3.Connection, submit: bool):
         ex = get_exercise(exercise_id)
+        if ex.kind != "function":
+            raise HTTPException(400, "This exercise runs as a training job; start it from the training dashboard.")
         track = active_track(user, conn)
         require_unlocked(conn, track, ex.lesson_id)
         lock = run_locks.setdefault(user["id"], asyncio.Lock())
@@ -510,6 +558,128 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
             ],
         }
 
+    # ------------------------------------------------------------------
+    # Capstone training runs
+    # ------------------------------------------------------------------
+
+    def get_training_exercise(exercise_id: str) -> Exercise:
+        ex = get_exercise(exercise_id)
+        if ex.kind != "training":
+            raise HTTPException(404, "That exercise isn't a training exercise.")
+        return ex
+
+    def get_run(conn: sqlite3.Connection, user: sqlite3.Row, run_id: int) -> sqlite3.Row:
+        row = conn.execute(
+            """SELECT training_runs.* FROM training_runs JOIN tracks ON tracks.id = training_runs.track_id
+               WHERE training_runs.id = ? AND tracks.user_id = ?""",
+            (run_id, user["id"]),
+        ).fetchone()
+        if row is None:
+            raise HTTPException(404, "No such training run.")
+        return row
+
+    def run_summary(row: sqlite3.Row) -> dict[str, Any]:
+        live = training.live.get(row["id"])
+        return {
+            "id": row["id"],
+            "status": live.status if live else row["status"],
+            "passed": bool(row["passed"]),
+            "accuracy": row["accuracy"],
+            "params": json.loads(row["params"]),
+            "message": row["message"],
+            "created_at": row["created_at"],
+            "finished_at": row["finished_at"],
+            "has_model": row["model"] is not None,
+        }
+
+    @app.get("/api/training/{exercise_id}")
+    def training_overview(exercise_id: str, user=Depends(current_user), conn: sqlite3.Connection = Depends(get_conn)):
+        ex = get_training_exercise(exercise_id)
+        track = active_track(user, conn)
+        require_unlocked(conn, track, ex.lesson_id)
+        rows = conn.execute(
+            """SELECT id, status, passed, accuracy, params, message, created_at, finished_at, model IS NOT NULL AS model
+               FROM training_runs WHERE track_id = ? AND exercise_id = ? ORDER BY id DESC""",
+            (track["id"], ex.id),
+        ).fetchall()
+        active = training.active_for_user(user["id"])
+        return {
+            "language": track["language"],
+            "config": ex.training[track["language"]],
+            "available": mnist.available(),
+            "runs": [run_summary(r) for r in rows],
+            "active_run_id": active.run_id if active else None,
+        }
+
+    @app.post("/api/training/{exercise_id}/runs")
+    async def start_training(
+        exercise_id: str, body: TrainBody, user=Depends(current_user), conn: sqlite3.Connection = Depends(get_conn)
+    ):
+        ex = get_training_exercise(exercise_id)
+        track = active_track(user, conn)
+        require_unlocked(conn, track, ex.lesson_id)
+        config = ex.training[track["language"]]
+        if body.train_limit > config["max_train_limit"]:
+            raise HTTPException(400, f"Train on at most {config['max_train_limit']:,} images.")
+        if body.epochs > config["max_epochs"]:
+            raise HTTPException(400, f"Use at most {config['max_epochs']} epochs.")
+        if training.active_for_user(user["id"]) is not None:
+            raise HTTPException(409, "You already have a training run going. Stop it or wait for it to finish.")
+        _save_draft(conn, track["id"], ex.id, body.code)
+        conn.commit()
+        library, _ = build_library(conn, track, ex)
+        params = body.model_dump(exclude={"code"})
+        try:
+            run_id = training.start(conn, user["id"], track, ex, body.code, params, library)
+        except TrainingUnavailable as exc:
+            raise HTTPException(503, str(exc)) from None
+        return training.snapshot(get_run(conn, user, run_id))
+
+    @app.get("/api/training/runs/{run_id}")
+    def training_run(
+        run_id: int, since: int = Query(0, ge=0), user=Depends(current_user), conn: sqlite3.Connection = Depends(get_conn)
+    ):
+        return training.snapshot(get_run(conn, user, run_id), since)
+
+    @app.post("/api/training/runs/{run_id}/cancel")
+    def cancel_training(run_id: int, user=Depends(current_user), conn: sqlite3.Connection = Depends(get_conn)):
+        row = get_run(conn, user, run_id)
+        if not training.cancel(row["id"]):
+            raise HTTPException(409, "That run has already finished.")
+        return {"ok": True}
+
+    @app.get("/api/training/runs/{run_id}/model")
+    def training_model(run_id: int, user=Depends(current_user), conn: sqlite3.Connection = Depends(get_conn)):
+        row = get_run(conn, user, run_id)
+        if row["model"] is None:
+            raise HTTPException(404, "This run didn't save a usable model.")
+        return Response(row["model"], media_type="application/json")
+
+    @app.get("/api/training/runs/{run_id}/predictions")
+    def training_predictions(run_id: int, user=Depends(current_user), conn: sqlite3.Connection = Depends(get_conn)):
+        row = get_run(conn, user, run_id)
+        if row["predictions"] is None:
+            raise HTTPException(404, "This run has no predictions.")
+        predicted = json.loads(row["predictions"])
+        return {"predicted": predicted, "actual": mnist.labels()[: len(predicted)]}
+
+    @app.get("/api/mnist/test-images")
+    def mnist_test_images(ids: str = Query(max_length=1000), user=Depends(current_user)):
+        """Raw 28×28 pixels (base64, one byte per pixel) and labels of some MNIST test images."""
+        if not mnist.available():
+            raise HTTPException(503, "MNIST isn't installed on this server.")
+        try:
+            wanted = [int(i) for i in ids.split(",") if i.strip()]
+        except ValueError:
+            raise HTTPException(400, "ids must be a comma-separated list of numbers.") from None
+        if len(wanted) > 100 or any(not 0 <= i < 10000 for i in wanted):
+            raise HTTPException(400, "Ask for at most 100 images with ids from 0 to 9999.")
+        labels = mnist.labels()
+        return {
+            "images": {str(i): base64.b64encode(mnist.image(i)).decode("ascii") for i in wanted},
+            "labels": {str(i): labels[i] for i in wanted},
+        }
+
     @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"])
     def api_not_found(path: str):
         raise HTTPException(404, "Not found.")
@@ -528,6 +698,8 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
             candidate = (static_dir / path).resolve()
             if path and candidate.is_file() and static_dir in candidate.parents:
                 return FileResponse(candidate)
-            return FileResponse(static_dir / "index.html")
+            # index.html names the current build's hashed files, so it must never
+            # be served from cache after a redeploy. (The hashed assets can be.)
+            return FileResponse(static_dir / "index.html", headers={"Cache-Control": "no-cache"})
 
     return app

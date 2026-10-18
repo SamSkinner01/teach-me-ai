@@ -1,0 +1,154 @@
+{
+  "title": "Dense backward: input gradient",
+  "function": "dense_backward_input",
+  "params": [
+    {
+      "name": "grad_out",
+      "type": "mat"
+    },
+    {
+      "name": "w",
+      "type": "mat"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Each input xᵢⱼ feeds every neuron k with weight wₖⱼ, so dL/dxᵢⱼ = Σₖ (dL/dzᵢₖ)·wₖⱼ.",
+    "That sum is exactly row i of grad_out times column j of w: a matrix product.",
+    "return matmul(grad_out, w)"
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            0.5,
+            2,
+            0
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ],
+          [
+            0,
+            -1
+          ],
+          [
+            3,
+            1
+          ]
+        ]
+      ],
+      "description": "a batch of 2, 3 neurons, 2 inputs",
+      "expected": [
+        [
+          -2.0,
+          1.0
+        ],
+        [
+          0.5,
+          -1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1
+          ]
+        ],
+        [
+          [
+            2,
+            3
+          ]
+        ]
+      ],
+      "description": "one example, one neuron",
+      "expected": [
+        [
+          2.0,
+          3.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            5,
+            6
+          ]
+        ],
+        [
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            1,
+            0
+          ]
+        ]
+      ],
+      "description": "batch of 3, 2 neurons, 3 inputs",
+      "hidden": true,
+      "expected": [
+        [
+          5.0,
+          2.0,
+          -1.0
+        ],
+        [
+          11.0,
+          4.0,
+          -3.0
+        ],
+        [
+          17.0,
+          6.0,
+          -5.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ]
+        ]
+      ],
+      "description": "grad_out needs one column per neuron (row of w)",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

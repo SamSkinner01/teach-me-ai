@@ -23,7 +23,7 @@
     ],
     "noEmit": true,
     "paths": {
-      "monaco-esm/*": [
+      "~monaco/*": [
         "./node_modules/monaco-editor/esm/vs/*"
       ]
     }

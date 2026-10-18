@@ -8,3 +8,5 @@ __pycache__/
 .pytest_cache/
 
 e2e/node_modules/
+runner-image/mnist/
+frontend/tsconfig.tsbuildinfo

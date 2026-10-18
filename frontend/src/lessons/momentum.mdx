@@ -1,0 +1,68 @@
+## The zig-zag problem
+
+In a long, narrow valley, the gradient points mostly **across** the valley, towards its steep walls, and only slightly **along** it, towards the minimum. Gradient descent bounces from wall to wall, and the learning rate can't be raised to speed up the slow direction without the bouncing blowing up. You saw this with the line fit, and real networks are full of such valleys.
+
+## A heavy ball
+
+Picture a heavy ball rolling down the valley instead of a careful hiker. It **builds up speed** in directions where the slope keeps pointing the same way, and its back-and-forth sideways motion tends to cancel out. That's <Term>momentum</Term>:
+
+$$
+\mathbf{v} \leftarrow \beta\,\mathbf{v} + \nabla L(\mathbf{w}), \qquad \mathbf{w} \leftarrow \mathbf{w} - \eta\,\mathbf{v}
+$$
+
+The velocity $\mathbf{v}$ is a running sum of past gradients, each one decayed by a factor $\beta$ per step ($\beta = 0.9$ is the usual choice). Two effects follow:
+
+- **Consistent directions speed up.** If the gradient keeps pointing the same way, the velocity grows towards $\frac{1}{1 - \beta}$ times the gradient: 10× for $\beta = 0.9$.
+- **Oscillations cancel.** A component that flips sign every step adds $+g, -g, +g, \dots$ to the velocity, which mostly cancels out.
+
+<MomentumViz />
+
+<NumericCheck
+  id="mom-limit"
+  question="The gradient is a constant 1 at every step, $\beta = 0.9$ and $v$ starts at 0. What value does $v$ approach?"
+  answer={10}
+  explain="$v \to 1 + 0.9 + 0.81 + \dots = \frac{1}{1 - 0.9} = 10$. Momentum multiplies the effective step size along consistent directions."
+/>
+
+<Quiz
+  id="mom-beta-zero"
+  question="What does momentum with $\beta = 0$ do?"
+  options={["Nothing: the weights never move", "Exactly plain gradient descent", "It diverges", "It moves at a constant speed"]}
+  answer={1}
+  explain="With $\beta = 0$ the velocity is just the current gradient, so $\mathbf{w} \leftarrow \mathbf{w} - \eta\nabla L$."
+/>
+
+## Beyond momentum
+
+Momentum is one of a family of optimizers that improve on plain SGD:
+
+- **Nesterov momentum** looks ahead: it computes the gradient at where the velocity is about to carry you.
+- **RMSProp** and **Adam** keep a running average of each weight's *squared* gradient and divide by its square root, which gives every weight its own adaptive step size. That automatically tames the ill-conditioning problem.
+
+Adam (momentum plus per-weight adaptive scaling) is the default for many deep-learning projects. But SGD with momentum is still widely used for convolutional networks, and it's what you'll train yours with.
+
+<KeyIdea>
+
+Momentum keeps a velocity $\mathbf{v} \leftarrow \beta\mathbf{v} + \nabla L$ and steps along it. Consistent gradients add up (up to $\frac{1}{1-\beta}$ times faster), and oscillating ones cancel, so it rolls through narrow valleys that make plain gradient descent zig-zag.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="opt-momentum-step">
+
+Take one momentum step: $\mathbf{v}' = \beta\mathbf{v} + \mathbf{g}$, then $\mathbf{w}' = \mathbf{w} - \eta\mathbf{v}'$. Return the 2-row matrix $[\mathbf{w}', \mathbf{v}']$.
+
+</Exercise>
+
+<Exercise id="opt-momentum">
+
+Minimize $f$ from $\mathbf{x}_0$ with momentum: start with zero velocity, take `steps` momentum steps using your numerical gradient ($h = 10^{-5}$), and return the final point.
+
+</Exercise>
+
+## Module 4 complete
+
+You can now train a model: define a loss, compute its gradient, and descend it with gradient descent, mini-batches and momentum. So far the models have been straight lines.
+
+**Next:** Module 5 replaces the line with a neural network: layers of neurons, non-linear activations, and backpropagation to compute the gradient for every weight at once.

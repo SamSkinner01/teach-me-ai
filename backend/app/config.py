@@ -26,6 +26,12 @@ class Settings:
     runner_image: str
     sandbox_memory: str
     max_concurrent_runs: int
+    # Capstone training runs: memory per run, and how many may run at once (the rest queue).
+    training_memory: str
+    max_concurrent_trainings: int
+    # Uncompressed MNIST IDX files (scripts/fetch_mnist.py). The backend reads the
+    # test labels and images from here; the local sandbox reads everything.
+    mnist_dir: Path
     # Let every lesson be opened without finishing the previous one (for content authors).
     unlock_all: bool
     # Set when serving over HTTPS so the session cookie is never sent in clear text.
@@ -44,6 +50,9 @@ class Settings:
             runner_image=os.environ.get("TMAI_RUNNER_IMAGE", "teach-me-ai-runner:latest"),
             sandbox_memory=os.environ.get("TMAI_SANDBOX_MEMORY", "768m"),
             max_concurrent_runs=int(os.environ.get("TMAI_MAX_CONCURRENT_RUNS", "4")),
+            training_memory=os.environ.get("TMAI_TRAINING_MEMORY", "2g"),
+            max_concurrent_trainings=int(os.environ.get("TMAI_MAX_CONCURRENT_TRAININGS", "1")),
+            mnist_dir=Path(os.environ.get("TMAI_MNIST_DIR", ROOT / "data" / "mnist" / "raw")),
             unlock_all=_bool("TMAI_UNLOCK_ALL", False),
             secure_cookies=_bool("TMAI_SECURE_COOKIES", False),
             session_days=int(os.environ.get("TMAI_SESSION_DAYS", "30")),

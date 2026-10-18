@@ -1,0 +1,92 @@
+{
+  "title": "ReLU backward",
+  "function": "relu_backward",
+  "params": [
+    {
+      "name": "z",
+      "type": "vec"
+    },
+    {
+      "name": "grad_out",
+      "type": "vec"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "relu has slope 1 where its input is positive and slope 0 where it's negative, so by the chain rule dL/dz = grad_out × slope.",
+    "Where z[i] > 0 pass grad_out[i] through unchanged; everywhere else output 0.",
+    "Check the lengths, then build the result entry by entry (or as a Hadamard product with the 0/1 slope)."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          -1,
+          2
+        ],
+        [
+          5,
+          5
+        ]
+      ],
+      "description": "the gradient only flows where the input was positive",
+      "expected": [
+        0.0,
+        5.0
+      ]
+    },
+    {
+      "args": [
+        [
+          0.5,
+          -0.5,
+          3
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "three entries",
+      "expected": [
+        1.0,
+        0.0,
+        3.0
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0
+        ],
+        [
+          7,
+          7
+        ]
+      ],
+      "description": "at exactly 0 the gradient is taken as 0",
+      "hidden": true,
+      "expected": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "description": "one gradient per input",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}
