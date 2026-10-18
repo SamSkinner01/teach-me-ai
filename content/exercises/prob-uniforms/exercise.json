@@ -1,0 +1,89 @@
+{
+  "title": "Uniform random numbers",
+  "function": "random_uniforms",
+  "params": [
+    {
+      "name": "seed",
+      "type": "int"
+    },
+    {
+      "name": "n",
+      "type": "int"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Start with state = seed. For each of the n numbers: advance the state with `xorshift32`, then divide it by 2³² = 4294967296.",
+    "Advance first, then divide, so the seed itself is never output.",
+    "Validate the seed: it must be between 1 and 2³² − 1. A zero state stays zero forever."
+  ],
+  "tests": [
+    {
+      "args": [
+        2463534242,
+        3
+      ],
+      "description": "three numbers from Marsaglia's seed",
+      "expected": [
+        0.16844638506881893,
+        0.5814635441638529,
+        0.480596162378788
+      ]
+    },
+    {
+      "args": [
+        42,
+        5
+      ],
+      "description": "five numbers from seed 42",
+      "expected": [
+        0.002643892541527748,
+        0.660311977379024,
+        0.11095708678476512,
+        0.8493769019842148,
+        0.8754393914714456
+      ]
+    },
+    {
+      "args": [
+        1,
+        3
+      ],
+      "description": "a tiny seed starts with tiny numbers (a known xorshift weakness)",
+      "hidden": true,
+      "expected": [
+        6.295018829405308e-05,
+        0.015747428173199296,
+        0.6164041024167091
+      ]
+    },
+    {
+      "args": [
+        42,
+        0
+      ],
+      "description": "zero numbers",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        0,
+        3
+      ],
+      "description": "seed 0 must be rejected (xorshift would output 0 forever)",
+      "expect_error": true,
+      "hidden": true
+    },
+    {
+      "args": [
+        4294967296,
+        3
+      ],
+      "description": "seeds must fit in 32 bits",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

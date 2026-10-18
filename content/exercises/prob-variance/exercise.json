@@ -1,0 +1,90 @@
+{
+  "title": "Variance",
+  "function": "variance",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "Variance is the average squared distance from the mean.",
+    "Compute the mean once (your `mean` already rejects empty input), then average (x − mean)² over every x.",
+    "Subtract the mean *before* squaring. The shortcut E[x²] − E[x]² gives the same answer on paper but loses precision when the numbers are large."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "description": "spread around a mean of 2.5",
+      "expected": 1.25
+    },
+    {
+      "args": [
+        [
+          5,
+          5,
+          5
+        ]
+      ],
+      "description": "no spread at all",
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          2,
+          4,
+          4,
+          4,
+          5,
+          5,
+          7,
+          9
+        ]
+      ],
+      "description": "a classic example with standard deviation 2",
+      "hidden": true,
+      "expected": 4.0
+    },
+    {
+      "args": [
+        [
+          -1,
+          1
+        ]
+      ],
+      "description": "symmetric around 0",
+      "hidden": true,
+      "expected": 1.0
+    },
+    {
+      "args": [
+        [
+          1000001.0,
+          1000002.0,
+          1000003.0
+        ]
+      ],
+      "description": "a large offset doesn't change the spread",
+      "hidden": true,
+      "expected": 0.6666666666666666
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "an empty vector has no variance",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

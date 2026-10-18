@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { api, ApiError, LANGUAGE_NAMES, type ExerciseData, type Report, type Submission } from "../api";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { useSession } from "../state/session";
 import { Icon } from "./Icon";
 import { RichText } from "./RichText";
@@ -240,15 +241,17 @@ export function Exercise({ id, children }: { id: string; children?: ReactNode })
               </button>
             </div>
           </div>
-          <Suspense fallback={<EditorFallback />}>
-            <CodeEditor
-              value={code}
-              language={lang}
-              onChange={onChange}
-              onRun={() => execute("run")}
-              onSubmit={() => execute("submit")}
-            />
-          </Suspense>
+          <ErrorBoundary what="the code editor">
+            <Suspense fallback={<EditorFallback />}>
+              <CodeEditor
+                value={code}
+                language={lang}
+                onChange={onChange}
+                onRun={() => execute("run")}
+                onSubmit={() => execute("submit")}
+              />
+            </Suspense>
+          </ErrorBoundary>
           <div className="editor-actions">
             <button className="btn" onClick={() => execute("run")} disabled={busy !== null} title="Ctrl/⌘ + Enter">
               {busy === "run" ? <span className="spinner" /> : <Icon name="play" size={14} />} Run examples

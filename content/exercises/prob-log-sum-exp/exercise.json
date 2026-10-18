@@ -1,0 +1,80 @@
+{
+  "title": "Log-sum-exp",
+  "function": "log_sum_exp",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "log_sum_exp(v) = ln(Σ exp(vᵢ)). Computed directly, it overflows for big values and gives −∞ for very negative ones.",
+    "Factor out the largest value m: ln Σ exp(vᵢ) = m + ln Σ exp(vᵢ − m). Every exponent is now ≤ 0, and the largest term is exactly 1.",
+    "m = max(v); return m + ln(Σ exp(vᵢ − m))."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0
+        ]
+      ],
+      "description": "ln(e⁰ + e⁰) = ln 2",
+      "expected": 0.6931471805599453
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "a little more than the largest value",
+      "expected": 3.4076059644443806
+    },
+    {
+      "args": [
+        [
+          1000,
+          1000
+        ]
+      ],
+      "description": "huge values (naive exp overflows)",
+      "hidden": true,
+      "expected": 1000.6931471805599
+    },
+    {
+      "args": [
+        [
+          -1000,
+          -1000
+        ]
+      ],
+      "description": "hugely negative values (naive exp underflows to 0, and ln 0 = −∞)",
+      "hidden": true,
+      "expected": -999.3068528194401
+    },
+    {
+      "args": [
+        [
+          5
+        ]
+      ],
+      "description": "a single value is its own log-sum-exp",
+      "hidden": true,
+      "expected": 5.0
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "an empty vector must be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

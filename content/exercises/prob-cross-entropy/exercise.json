@@ -1,0 +1,98 @@
+{
+  "title": "Cross-entropy loss",
+  "function": "cross_entropy_loss",
+  "params": [
+    {
+      "name": "logits",
+      "type": "vec"
+    },
+    {
+      "name": "label",
+      "type": "int"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "The loss is −ln(softmax(logits)[label]). But don't compute the softmax and then take its log: a probability that rounds to 0 gives ln 0 = −∞.",
+    "Use the identity ln softmax(z)ₖ = zₖ − log_sum_exp(z). Your `log_sum_exp` is already stable.",
+    "Check 0 ≤ label < len(logits), then return log_sum_exp(logits) − logits[label]."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0
+        ],
+        0
+      ],
+      "description": "a 50/50 guess costs ln 2",
+      "expected": 0.6931471805599453
+    },
+    {
+      "args": [
+        [
+          2,
+          1,
+          0.1
+        ],
+        0
+      ],
+      "description": "the right class has the highest score: small loss",
+      "expected": 0.41703001627783376
+    },
+    {
+      "args": [
+        [
+          2,
+          1,
+          0.1
+        ],
+        2
+      ],
+      "description": "the right class has the lowest score: big loss",
+      "hidden": true,
+      "expected": 2.3170300162778337
+    },
+    {
+      "args": [
+        [
+          1000,
+          0
+        ],
+        1
+      ],
+      "description": "confidently wrong: huge but finite loss",
+      "hidden": true,
+      "expected": 1000.0
+    },
+    {
+      "args": [
+        [
+          0,
+          5,
+          0,
+          0
+        ],
+        1
+      ],
+      "description": "confidently right: tiny loss",
+      "hidden": true,
+      "expected": 0.020012253359626975
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          0
+        ],
+        3
+      ],
+      "description": "a label past the last class must be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

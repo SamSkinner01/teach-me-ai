@@ -90,6 +90,12 @@ function Outcome({ t, exercise }: { t: TestOutcome; exercise: ExerciseData }) {
   );
 }
 
+function listFunctions(names: string[]): string {
+  const shown = names.slice(0, 4).map((f) => `\`${f}\``);
+  const rest = names.length - shown.length;
+  return rest > 0 ? `${shown.join(", ")} and ${rest} other library function${rest === 1 ? "" : "s"}` : shown.join(", ");
+}
+
 const BANNER: Record<Report["status"], { cls: string; icon: string }> = {
   passed: { cls: "pass", icon: "check" },
   failed: { cls: "fail", icon: "x" },
@@ -160,7 +166,7 @@ export function ReportView({ report, submitted, exercise }: { report: Report; su
       {report.used_reference.length > 0 && (
         <p className="small muted reference-note">
           <RichText
-            text={`You haven't passed ${report.used_reference.map((f) => `\`${f}\``).join(", ")} yet, so a reference version was used for ${report.used_reference.length === 1 ? "it" : "them"}.`}
+            text={`You haven't passed ${listFunctions(report.used_reference)} yet, so a reference version was used for ${report.used_reference.length === 1 ? "it" : "them"}.`}
           />
         </p>
       )}

@@ -1,0 +1,12 @@
+{
+  "name": "teach-me-ai-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Browser smoke tests. Uses an installed Chrome via playwright-core.",
+  "scripts": {
+    "test": "node progression.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.64.1"
+  }
+}

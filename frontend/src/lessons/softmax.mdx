@@ -1,0 +1,91 @@
+## Scores aren't probabilities
+
+The last layer of a digit classifier is a matrix-vector product that produces **10 numbers**, one per digit. They're called <Term t="logit">logits</Term>, and they can be anything: $(2.1,\ -0.4,\ 7.3,\ \dots)$. Bigger means "more likely", but they aren't probabilities. They can be negative, and they don't add up to 1.
+
+You need a function that turns any vector of scores into a probability distribution, where:
+
+1. every output is positive,
+2. the outputs sum to 1,
+3. a bigger score always gets a bigger probability.
+
+Dividing each score by the total fails rule 1 as soon as a score is negative. The fix is to make everything positive first, with the exponential function, and *then* divide by the total.
+
+## Softmax
+
+$$
+\mathrm{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_j e^{z_j}}
+$$
+
+$e^{z}$ is always positive, dividing by the total makes the outputs sum to 1, and $e^z$ grows with $z$, so the order of the scores is preserved. That's the <Term>softmax</Term>. Play with it:
+
+<SoftmaxViz />
+
+<NumericCheck
+  id="softmax-ln3"
+  question="What is the first entry of $\mathrm{softmax}(0,\ \ln 3)$?"
+  answer={0.25}
+  tolerance={1e-6}
+  explain="$e^0 = 1$ and $e^{\ln 3} = 3$, so the probabilities are $\tfrac14$ and $\tfrac34$."
+/>
+
+## Three properties worth knowing
+
+**Adding a constant changes nothing.** Add $c$ to every score and every $e^{z_i}$ gets multiplied by $e^c$, top and bottom, so it cancels:
+
+$$
+\frac{e^{z_i + c}}{\sum_j e^{z_j + c}} = \frac{e^{c}\,e^{z_i}}{e^{c}\sum_j e^{z_j}} = \frac{e^{z_i}}{\sum_j e^{z_j}}
+$$
+
+Only the *differences* between scores matter. Try the "Add 1 to every score" button above.
+
+**It's a soft version of "pick the biggest".** Dividing the scores by a *temperature* $T$ before the softmax controls how decisive it is. As $T \to 0$, all the probability piles onto the largest score: the output becomes a one-hot vector picking the maximum. That's where the name comes from. As $T$ grows, the distribution flattens towards uniform.
+
+**With two classes, it's the sigmoid.** $\mathrm{softmax}(z, 0)_1 = \dfrac{e^z}{e^z + 1} = \dfrac{1}{1 + e^{-z}} = \sigma(z)$. The sigmoid from Module 2 is the two-class special case.
+
+<Quiz
+  id="softmax-shift"
+  question="Scores $(1, 2, 3)$ give probabilities $(0.09, 0.24, 0.67)$. What does softmax give for $(101, 102, 103)$?"
+  options={["$(0.09,\\ 0.24,\\ 0.67)$", "Almost $(0, 0, 1)$", "$(0.33,\\ 0.33,\\ 0.33)$", "It overflows"]}
+  answer={0}
+  explain="Shifting every score by the same amount (here 100) changes nothing: only differences matter."
+/>
+
+## Doing it without overflowing
+
+Mathematically, softmax is happy with scores like $(1000, 1001, 1002)$. Computationally, $e^{1000}$ is far beyond the largest 64-bit float ($\approx 1.8 \times 10^{308}$), so it becomes infinity, and $\infty / \infty$ is NaN ("not a number"). A network whose logits drift large would suddenly output garbage.
+
+The fix uses the first property: subtract the **largest** score from every score before exponentiating. The answer doesn't change, but now the biggest exponent is $e^0 = 1$ and nothing can overflow:
+
+$$
+\mathrm{softmax}(\mathbf{z})_i = \frac{e^{z_i - m}}{\sum_j e^{z_j - m}}, \qquad m = \max_j z_j
+$$
+
+Very negative scores still underflow to $e^{-\text{huge}} = 0$, but that's fine: their true probability really is 0 to many decimal places.
+
+## From probabilities to a prediction
+
+To turn the probabilities into a single answer, pick the class with the highest probability: the **argmax**. Since softmax preserves order, that's also the index of the highest *score*. You don't even need the softmax to make a prediction, only to train.
+
+<KeyIdea>
+
+$\mathrm{softmax}(\mathbf{z})_i = e^{z_i} / \sum_j e^{z_j}$ turns any scores into probabilities. It only depends on differences between scores, so subtract the maximum first to avoid overflow. The prediction is the argmax.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="prob-softmax">
+
+Return $\mathrm{softmax}(\mathbf{z})$, computed stably so that huge scores like $(1000, 1001, 1002)$ work.
+
+<Lang only="python">`max(logits)` gives the largest score, and `math.exp` the exponential.</Lang>
+<Lang only="rust">For the maximum of a slice of `f64`s: `logits.iter().cloned().fold(f64::NEG_INFINITY, f64::max)`. (`f64` has no `Ord`, because NaN can't be compared, so `.max()` on the iterator doesn't work.)</Lang>
+<Lang only="cpp">Start from `-std::numeric_limits<double>::infinity()` and take the max in a loop, or use `*std::max_element(z.begin(), z.end())`, but only on a non-empty vector.</Lang>
+
+</Exercise>
+
+<Exercise id="prob-argmax">
+
+Return the index of the largest element. If several elements tie for largest, return the first. Reject an empty vector.
+
+</Exercise>

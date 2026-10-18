@@ -1,5 +1,6 @@
 import { lazy, Suspense, type ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Layout } from "./components/Layout";
 import { AuthPage } from "./pages/AuthPage";
 import { GlossaryPage } from "./pages/GlossaryPage";
@@ -14,6 +15,16 @@ const Roadmap = lazy(() => import("./pages/Roadmap"));
 const LessonPage = lazy(() => import("./pages/LessonPage"));
 const LibraryPage = lazy(() => import("./pages/LibraryPage"));
 const AccountPage = lazy(() => import("./pages/AccountPage"));
+
+/** A page-level boundary that resets when you navigate somewhere else. */
+function PageBoundary({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  return (
+    <ErrorBoundary what="this page" resetKey={pathname}>
+      {children}
+    </ErrorBoundary>
+  );
+}
 
 function Loading() {
   return (
@@ -46,7 +57,8 @@ export default function App() {
       <SessionProvider>
         <BrowserRouter>
           <Layout>
-            <Suspense fallback={<Loading />}>
+            <PageBoundary>
+              <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<AuthPage mode="login" />} />
@@ -94,7 +106,8 @@ export default function App() {
                 />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Suspense>
+              </Suspense>
+            </PageBoundary>
           </Layout>
         </BrowserRouter>
       </SessionProvider>

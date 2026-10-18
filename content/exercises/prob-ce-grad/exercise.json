@@ -1,0 +1,116 @@
+{
+  "title": "Gradient of softmax + cross-entropy",
+  "function": "cross_entropy_grad",
+  "params": [
+    {
+      "name": "logits",
+      "type": "vec"
+    },
+    {
+      "name": "label",
+      "type": "int"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "The gradient of the loss with respect to the logits is softmax(logits) − onehot(label).",
+    "onehot(label) is all zeros except a 1 at position `label`. Subtracting it only changes one entry.",
+    "grad = softmax(logits); grad[label] −= 1; return grad. Check the label's range first."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0
+        ],
+        0
+      ],
+      "description": "push the right score up, the wrong one down",
+      "expected": [
+        -0.5,
+        0.5
+      ]
+    },
+    {
+      "args": [
+        [
+          2,
+          1,
+          0.1
+        ],
+        0
+      ],
+      "description": "already mostly right: small gradients",
+      "expected": [
+        -0.3409988611140321,
+        0.24243297070471392,
+        0.09856589040931818
+      ]
+    },
+    {
+      "args": [
+        [
+          2,
+          1,
+          0.1
+        ],
+        2
+      ],
+      "description": "mostly wrong: big gradients",
+      "hidden": true,
+      "expected": [
+        0.6590011388859679,
+        0.24243297070471392,
+        -0.9014341095906818
+      ]
+    },
+    {
+      "args": [
+        [
+          1000,
+          0
+        ],
+        1
+      ],
+      "description": "huge logits",
+      "hidden": true,
+      "expected": [
+        1.0,
+        -1.0
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          5,
+          0,
+          0
+        ],
+        1
+      ],
+      "description": "confidently right: nearly zero gradient",
+      "hidden": true,
+      "expected": [
+        0.00660444578216969,
+        -0.019813337346508808,
+        0.00660444578216969,
+        0.00660444578216969
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0
+        ],
+        2
+      ],
+      "description": "a label past the last class must be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

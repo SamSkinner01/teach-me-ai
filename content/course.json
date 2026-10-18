@@ -15,7 +15,9 @@
           "id": "how-it-works",
           "title": "How this course works",
           "summary": "Lessons, visualizations, exercises, and the library of functions you build along the way.",
-          "exercises": ["warmup-vec-sum"]
+          "exercises": [
+            "warmup-vec-sum"
+          ]
         }
       ]
     },
@@ -28,37 +30,57 @@
           "id": "vectors",
           "title": "Vectors",
           "summary": "Arrows, lists of numbers, and the two basic operations: adding and scaling.",
-          "exercises": ["la-vec-add", "la-vec-scale"]
+          "exercises": [
+            "la-vec-add",
+            "la-vec-scale"
+          ]
         },
         {
           "id": "dot-product",
           "title": "The dot product & length",
           "summary": "The single most important operation in deep learning, and what it says about angles.",
-          "exercises": ["la-dot", "la-norm"]
+          "exercises": [
+            "la-dot",
+            "la-norm"
+          ]
         },
         {
           "id": "matrices",
           "title": "Matrices as transformations",
           "summary": "A matrix is a function that moves every point in space. Multiply one by a vector and see where it lands.",
-          "exercises": ["la-mat-vec", "la-transpose"]
+          "exercises": [
+            "la-mat-vec",
+            "la-transpose"
+          ]
         },
         {
           "id": "matmul",
           "title": "Matrix multiplication",
           "summary": "Chaining transformations, and the row-times-column rule behind every layer of a network.",
-          "exercises": ["la-matmul", "la-identity"]
+          "exercises": [
+            "la-matmul",
+            "la-identity"
+          ]
         },
         {
           "id": "tensors",
           "title": "Tensors, shapes & strides",
           "summary": "How a stack of images becomes one flat block of memory, and how to find any element in it.",
-          "exercises": ["la-strides", "la-ravel-index", "la-flatten", "la-reshape"]
+          "exercises": [
+            "la-strides",
+            "la-ravel-index",
+            "la-flatten",
+            "la-reshape"
+          ]
         },
         {
           "id": "elementwise",
           "title": "Element-wise ops & broadcasting",
           "summary": "Operations that work entry by entry, and the stretching rule that adds a bias to every row.",
-          "exercises": ["la-hadamard", "la-add-bias"]
+          "exercises": [
+            "la-hadamard",
+            "la-add-bias"
+          ]
         }
       ]
     },
@@ -71,68 +93,152 @@
           "id": "derivatives",
           "title": "Derivatives: the slope of a curve",
           "summary": "Zoom in on any smooth curve until it looks straight. Its slope there is the derivative.",
-          "exercises": ["calc-forward-diff", "calc-central-diff"]
+          "exercises": [
+            "calc-forward-diff",
+            "calc-central-diff"
+          ]
         },
         {
           "id": "derivative-rules",
           "title": "Derivative rules & the sigmoid",
           "summary": "The handful of rules that let you differentiate by hand, applied to the sigmoid activation.",
-          "exercises": ["calc-sigmoid", "calc-sigmoid-prime"]
+          "exercises": [
+            "calc-sigmoid",
+            "calc-sigmoid-prime"
+          ]
         },
         {
           "id": "chain-rule",
           "title": "The chain rule",
           "summary": "Differentiating functions of functions: the idea backpropagation is built on.",
-          "exercises": ["calc-neuron-grad", "calc-loss-grad"]
+          "exercises": [
+            "calc-neuron-grad",
+            "calc-loss-grad"
+          ]
         },
         {
           "id": "gradients",
           "title": "Partial derivatives & gradients",
           "summary": "Functions of many variables, and the arrow that points uphill.",
-          "exercises": ["calc-numerical-gradient"]
+          "exercises": [
+            "calc-numerical-gradient"
+          ]
         },
         {
           "id": "gradient-check",
           "title": "Gradient checking",
           "summary": "How to know your hand-derived gradients are right before you train on them.",
-          "exercises": ["calc-relative-error", "calc-gradient-check"]
+          "exercises": [
+            "calc-relative-error",
+            "calc-gradient-check"
+          ]
         }
       ]
     },
     {
       "id": "probability",
       "title": "Probability & Statistics",
-      "summary": "Turning a network's raw scores into probabilities, and measuring how wrong they are.",
-      "coming_soon": true,
-      "planned": ["Distributions, expectation & variance", "Softmax", "Cross-entropy & maximum likelihood", "A seeded random number generator", "Weight initialization"]
+      "summary": "Turning a network's raw scores into probabilities, measuring how wrong they are, and the randomness that gets training started.",
+      "lessons": [
+        {
+          "id": "distributions",
+          "title": "Randomness, expectation & variance",
+          "summary": "Random variables, what to expect on average, and how much results spread out.",
+          "exercises": [
+            "prob-mean",
+            "prob-variance",
+            "prob-expected-value"
+          ]
+        },
+        {
+          "id": "softmax",
+          "title": "Softmax: from scores to probabilities",
+          "summary": "How a classifier's ten raw scores become ten probabilities that add up to 1.",
+          "exercises": [
+            "prob-softmax",
+            "prob-argmax"
+          ]
+        },
+        {
+          "id": "cross-entropy",
+          "title": "Cross-entropy & maximum likelihood",
+          "summary": "The loss function that trains classifiers, why it uses logarithms, and its remarkably simple gradient.",
+          "exercises": [
+            "prob-log-sum-exp",
+            "prob-cross-entropy",
+            "prob-ce-grad"
+          ]
+        },
+        {
+          "id": "rng",
+          "title": "A seeded random number generator",
+          "summary": "Build your own reproducible randomness from bit shifts and XOR.",
+          "exercises": [
+            "prob-xorshift",
+            "prob-uniforms"
+          ]
+        },
+        {
+          "id": "initialization",
+          "title": "Normal distributions & weight initialization",
+          "summary": "Bell curves from uniform numbers, and why a network's starting weights decide whether it can learn at all.",
+          "exercises": [
+            "prob-normals",
+            "prob-he-init"
+          ]
+        }
+      ]
     },
     {
       "id": "optimization",
       "title": "Optimization",
       "summary": "Walking downhill on a loss surface, one gradient step at a time.",
       "coming_soon": true,
-      "planned": ["Loss functions", "Gradient descent & learning rates", "Stochastic gradient descent & mini-batches", "Momentum"]
+      "planned": [
+        "Loss functions",
+        "Gradient descent & learning rates",
+        "Stochastic gradient descent & mini-batches",
+        "Momentum"
+      ]
     },
     {
       "id": "neural-networks",
       "title": "Neural Networks",
       "summary": "Layers of neurons, backpropagation, and your first MNIST classifier.",
       "coming_soon": true,
-      "planned": ["Neurons & activation functions", "The multi-layer perceptron", "Computational graphs & backpropagation", "Milestone: an MLP on MNIST"]
+      "planned": [
+        "Neurons & activation functions",
+        "The multi-layer perceptron",
+        "Computational graphs & backpropagation",
+        "Milestone: an MLP on MNIST"
+      ]
     },
     {
       "id": "cnn",
       "title": "Convolutional Neural Networks",
       "summary": "Sliding filters that detect edges, then shapes, then digits.",
       "coming_soon": true,
-      "planned": ["Convolution", "Stride, padding & output size", "Channels & feature maps", "Pooling", "Backprop through conv & pooling", "im2col"]
+      "planned": [
+        "Convolution",
+        "Stride, padding & output size",
+        "Channels & feature maps",
+        "Pooling",
+        "Backprop through conv & pooling",
+        "im2col"
+      ]
     },
     {
       "id": "capstone",
       "title": "Capstone: MNIST CNN",
       "summary": "Load the real dataset, train your own CNN to about 99%, and test it on your own handwriting.",
       "coming_soon": true,
-      "planned": ["Parsing the IDX format", "Batching & normalization", "Training your CNN", "Evaluation & the confusion matrix", "Draw a digit with your own model"]
+      "planned": [
+        "Parsing the IDX format",
+        "Batching & normalization",
+        "Training your CNN",
+        "Evaluation & the confusion matrix",
+        "Draw a digit with your own model"
+      ]
     }
   ]
 }

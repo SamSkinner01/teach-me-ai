@@ -181,17 +181,17 @@ An interactive web app that teaches the math behind AI from first principles. Th
 - **Where code runs:** on the server, in a throwaway Docker container per run (no network, read-only filesystem, resource limits)
 - **Audience:** built for multiple users (accounts, sessions, sandboxing), currently run by me
 
-## Status (2026-10-17)
+## Status (updated 2026-10-17)
 
 **Built**
 - Accounts, language tracks (separate progress per language), lesson unlocking, progress tracking
 - Sandboxed runner for all three languages: generated test harnesses, hidden tests, friendly compile/crash/timeout messages, shared JSON test fixtures
 - Coding workspace: Monaco editor, Run/Submit, autosaved drafts, staged hints, reference solution after 3 submissions, submission history, My Library page
-- Modules 0–2: 13 lessons, 24 exercises (each in Python, Rust and C++), quizzes and hand-calculation checks, glossary
-- Visualizations: vector playground (add / dot / scale), matrix transformer, matmul stepper, stride explorer, broadcasting, derivative explorer, computational-graph backprop, gradient field with gradient descent, draw-a-digit CNN demo
+- Modules 0–3: 18 lessons, 36 exercises (each in Python, Rust and C++), quizzes and hand-calculation checks, glossary
+- Visualizations: vector playground (add / dot / scale), matrix transformer, matmul stepper, stride explorer, broadcasting, derivative explorer, computational-graph backprop, gradient field with gradient descent, sampling and the law of large numbers, softmax with temperature, −ln p loss curve, cross-entropy gradient-step trainer, xorshift bit stepper, generator quality (pairs test), Box–Muller, deep-network initialization lab, draw-a-digit CNN demo
 - Light/dark mode, mobile layout
 
 **Not built yet**
-- Modules 3–7 (shown as "coming soon" on the roadmap), including the training dashboard, dataset viewer and capstone features
+- Modules 4–7 (shown as "coming soon" on the roadmap), including the training dashboard, dataset viewer and capstone features
 - Running learner code for long training jobs (needs background jobs and streaming metrics)
 - Compile caching for Rust/C++ (single-file compiles currently take under a second)

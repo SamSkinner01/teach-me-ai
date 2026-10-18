@@ -167,11 +167,13 @@ export function MatrixCheck({
   question,
   answer,
   explain,
+  tolerance = 1e-6,
 }: {
   id: string;
   question: string;
   answer: number[][];
   explain?: string;
+  tolerance?: number;
 }) {
   const { doneBefore, markDone } = useCheck(id);
   const rows = answer.length;
@@ -182,7 +184,7 @@ export function MatrixCheck({
   const status = cells.map((r, i) =>
     r.map((c, j) => {
       const n = parseNumber(c);
-      return n !== null && close(n, answer[i][j], 1e-6);
+      return n !== null && close(n, answer[i][j], tolerance);
     }),
   );
   const allRight = status.every((r) => r.every(Boolean));

@@ -1,18 +1,24 @@
 // Every component a lesson (.mdx) can use without importing it.
 
 import type { MDXComponents } from "mdx/types";
-import type { AnchorHTMLAttributes } from "react";
+import type { AnchorHTMLAttributes, ComponentType } from "react";
 import { Link } from "react-router-dom";
 import { BroadcastViz } from "../viz/BroadcastViz";
 import { ChainRuleGraph } from "../viz/ChainRuleGraph";
+import { CrossEntropyTrainer, LogLossCurve } from "../viz/CrossEntropyViz";
 import { DerivativeExplorer } from "../viz/DerivativeExplorer";
 import { DigitDemo } from "../viz/DigitDemo";
 import { GradientField } from "../viz/GradientField";
+import { InitViz, NormalViz } from "../viz/InitViz";
 import { MatmulStepper } from "../viz/MatmulStepper";
 import { MatrixTransformer } from "../viz/MatrixTransformer";
+import { RngQuality, XorshiftViz } from "../viz/RngViz";
+import { SamplingViz } from "../viz/SamplingViz";
+import { SoftmaxViz } from "../viz/SoftmaxViz";
 import { StrideExplorer } from "../viz/StrideExplorer";
 import { VectorPlayground } from "../viz/VectorPlayground";
 import { MatrixCheck, NumericCheck, Quiz } from "./Checks";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { Exercise } from "./Exercise";
 import { Callout, KeyIdea, Lang, LangName, PerLang, Term, Wide } from "./LessonBits";
 import { Tex } from "./RichText";
@@ -26,9 +32,40 @@ function A({ href = "", children, ...rest }: AnchorHTMLAttributes<HTMLAnchorElem
   );
 }
 
+/** Wrap a lesson component so a failure shows a message in its place instead of breaking the lesson. */
+function guard<P extends object>(C: ComponentType<P>, what: string): ComponentType<P> {
+  const Guarded = (props: P) => (
+    <ErrorBoundary what={what}>
+      <C {...props} />
+    </ErrorBoundary>
+  );
+  Guarded.displayName = `Guarded(${C.displayName ?? C.name})`;
+  return Guarded;
+}
+
+const figures = {
+  VectorPlayground,
+  MatrixTransformer,
+  MatmulStepper,
+  StrideExplorer,
+  BroadcastViz,
+  DerivativeExplorer,
+  ChainRuleGraph,
+  GradientField,
+  DigitDemo,
+  SamplingViz,
+  SoftmaxViz,
+  LogLossCurve,
+  CrossEntropyTrainer,
+  XorshiftViz,
+  RngQuality,
+  NormalViz,
+  InitViz,
+};
+
 export const mdxComponents: MDXComponents = {
   a: A,
-  Exercise,
+  Exercise: guard(Exercise, "this exercise"),
   Quiz,
   NumericCheck,
   MatrixCheck,
@@ -40,13 +77,5 @@ export const mdxComponents: MDXComponents = {
   KeyIdea,
   Wide,
   Tex,
-  VectorPlayground,
-  MatrixTransformer,
-  MatmulStepper,
-  StrideExplorer,
-  BroadcastViz,
-  DerivativeExplorer,
-  ChainRuleGraph,
-  GradientField,
-  DigitDemo,
+  ...Object.fromEntries(Object.entries(figures).map(([name, C]) => [name, guard(C as ComponentType<object>, "this figure")])),
 };

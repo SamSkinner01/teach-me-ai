@@ -1,0 +1,140 @@
+## Randomness in deep learning
+
+Training a network uses random numbers all the time:
+
+- **Initial weights** are random. (Next lesson explains why they can't all start at zero.)
+- **Shuffling.** Before each pass over the training set, the examples are put in a new random order.
+- **Augmentation and dropout**, later on, add random noise to make networks more robust.
+
+But computers are deterministic machines. So where do random numbers come from?
+
+## Pseudo-random numbers
+
+A <Term t="pseudo-random number generator">pseudo-random number generator</Term> (PRNG) is a small deterministic machine: it holds a **state** (here, one 32-bit number) and an **update rule** that scrambles the state into a new one. Every output is completely determined by the previous one, yet the sequence *looks* random: no obvious patterns, every value about equally likely.
+
+The starting state is called the <Term>seed</Term>, and the same seed always produces exactly the same sequence. That's a feature, not a bug. It makes experiments **reproducible**: rerun training with the same seed and you get the same weights, the same shuffles and the same results, which makes bugs far easier to track down.
+
+<Callout type="why" title="Why build our own?">
+
+Python has `random`, and C++ has `<random>`, but Rust's standard library has no random numbers at all, and the generators that do exist differ from language to language. Building one shared generator means every track gets **bit-for-bit identical** random numbers from the same seed: your weights in <LangName /> will match anyone else's, in any language.
+
+</Callout>
+
+## A bit-level refresher
+
+The generator works on the individual bits of a 32-bit unsigned integer, using two operations.
+
+**Shifts** slide all the bits left or right. `x << k` moves every bit $k$ places left (multiplying by $2^k$) and fills in zeros on the right. Bits pushed past position 31 are **dropped**, because the number only has 32 bits. `x >> k` moves bits right (dividing by $2^k$, rounding down) and fills in zeros on the left.
+
+**<Term t="xor">XOR</Term>** (written `^`) compares two numbers bit by bit: the result has a 1 wherever the bits **differ**.
+
+| a | b | a XOR b |
+| --- | --- | --- |
+| 0 | 0 | 0 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 0 |
+
+<NumericCheck
+  id="rng-shift"
+  question="What is `5 << 2`? (5 is `101` in binary.)"
+  answer={20}
+  explain="`101` shifted left twice is `10100`, which is 20. Shifting left by $k$ multiplies by $2^k$: $5 \cdot 4 = 20$."
+/>
+
+<NumericCheck
+  id="rng-xor"
+  question="What is `12 ^ 10` (XOR)? 12 is `1100` and 10 is `1010` in binary."
+  answer={6}
+  explain="The bits differ in the middle two positions: `0110`, which is 6."
+/>
+
+## Xorshift32
+
+George Marsaglia's *xorshift32* generator (2003) is three lines long. Each step XORs the state with a shifted copy of itself:
+
+```text
+x ^= x << 13
+x ^= x >> 17
+x ^= x << 5
+```
+
+That's it. Each step mixes high bits into low bits or low bits into high bits, and three of them scramble the state thoroughly. Step through it bit by bit:
+
+<XorshiftViz />
+
+The constants 13, 17 and 5 were chosen so that, starting from any nonzero state, the generator visits **all** $2^{32} - 1 \approx 4.3$ billion nonzero states before repeating. Zero is the one forbidden state: every shift of 0 is 0, so the generator would output 0 forever.
+
+<Callout type="warning" title="Pick a messy seed">
+
+Starting from a seed with very few 1-bits, like `1`, the first few outputs are suspiciously small (`1` becomes `270369`, then `67634689`, …) until the bits get mixed. Use a large, irregular seed such as `2463534242`, the one Marsaglia used in his paper.
+
+</Callout>
+
+## From integers to uniform numbers
+
+Most uses need a number between 0 and 1. Divide the 32-bit state by $2^{32}$:
+
+$$
+u = \frac{x}{2^{32}} = \frac{x}{4294967296}
+$$
+
+Since $x$ is between $1$ and $2^{32} - 1$, $u$ is strictly between 0 and 1, never exactly 0, which matters next lesson when we take its logarithm. Every value is equally likely: a **uniform** distribution.
+
+How do you know the output is random enough? One classic test is to plot consecutive pairs of outputs as points. A good generator fills the square evenly, while a bad one reveals its structure:
+
+<RngQuality />
+
+Xorshift32 isn't suitable for cryptography (with a few outputs you could predict the rest), but for shuffling data and initializing weights it's plenty.
+
+## Fixed-width integers in your language
+
+<Lang only="python">
+
+<Callout type="lang">
+
+Python integers never overflow. `x << 13` just keeps getting bigger, so you have to **drop the high bits yourself** by masking: `(x << 13) & 0xFFFFFFFF` keeps only the low 32 bits. Right shifts never create high bits, so `x >> 17` needs no mask.
+
+</Callout>
+
+</Lang>
+
+<Lang only="rust">
+
+<Callout type="lang">
+
+Work in `u32`: `let mut x = state as u32;`. On a `u32`, `x << 13` discards the bits that fall off the top, exactly what we want. (Shifting by 32 or more *does* panic, but our shifts are smaller.) Convert back with `x as usize`. Careful with arithmetic later on: `+` and `*` panic on overflow in debug builds, and when you want wrap-around you say so explicitly with `wrapping_add` / `wrapping_mul`.
+
+</Callout>
+
+</Lang>
+
+<Lang only="cpp">
+
+<Callout type="lang">
+
+Work in `std::uint32_t` (from `<cstdint>`). Unsigned arithmetic in C++ is defined to wrap around modulo $2^{32}$, so `x << 13` simply drops the high bits. Avoid plain `int` here: left-shifting a signed integer into its sign bit is undefined behaviour. The function takes and returns `std::size_t`, so convert with `static_cast<std::uint32_t>(state)` on the way in.
+
+</Callout>
+
+</Lang>
+
+<KeyIdea>
+
+A pseudo-random generator is a deterministic state machine: same seed, same sequence, so experiments are reproducible. Xorshift32 scrambles a 32-bit state with three shift-and-XOR steps; dividing the state by $2^{32}$ gives uniform numbers in $(0, 1)$.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="prob-xorshift">
+
+Advance the xorshift32 state by one step (all three shift-XORs) and return the new state. Keep every intermediate value within 32 bits.
+
+</Exercise>
+
+<Exercise id="prob-uniforms">
+
+Return `n` uniform numbers from seed `seed`: set the state to the seed, then `n` times advance it with `xorshift32` and output state / $2^{32}$. Reject seed 0 and seeds that don't fit in 32 bits.
+
+</Exercise>

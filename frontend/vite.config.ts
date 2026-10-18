@@ -25,6 +25,13 @@ export default defineConfig({
       "monaco-esm": fileURLToPath(new URL("./node_modules/monaco-editor/esm/vs", import.meta.url)),
     },
   },
+  // Monaco is imported file-by-file through the alias above. Letting the dev
+  // server pre-bundle it means it gets discovered (and re-bundled) mid-session
+  // the first time an exercise loads, which breaks its `?worker` import and
+  // blanked the app. Serve it as plain ES modules instead, as the build does.
+  optimizeDeps: {
+    exclude: ["monaco-esm", "monaco-editor"],
+  },
   server: {
     proxy: { "/api": "http://127.0.0.1:8000" },
   },

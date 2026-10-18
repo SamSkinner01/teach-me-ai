@@ -1,0 +1,65 @@
+{
+  "title": "Xorshift32",
+  "function": "xorshift32",
+  "params": [
+    {
+      "name": "state",
+      "type": "int"
+    }
+  ],
+  "returns": "int",
+  "library": true,
+  "hints": [
+    "Do the three steps in order, each one updating x: x ^= x << 13, then x ^= x >> 17, then x ^= x << 5.",
+    "Everything must stay within 32 bits. A left shift can push bits past bit 31, and those must be thrown away (the result is taken mod 2³²).",
+    "Python: mask with & 0xFFFFFFFF after each left shift. Rust: work in u32 (`state as u32`). C++: work in std::uint32_t."
+  ],
+  "tests": [
+    {
+      "args": [
+        1
+      ],
+      "description": "the smallest valid state",
+      "expected": 270369
+    },
+    {
+      "args": [
+        2463534242
+      ],
+      "description": "Marsaglia's example seed",
+      "expected": 723471715
+    },
+    {
+      "args": [
+        270369
+      ],
+      "description": "the second step from state 1",
+      "hidden": true,
+      "expected": 67634689
+    },
+    {
+      "args": [
+        4294967295
+      ],
+      "description": "all 32 bits set: the shifted-out bits must be dropped",
+      "hidden": true,
+      "expected": 253983
+    },
+    {
+      "args": [
+        12345
+      ],
+      "description": "an arbitrary state",
+      "hidden": true,
+      "expected": 3336926330
+    },
+    {
+      "args": [
+        2147483648
+      ],
+      "description": "only the top bit set",
+      "hidden": true,
+      "expected": 2148024320
+    }
+  ]
+}

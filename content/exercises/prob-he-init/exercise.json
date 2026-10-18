@@ -1,0 +1,110 @@
+{
+  "title": "He initialization",
+  "function": "he_init",
+  "params": [
+    {
+      "name": "seed",
+      "type": "int"
+    },
+    {
+      "name": "fan_in",
+      "type": "int"
+    },
+    {
+      "name": "fan_out",
+      "type": "int"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "The weight matrix has one row per neuron (fan_out rows) and one column per input (fan_in columns).",
+    "Draw fan_out · fan_in normals with `random_normals`, multiply them all by √(2 / fan_in) with `vec_scale`, and fill the matrix row by row.",
+    "return reshape(vec_scale(random_normals(seed, fan_in * fan_out), sqrt(2 / fan_in)), fan_out, fan_in)"
+  ],
+  "tests": [
+    {
+      "args": [
+        2463534242,
+        2,
+        3
+      ],
+      "description": "a layer with 2 inputs and 3 neurons",
+      "expected": [
+        [
+          -1.6455093556075222,
+          -0.924431987362357
+        ],
+        [
+          -1.185461226979586,
+          0.24522960848372194
+        ],
+        [
+          0.5339555220365974,
+          0.3253895190487504
+        ]
+      ]
+    },
+    {
+      "args": [
+        42,
+        4,
+        1
+      ],
+      "description": "one neuron with 4 inputs",
+      "expected": [
+        [
+          -1.301394093406596,
+          -2.0595816113600436,
+          0.8668482061707552,
+          -1.2029904178430488
+        ]
+      ]
+    },
+    {
+      "args": [
+        12345,
+        3,
+        2
+      ],
+      "description": "3 inputs, 2 neurons",
+      "hidden": true,
+      "expected": [
+        [
+          -0.4587606408919655,
+          0.35505459474697443,
+          -0.7206673068634138
+        ],
+        [
+          0.20792213196141476,
+          0.14072321208068025,
+          -1.537402536698961
+        ]
+      ]
+    },
+    {
+      "args": [
+        7,
+        1,
+        1
+      ],
+      "description": "a single weight",
+      "hidden": true,
+      "expected": [
+        [
+          4.294382204826231
+        ]
+      ]
+    },
+    {
+      "args": [
+        0,
+        2,
+        2
+      ],
+      "description": "seed 0 must still be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

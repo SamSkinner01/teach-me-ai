@@ -1,0 +1,107 @@
+{
+  "title": "Softmax",
+  "function": "softmax",
+  "params": [
+    {
+      "name": "logits",
+      "type": "vec"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "softmax(z)ᵢ = exp(zᵢ) / Σⱼ exp(zⱼ). Exponentiate, then divide by the total.",
+    "exp(1000) overflows. Subtract the largest score from every score first: the answer is mathematically identical, but now the biggest exponent is exp(0) = 1.",
+    "m = max(z); e = [exp(zᵢ − m) for each i]; return vec_scale(e, 1 / vec_sum(e))."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0
+        ]
+      ],
+      "description": "equal scores give equal probabilities",
+      "expected": [
+        0.5,
+        0.5
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "bigger scores get more probability",
+      "expected": [
+        0.09003057317038045,
+        0.2447284710547976,
+        0.6652409557748218
+      ]
+    },
+    {
+      "args": [
+        [
+          1000,
+          1001,
+          1002
+        ]
+      ],
+      "description": "huge scores (naive exp overflows to infinity)",
+      "hidden": true,
+      "expected": [
+        0.09003057317038045,
+        0.2447284710547976,
+        0.6652409557748218
+      ]
+    },
+    {
+      "args": [
+        [
+          -1000,
+          0
+        ]
+      ],
+      "description": "a hugely negative score gets probability ~0",
+      "hidden": true,
+      "expected": [
+        0.0,
+        1.0
+      ]
+    },
+    {
+      "args": [
+        [
+          5
+        ]
+      ],
+      "description": "a single class gets probability 1",
+      "hidden": true,
+      "expected": [
+        1.0
+      ]
+    },
+    {
+      "args": [
+        [
+          2,
+          1,
+          0.1,
+          -3
+        ]
+      ],
+      "description": "four classes",
+      "hidden": true,
+      "expected": [
+        0.6560879020995045,
+        0.24136125078370968,
+        0.09813016160569826,
+        0.004420685511087636
+      ]
+    }
+  ]
+}

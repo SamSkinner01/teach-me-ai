@@ -1,0 +1,72 @@
+{
+  "title": "Argmax",
+  "function": "argmax",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    }
+  ],
+  "returns": "int",
+  "library": true,
+  "hints": [
+    "Keep track of the index of the best value seen so far, starting at 0.",
+    "Only replace it when you see a strictly larger value. That way ties keep the earlier index.",
+    "Reject an empty vector before looking at v[0]."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0.1,
+          0.7,
+          0.2
+        ]
+      ],
+      "description": "the most likely class",
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          3,
+          -1
+        ]
+      ],
+      "description": "the first element can win",
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          1,
+          5,
+          5
+        ]
+      ],
+      "description": "on a tie, return the first index",
+      "hidden": true,
+      "expected": 1
+    },
+    {
+      "args": [
+        [
+          -3,
+          -2,
+          -9
+        ]
+      ],
+      "description": "all negative",
+      "hidden": true,
+      "expected": 1
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "an empty vector has no largest element",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}
