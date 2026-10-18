@@ -1,0 +1,71 @@
+{
+  "title": "ReLU",
+  "function": "relu",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "relu(x) = max(0, x), applied to every entry.",
+    "Build a new vector: for each x, push x if x > 0, else 0.",
+    "Python: [max(0.0, x) for x in v]. Rust: v.iter().map(|&x| x.max(0.0)).collect(). C++: std::max(0.0, x) in a loop."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          -1,
+          0,
+          2
+        ]
+      ],
+      "description": "negatives become 0, positives pass through",
+      "expected": [
+        0.0,
+        0.0,
+        2.0
+      ]
+    },
+    {
+      "args": [
+        [
+          3.5,
+          -0.1
+        ]
+      ],
+      "description": "two values",
+      "expected": [
+        3.5,
+        0.0
+      ]
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "an empty vector",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          -5,
+          -4,
+          -3
+        ]
+      ],
+      "description": "all negative",
+      "hidden": true,
+      "expected": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

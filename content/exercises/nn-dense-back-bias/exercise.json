@@ -1,0 +1,90 @@
+{
+  "title": "Dense backward: bias gradient",
+  "function": "dense_backward_bias",
+  "params": [
+    {
+      "name": "grad_out",
+      "type": "mat"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "The bias bₖ is added to neuron k's output for every example, so its gradient adds up over the batch.",
+    "dL/dbₖ = Σᵢ grad_out[i][k]: sum down each column.",
+    "Start from a zero vector the length of a row and vec_add every row onto it."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            0.5,
+            2,
+            0
+          ]
+        ]
+      ],
+      "description": "column sums of a 2×3 gradient",
+      "expected": [
+        1.5,
+        2.0,
+        -1.0
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3
+          ]
+        ]
+      ],
+      "description": "a batch of one is just that row",
+      "expected": [
+        1.0,
+        2.0,
+        3.0
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            5,
+            6
+          ]
+        ]
+      ],
+      "description": "batch of 3",
+      "hidden": true,
+      "expected": [
+        9.0,
+        12.0
+      ]
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "an empty batch",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

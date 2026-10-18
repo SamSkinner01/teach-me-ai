@@ -1,0 +1,72 @@
+## The training loop
+
+You now have every piece. Training a neural network is this loop:
+
+```text
+initialize the weights (He initialization) and the biases (zeros)
+repeat for each epoch:
+    forward:   z1 = dense(X, W1, b1);  h = relu(z1);  logits = dense(h, W2, b2)
+    loss:      L = mean cross-entropy(logits, labels)
+    backward:  start from dL/dlogits, push it back through dense, relu, dense
+    update:    every parameter -= learning_rate * its gradient
+```
+
+Each line is a function in your library. The milestone exercise below assembles them into a network that learns.
+
+## Watch it learn
+
+This playground runs exactly that loop in your browser. The background colour shows what the network would predict at every point in the plane, so you can watch the decision boundary bend as it trains.
+
+<PlaygroundViz />
+
+Things to try:
+
+- **XOR with 1 hidden neuron, then with 4.** One neuron can only draw one line.
+- **The spiral** needs lots of neurons and many epochs. Watch the loss plateau, then suddenly drop as the network figures out a new twist.
+- **Learning rate 2** on the circle: the loss jumps around instead of falling smoothly.
+- **New weights** restarts from a different random initialization. Sometimes the same network learns faster or slower, or gets stuck.
+
+## How do you know it works?
+
+On these toy datasets you can see the answer. On real data you can't, so you watch the numbers: the training loss should fall steadily, and the accuracy should rise.
+
+There's one more thing to watch, which matters on real datasets. A network with enough weights can memorize its training examples instead of learning the pattern, a problem called **overfitting**. The fix is to keep some data aside, a **test set**, that the network never trains on, and measure accuracy there. You'll do exactly that with MNIST in the capstone.
+
+<Quiz
+  id="train-overfit"
+  question="Training accuracy is 99.9%, but accuracy on held-out test images is 85%. What's the most likely explanation?"
+  options={[
+    "The learning rate is too high",
+    "The network is overfitting: memorizing the training images rather than learning patterns that generalize",
+    "There's a bug in the backward pass",
+    "The test images are corrupted"
+  ]}
+  answer={1}
+  explain="A big gap between training and test accuracy is the signature of overfitting. Common remedies are more data, a smaller network, or regularization techniques like dropout and data augmentation."
+/>
+
+<KeyIdea>
+
+Training is: initialize, then repeat forward → loss → backward → update. Every step is a function you've already written. Watch the loss and accuracy, and always measure accuracy on data the network didn't train on.
+
+</KeyIdea>
+
+## Milestone exercise
+
+<Exercise id="nn-train-mlp">
+
+Train a two-layer MLP with full-batch gradient descent and return its final loss. The starter code spells out every step, including the exact initialization, so your result matches the tests to many decimal places. Each test trains a fresh network on a small dataset (XOR, three clusters, a ring around a disc) right in the sandbox.
+
+<Lang only="python">
+
+Plain Python is slow for this kind of number crunching, but these datasets are tiny, so each test trains in well under a second.
+
+</Lang>
+
+</Exercise>
+
+## Module 5 complete
+
+You've built a neural network from scratch: layers, activations, a loss, backpropagation and a training loop, all on your own library. The same code, with 784 inputs and 10 outputs, reaches about 97% accuracy on MNIST.
+
+**Next:** Module 6 replaces the first dense layer with something better suited to images. Instead of connecting every pixel to every neuron, a *convolution* slides a small filter across the image, so the network can recognize a stroke wherever it appears.

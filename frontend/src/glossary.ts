@@ -1,6 +1,15 @@
 // Definitions shown when hovering a <Term> in a lesson, and on the glossary page.
 
 export const GLOSSARY: Record<string, string> = {
+  "dense layer":
+    "A layer in which every neuron is connected to every input: z = x·Wᵀ + b. Also called a fully connected or linear layer.",
+  logits: "The raw, unnormalized scores a classifier outputs, one per class, before softmax turns them into probabilities.",
+  "multi-layer perceptron":
+    "A neural network made of dense layers with non-linear activations between them. Even one hidden layer can represent curved decision boundaries.",
+  relu: "The rectified linear unit, relu(x) = max(0, x): the most common activation function for hidden layers.",
+  "hidden layer": "Any layer between a network's input and its output. Its values aren't observed directly; the network learns what they should represent.",
+  "decision boundary": "The border in input space where a classifier switches from predicting one class to another.",
+  accuracy: "The fraction of examples a classifier gets right: its most probable class matches the true label.",
   epoch: "One full pass through the training data. Training usually runs for many epochs.",
   "learning rate":
     "The step size η in gradient descent, w ← w − η∇L. Too small and training crawls; too large and it oscillates or blows up.",

@@ -1122,3 +1122,137 @@ button.mm-cell {
 .path-end-mom {
   fill: var(--viz-c);
 }
+
+/* ------------------------------------------------------------------
+   Module 5: neural-network figures
+   ------------------------------------------------------------------ */
+
+.class-dot {
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+.class-dot.c0 {
+  fill: var(--viz-a);
+}
+.class-dot.c1 {
+  fill: var(--viz-b);
+}
+.class-dot.c2 {
+  fill: var(--viz-c);
+}
+.boundary-line {
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+}
+.neuron-stage,
+.playground-stage {
+  max-width: 320px;
+}
+
+.nn-edge {
+  stroke-width: 2;
+  opacity: 0.35;
+}
+.nn-edge.pos {
+  stroke: var(--viz-a);
+}
+.nn-edge.neg {
+  stroke: var(--viz-b);
+}
+.nn-edge.active {
+  opacity: 1;
+  stroke-width: 3;
+}
+.nn-weight {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  fill: var(--text-muted);
+  paint-order: stroke;
+  stroke: var(--surface);
+  stroke-width: 4px;
+}
+.nn-node {
+  fill: var(--surface-2);
+  stroke: var(--border-strong);
+  stroke-width: 2;
+}
+.nn-node.on {
+  fill: var(--accent-soft);
+  stroke: var(--accent);
+}
+.nn-node.out.on {
+  fill: color-mix(in srgb, var(--viz-c) 25%, var(--surface));
+  stroke: var(--viz-c);
+}
+.nn-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  fill: var(--text);
+}
+.nn-input {
+  cursor: pointer;
+}
+.xor-table {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.xor-row {
+  display: flex;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+}
+.xor-row.current {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.shape-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.shape-head {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.shape-eq {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.shape-box {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid;
+  min-width: 70px;
+}
+.shape-box.a {
+  border-color: var(--viz-a);
+  background: color-mix(in srgb, var(--viz-a) 10%, var(--surface));
+}
+.shape-box.b {
+  border-color: var(--viz-b);
+  background: color-mix(in srgb, var(--viz-b) 10%, var(--surface));
+}
+.shape-box.c {
+  border-color: var(--viz-c);
+  background: color-mix(in srgb, var(--viz-c) 10%, var(--surface));
+}

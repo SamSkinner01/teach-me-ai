@@ -1,0 +1,73 @@
+## A loss for the whole batch
+
+Your network now produces a matrix of logits, one row per example. The loss for a batch is the **average** cross-entropy over its rows:
+
+$$
+L = \frac{1}{N}\sum_{i=1}^{N} \text{CE}(\text{logits}_i,\ y_i)
+$$
+
+Averaging rather than summing means the size of the gradient doesn't depend on the batch size, so the same learning rate works whether you use batches of 16 or 256.
+
+<NumericCheck
+  id="batch-loss-mean"
+  question="A batch of two examples has individual losses 0.1 and 0.5. What is the batch loss?"
+  answer={0.3}
+  tolerance={1e-6}
+  explain="The average: $(0.1 + 0.5)/2 = 0.3$."
+/>
+
+## Where backpropagation starts
+
+Backprop needs $\partial L/\partial \text{logits}$, a matrix the same shape as the logits. Each example's logits only affect its own term of the average, and from Module 3 you know that term's gradient is $\mathbf{p} - \mathbf{y}$. The $\frac1N$ comes along for the ride:
+
+$$
+\frac{\partial L}{\partial\,\text{logits}_i} = \frac{1}{N}\big(\mathrm{softmax}(\text{logits}_i) - \text{onehot}(y_i)\big)
+$$
+
+That matrix is the starting point of every backward pass in a classifier. From here on, the chain rule carries it back through each layer.
+
+## Loss vs accuracy
+
+What you actually care about is usually **accuracy**: the fraction of examples where the most likely class is the right one. So why not train on accuracy directly?
+
+Because accuracy is a step function of the weights. Nudge a weight slightly and the predictions almost never change, so the accuracy doesn't change either, and its gradient is zero almost everywhere. Gradient descent would have nothing to follow. Cross-entropy is a smooth stand-in: it keeps rewarding the model for making the right class *more* probable, even before that changes the prediction.
+
+So you train on the loss, but you **report** accuracy: it's what tells you whether the model is any good.
+
+<Quiz
+  id="batch-acc-vs-loss"
+  question="During training, the loss keeps going down but the accuracy stays the same for a while. Is something wrong?"
+  options={[
+    "Yes: loss and accuracy must always move together",
+    "No: the model is growing more confident about predictions that were already right (or less wrong about wrong ones) without flipping any of them yet",
+    "Yes: the learning rate must be too small"
+  ]}
+  answer={1}
+  explain="Loss measures confidence as well as correctness. It can improve a lot before any prediction crosses the line and changes the accuracy."
+/>
+
+<KeyIdea>
+
+The batch loss is the mean cross-entropy. Its gradient with respect to the logits, $(\text{softmax} - \text{onehot})/N$ row by row, is where backpropagation starts. Accuracy is what you report, but it can't be trained on directly because its gradient is zero almost everywhere.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="nn-batch-ce">
+
+Return the mean of `cross_entropy_loss(logits[i], labels[i])` over the batch. Reject a batch where the number of labels doesn't match the number of rows.
+
+</Exercise>
+
+<Exercise id="nn-batch-ce-grad">
+
+Return the $N \times C$ gradient of the batch loss: row $i$ is `cross_entropy_grad(logits[i], labels[i])` divided by $N$.
+
+</Exercise>
+
+<Exercise id="nn-accuracy">
+
+Return the fraction of rows whose `argmax` equals the label.
+
+</Exercise>

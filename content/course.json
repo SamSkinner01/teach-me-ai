@@ -236,13 +236,54 @@
     {
       "id": "neural-networks",
       "title": "Neural Networks",
-      "summary": "Layers of neurons, backpropagation, and your first MNIST classifier.",
-      "coming_soon": true,
-      "planned": [
-        "Neurons & activation functions",
-        "The multi-layer perceptron",
-        "Computational graphs & backpropagation",
-        "Milestone: an MLP on MNIST"
+      "summary": "Layers of neurons, backpropagation, and training your first neural network end to end.",
+      "lessons": [
+        {
+          "id": "neurons",
+          "title": "Neurons & activation functions",
+          "summary": "One neuron draws one straight line. The non-linearity is what makes stacking them worthwhile.",
+          "exercises": [
+            "nn-relu",
+            "nn-relu-backward"
+          ]
+        },
+        {
+          "id": "mlp",
+          "title": "Layers & the multi-layer perceptron",
+          "summary": "Many neurons side by side make a layer; layers stacked make a network that can bend its decisions.",
+          "exercises": [
+            "nn-dense-forward",
+            "nn-mlp-forward"
+          ]
+        },
+        {
+          "id": "batch-loss",
+          "title": "Losses & accuracy over a batch",
+          "summary": "Scoring a whole batch of predictions at once, and the gradient that starts backpropagation.",
+          "exercises": [
+            "nn-batch-ce",
+            "nn-batch-ce-grad",
+            "nn-accuracy"
+          ]
+        },
+        {
+          "id": "backprop",
+          "title": "Backpropagation through a layer",
+          "summary": "Three matrix products give the gradient for a layer's inputs, weights and biases.",
+          "exercises": [
+            "nn-dense-back-input",
+            "nn-dense-back-weights",
+            "nn-dense-back-bias"
+          ]
+        },
+        {
+          "id": "train-mlp",
+          "title": "Milestone: training a neural network",
+          "summary": "Put it all together: initialize, forward, backward, update, repeat.",
+          "exercises": [
+            "nn-train-mlp"
+          ]
+        }
       ]
     },
     {

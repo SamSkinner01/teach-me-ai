@@ -1,0 +1,160 @@
+{
+  "title": "Dense backward: weight gradient",
+  "function": "dense_backward_weights",
+  "params": [
+    {
+      "name": "grad_out",
+      "type": "mat"
+    },
+    {
+      "name": "x",
+      "type": "mat"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Weight wₖⱼ multiplies input j for neuron k in every example, so dL/dwₖⱼ = Σᵢ (dL/dzᵢₖ)·xᵢⱼ: summed over the batch.",
+    "That's row k of grad_outᵀ times column j of x.",
+    "return matmul(transpose(grad_out), x)"
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            0.5,
+            2,
+            0
+          ]
+        ],
+        [
+          [
+            1,
+            -1
+          ],
+          [
+            2,
+            0.5
+          ]
+        ]
+      ],
+      "description": "a batch of 2, 3 neurons, 2 inputs",
+      "expected": [
+        [
+          2.0,
+          -0.75
+        ],
+        [
+          4.0,
+          1.0
+        ],
+        [
+          -1.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            2,
+            3
+          ]
+        ]
+      ],
+      "description": "one example, one neuron: the gradient is grad × input",
+      "expected": [
+        [
+          2.0,
+          4.0,
+          6.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            5,
+            6
+          ]
+        ],
+        [
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            2,
+            1,
+            0
+          ],
+          [
+            0,
+            0,
+            1
+          ]
+        ]
+      ],
+      "description": "batch of 3, 2 neurons, 3 inputs",
+      "hidden": true,
+      "expected": [
+        [
+          7.0,
+          3.0,
+          4.0
+        ],
+        [
+          10.0,
+          4.0,
+          4.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "description": "grad_out and x need the same number of rows",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

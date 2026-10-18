@@ -1,0 +1,94 @@
+## The chain rule, with matrices
+
+In Module 2 you pushed gradients backwards through a graph of single numbers: every node multiplied the incoming gradient by its local derivative. A network does the same thing with whole matrices. Each layer receives $G = \partial L/\partial Z$, the gradient of the loss with respect to its output, and has to produce three things:
+
+- $\partial L/\partial W$ and $\partial L/\partial \mathbf{b}$, so the optimizer can update this layer's parameters,
+- $\partial L/\partial X$, to hand back to the previous layer, which continues the chain.
+
+## Deriving the three gradients
+
+Write the layer $Z = XW^\mathsf{T} + \mathbf{b}$ entry by entry:
+
+$$
+Z_{ik} = \sum_j X_{ij}\,W_{kj} + b_k
+$$
+
+Now ask what each parameter touches. Input $X_{ij}$ feeds every neuron $k$, with weight $W_{kj}$:
+
+$$
+\frac{\partial L}{\partial X_{ij}} = \sum_k G_{ik}\,W_{kj} \quad\Longrightarrow\quad \frac{\partial L}{\partial X} = G\,W
+$$
+
+Weight $W_{kj}$ is used for every example $i$, multiplying $X_{ij}$, so its gradient sums over the batch:
+
+$$
+\frac{\partial L}{\partial W_{kj}} = \sum_i G_{ik}\,X_{ij} \quad\Longrightarrow\quad \frac{\partial L}{\partial W} = G^\mathsf{T} X
+$$
+
+Bias $b_k$ is added to neuron $k$'s output for every example:
+
+$$
+\frac{\partial L}{\partial b_k} = \sum_i G_{ik} \quad\Longrightarrow\quad \frac{\partial L}{\partial \mathbf{b}} = \text{the column sums of } G
+$$
+
+Three short formulas, and they hold for every dense layer in every network.
+
+## The shape rule
+
+You don't need to re-derive those every time. The gradient of anything always has the **same shape as the thing itself**, and there's usually only one way to multiply the available matrices to get that shape:
+
+<BackpropShapesViz />
+
+$\partial L/\partial W$ must be $n_{\text{out}} \times n_{\text{in}}$, like $W$. The only way to make that from $G$ ($N \times n_{\text{out}}$) and $X$ ($N \times n_{\text{in}}$) is $G^\mathsf{T}X$. That's where the transposes in backpropagation come from.
+
+<MatrixCheck
+  id="backprop-dw"
+  question="One example: $X = \begin{bmatrix} 3 & 4 \end{bmatrix}$ and $G = \partial L/\partial Z = \begin{bmatrix} 1 & 2 \end{bmatrix}$. Compute $\partial L/\partial W = G^\mathsf{T}X$."
+  answer={[[3, 4], [6, 8]]}
+  explain="$G^\mathsf{T}$ is $2\times1$ and $X$ is $1\times2$, so the result is the $2\times2$ outer product: each neuron's gradient is its incoming gradient times the input."
+/>
+
+## The whole backward pass
+
+For the two-layer MLP, backpropagation runs the forward pass in reverse:
+
+1. $G_2 = \partial L/\partial\,\text{logits}$, from the batch cross-entropy gradient.
+2. Layer 2: $\partial L/\partial W_2 = G_2^\mathsf{T}H$, $\partial L/\partial \mathbf{b}_2$ = the column sums of $G_2$, and $\partial L/\partial H = G_2W_2$.
+3. ReLU: $G_1 = \partial L/\partial H$ with entries zeroed wherever $Z_1 \le 0$.
+4. Layer 1: $\partial L/\partial W_1 = G_1^\mathsf{T}X$, $\partial L/\partial \mathbf{b}_1$ = the column sums of $G_1$.
+
+Notice what the backward pass needs from the forward pass: $X$, $Z_1$ and $H$. Networks keep those activations in memory until the backward pass is done, which is why training uses far more memory than prediction.
+
+The total cost is about two matrix products per layer, roughly twice the forward pass. Compare that with finite differences, which would need two forward passes **per weight**: 200,000 passes for the 100,000-weight MLP from the last lesson.
+
+<Callout type="tip" title="Trust, but gradient-check">
+
+Your library has `gradient_check`. When you write a new layer, wrap a tiny version of it in a function of a flat parameter vector and compare your backward pass against the numerical gradient. A relative error below $10^{-7}$ means you got it right.
+
+</Callout>
+
+<KeyIdea>
+
+For a dense layer $Z = XW^\mathsf{T} + \mathbf{b}$ with incoming gradient $G$: $\partial L/\partial X = GW$, $\partial L/\partial W = G^\mathsf{T}X$, and $\partial L/\partial\mathbf{b}$ is the column sums of $G$. Gradients always have the same shape as what they're the gradient of.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="nn-dense-back-input">
+
+Return $\partial L/\partial X = GW$.
+
+</Exercise>
+
+<Exercise id="nn-dense-back-weights">
+
+Return $\partial L/\partial W = G^\mathsf{T}X$.
+
+</Exercise>
+
+<Exercise id="nn-dense-back-bias">
+
+Return $\partial L/\partial\mathbf{b}$: the sum of each column of $G$. Reject an empty batch.
+
+</Exercise>

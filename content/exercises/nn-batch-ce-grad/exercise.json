@@ -1,0 +1,136 @@
+{
+  "title": "Batch cross-entropy gradient",
+  "function": "batch_cross_entropy_grad",
+  "params": [
+    {
+      "name": "logits",
+      "type": "mat"
+    },
+    {
+      "name": "labels",
+      "type": "ivec"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "The batch loss is (1/N) Σᵢ Lᵢ, and each row's logits only affect their own Lᵢ.",
+    "So row i of the gradient is (1/N) · cross_entropy_grad(logits[i], labels[i]).",
+    "[vec_scale(cross_entropy_grad(row, y), 1 / N) for each row, label]"
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "each row's gradient is halved because there are two rows",
+      "expected": [
+        [
+          -0.25,
+          0.25
+        ],
+        [
+          0.25,
+          -0.25
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            2,
+            1,
+            0.1
+          ]
+        ],
+        [
+          0
+        ]
+      ],
+      "description": "a batch of one is just cross_entropy_grad",
+      "expected": [
+        [
+          -0.3409988611140321,
+          0.24243297070471392,
+          0.09856589040931818
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            2,
+            1,
+            0.1
+          ],
+          [
+            0.5,
+            2.5,
+            0
+          ],
+          [
+            1000,
+            0,
+            0
+          ]
+        ],
+        [
+          2,
+          0,
+          1
+        ]
+      ],
+      "description": "a batch of three",
+      "hidden": true,
+      "expected": [
+        [
+          0.21966704629532263,
+          0.08081099023490464,
+          -0.30047803653022725
+        ],
+        [
+          -0.29627812589919295,
+          0.2738030064883753,
+          0.02247511941081764
+        ],
+        [
+          0.3333333333333333,
+          -0.3333333333333333,
+          0.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ]
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "one label per row",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

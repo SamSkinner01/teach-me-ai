@@ -13,7 +13,10 @@ import { InitViz, NormalViz } from "../viz/InitViz";
 import { LineFitViz } from "../viz/LineFitViz";
 import { MatmulStepper } from "../viz/MatmulStepper";
 import { MatrixTransformer } from "../viz/MatrixTransformer";
+import { BackpropShapesViz, XorNetViz } from "../viz/MLPViz";
+import { ActivationViz, NeuronViz } from "../viz/NeuronViz";
 import { LearningRateViz, MomentumViz } from "../viz/OptimizerViz";
+import { PlaygroundViz } from "../viz/PlaygroundViz";
 import { RngQuality, XorshiftViz } from "../viz/RngViz";
 import { SamplingViz } from "../viz/SamplingViz";
 import { SoftmaxViz } from "../viz/SoftmaxViz";
@@ -66,6 +69,11 @@ const figures = {
   LineFitViz,
   LearningRateViz,
   MomentumViz,
+  ActivationViz,
+  NeuronViz,
+  XorNetViz,
+  BackpropShapesViz,
+  PlaygroundViz,
 };
 
 export const mdxComponents: MDXComponents = {

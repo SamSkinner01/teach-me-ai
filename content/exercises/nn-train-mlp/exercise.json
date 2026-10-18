@@ -1,0 +1,301 @@
+{
+  "title": "Train an MLP",
+  "function": "train_mlp",
+  "params": [
+    {
+      "name": "xs",
+      "type": "mat"
+    },
+    {
+      "name": "labels",
+      "type": "ivec"
+    },
+    {
+      "name": "hidden",
+      "type": "int"
+    },
+    {
+      "name": "classes",
+      "type": "int"
+    },
+    {
+      "name": "lr",
+      "type": "float"
+    },
+    {
+      "name": "epochs",
+      "type": "int"
+    },
+    {
+      "name": "seed",
+      "type": "int"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "This combines nearly everything in your library. Follow the steps in the starter comment exactly, in order.",
+    "Update matrices row by row: W[i] = gd_step(W[i], dW[i], lr) (likewise b = gd_step(b, db, lr)).",
+    "Compute all four gradients before updating anything: dh needs the old W2."
+  ],
+  "tolerance": {
+    "abs": 1e-07,
+    "rel": 1e-05
+  },
+  "time_limit": 20,
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        [
+          0,
+          1,
+          1,
+          0
+        ],
+        8,
+        2,
+        0.5,
+        300,
+        42
+      ],
+      "description": "learns XOR, which no single neuron can",
+      "expected": 0.0068507332582938285
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        [
+          0,
+          1,
+          1,
+          0
+        ],
+        8,
+        2,
+        0.5,
+        0,
+        42
+      ],
+      "description": "zero epochs: the loss of the random starting network",
+      "expected": 0.6096507829984207
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0.5,
+            0.3
+          ],
+          [
+            -0.3,
+            0.4
+          ],
+          [
+            3,
+            3
+          ],
+          [
+            3.4,
+            2.6
+          ],
+          [
+            2.7,
+            3.3
+          ],
+          [
+            0,
+            3
+          ],
+          [
+            -0.4,
+            3.5
+          ],
+          [
+            0.3,
+            2.6
+          ]
+        ],
+        [
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          2,
+          2,
+          2
+        ],
+        6,
+        3,
+        0.2,
+        200,
+        7
+      ],
+      "description": "three clusters",
+      "hidden": true,
+      "expected": 0.01312820922440356
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0.3
+          ],
+          [
+            0.3,
+            0
+          ],
+          [
+            -0.2,
+            -0.2
+          ],
+          [
+            0,
+            -0.3
+          ],
+          [
+            0.25,
+            0.2
+          ],
+          [
+            -0.3,
+            0.1
+          ],
+          [
+            1.5,
+            0
+          ],
+          [
+            0,
+            1.5
+          ],
+          [
+            -1.5,
+            0
+          ],
+          [
+            0,
+            -1.5
+          ],
+          [
+            1.1,
+            1.1
+          ],
+          [
+            -1.1,
+            -1.1
+          ],
+          [
+            1.1,
+            -1.1
+          ],
+          [
+            -1.1,
+            1.1
+          ]
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        16,
+        2,
+        0.3,
+        400,
+        2463534242
+      ],
+      "description": "a ring around a disc: needs a curved boundary",
+      "hidden": true,
+      "expected": 0.0037451671766861754
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            0
+          ],
+          [
+            1,
+            1
+          ]
+        ],
+        [
+          0,
+          1,
+          1,
+          0
+        ],
+        4,
+        2,
+        0.1,
+        50,
+        12345
+      ],
+      "description": "a smaller network, a few epochs",
+      "hidden": true,
+      "expected": 0.5700748999002836
+    }
+  ]
+}
