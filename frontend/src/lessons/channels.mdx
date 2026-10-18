@@ -1,0 +1,50 @@
+## Many filters, many channels
+
+One filter detects one pattern. A real convolution layer has many filters, say 8 or 64, and each produces its own feature map. Stack those maps and the layer's output is a 3-D tensor of shape $[C_{\text{out}}, H, W]$: one **<Term t="channel">channel</Term>** per filter.
+
+The next layer's input therefore has several channels too, and so does a colour photo (red, green and blue). So a filter in a real layer isn't a flat $k \times k$ grid. It has one $k \times k$ slice **per input channel**, and its output adds up the convolutions of every input channel with its own slice:
+
+$$
+\text{out}[o, i, j] = b_o + \sum_{c} \sum_{u,v} W[o, c, u, v]\; x[c,\ i+u,\ j+v]
+$$
+
+So a layer's weights form a 4-D tensor of shape $[C_{\text{out}}, C_{\text{in}}, k, k]$, plus one bias per output channel.
+
+<NumericCheck
+  id="ch-params"
+  question="A convolution layer maps 8 input channels to 16 output channels with 3×3 kernels. How many weights and biases does it have?"
+  answer={1168}
+  explain="$16 \times 8 \times 3 \times 3 = 1{,}152$ weights plus 16 biases. Compare that with a dense layer between two 13×13×8 tensors."
+/>
+
+## What the layers learn
+
+Here's the small CNN from the first lesson, opened up layer by layer. Pick a digit and watch how it's transformed:
+
+<FeatureMapsViz />
+
+The first layer's 8 filters respond to simple strokes and edges in different directions. The second layer's 16 filters each look at all 8 of those maps, so they can respond to *combinations*, like an edge here next to a curve there. By the end, 400 numbers summarize the digit well enough for one dense layer to classify it with about 98% accuracy.
+
+## Storing tensors flat
+
+How do you store a $[C, H, W]$ tensor? Exactly as Module 1 taught: one flat array in row-major order, with strides $[HW,\ W,\ 1]$. Element $(c, i, j)$ lives at index
+
+$$
+(c \cdot H + i)\cdot W + j
+$$
+
+and a weight $(o, c, u, v)$ in a $[O, C, K, K]$ tensor at $((o \cdot C + c)\cdot K + u)\cdot K + v$. Real frameworks store tensors exactly like this. In the next exercise, tensors come in as a flat vector plus a shape, just as they will in your capstone CNN.
+
+<KeyIdea>
+
+A convolution layer has $C_{\text{out}}$ filters, each with one $k\times k$ slice per input channel; output channel $o$ is its bias plus the sum, over input channels, of each channel convolved with its slice. Weights form a $[C_{\text{out}}, C_{\text{in}}, k, k]$ tensor, and everything is stored flat and row-major.
+
+</KeyIdea>
+
+## Exercise
+
+<Exercise id="cnn-conv2d-multi">
+
+Implement a full multi-channel convolution layer on flat tensors: input `x` with shape $[C, H, W]$, weights `w` with shape $[O, C, K_h, K_w]$, and `b` with $O$ biases. Return the flat output of shape $[O,\ H - K_h + 1,\ W - K_w + 1]$. Validate every shape first.
+
+</Exercise>

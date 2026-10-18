@@ -5,6 +5,8 @@ import type { AnchorHTMLAttributes, ComponentType } from "react";
 import { Link } from "react-router-dom";
 import { BroadcastViz } from "../viz/BroadcastViz";
 import { ChainRuleGraph } from "../viz/ChainRuleGraph";
+import { ConvolutionViz, FeatureMapsViz } from "../viz/CnnViz";
+import { ConvGradViz, Im2colViz, PoolingViz, StridePaddingViz } from "../viz/ConvMechanicsViz";
 import { CrossEntropyTrainer, LogLossCurve } from "../viz/CrossEntropyViz";
 import { DerivativeExplorer } from "../viz/DerivativeExplorer";
 import { DigitDemo } from "../viz/DigitDemo";
@@ -74,6 +76,12 @@ const figures = {
   XorNetViz,
   BackpropShapesViz,
   PlaygroundViz,
+  ConvolutionViz,
+  FeatureMapsViz,
+  StridePaddingViz,
+  PoolingViz,
+  ConvGradViz,
+  Im2colViz,
 };
 
 export const mdxComponents: MDXComponents = {

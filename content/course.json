@@ -289,15 +289,61 @@
     {
       "id": "cnn",
       "title": "Convolutional Neural Networks",
-      "summary": "Sliding filters that detect edges, then shapes, then digits.",
-      "coming_soon": true,
-      "planned": [
-        "Convolution",
-        "Stride, padding & output size",
-        "Channels & feature maps",
-        "Pooling",
-        "Backprop through conv & pooling",
-        "im2col"
+      "summary": "Sliding filters that detect edges, then shapes, then digits, and how to train them.",
+      "lessons": [
+        {
+          "id": "convolution",
+          "title": "Convolution",
+          "summary": "Slide a small grid of weights across an image to find a pattern wherever it appears.",
+          "exercises": [
+            "cnn-conv2d"
+          ]
+        },
+        {
+          "id": "stride-padding",
+          "title": "Stride, padding & output size",
+          "summary": "Controlling how far the filter jumps and what happens at the edges.",
+          "exercises": [
+            "cnn-output-size",
+            "cnn-pad2d",
+            "cnn-conv2d-strided"
+          ]
+        },
+        {
+          "id": "channels",
+          "title": "Channels & feature maps",
+          "summary": "Many filters, many input channels: a convolution layer as a whole.",
+          "exercises": [
+            "cnn-conv2d-multi"
+          ]
+        },
+        {
+          "id": "pooling",
+          "title": "Pooling",
+          "summary": "Shrinking feature maps to the strongest responses, and routing gradients back through them.",
+          "exercises": [
+            "cnn-maxpool",
+            "cnn-maxpool-backward"
+          ]
+        },
+        {
+          "id": "conv-backprop",
+          "title": "Backprop through convolution",
+          "summary": "The kernel's gradient is a convolution, and so is the input's.",
+          "exercises": [
+            "cnn-conv-back-kernel",
+            "cnn-conv-back-input"
+          ]
+        },
+        {
+          "id": "im2col",
+          "title": "im2col: convolution as matrix multiplication",
+          "summary": "The trick real libraries use to make convolution fast.",
+          "exercises": [
+            "cnn-im2col",
+            "cnn-conv-im2col"
+          ]
+        }
       ]
     },
     {

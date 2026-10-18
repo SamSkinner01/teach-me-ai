@@ -5,7 +5,7 @@ import { loadModel, mnistify, predict, type Model, type ModelFile, type Predicti
 const SIZE = 280;
 let modelPromise: Promise<Model> | null = null;
 
-function getModel(): Promise<Model> {
+export function getModel(): Promise<Model> {
   modelPromise ??= fetch("/models/demo-cnn.json")
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`);

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Icon } from "../components/Icon";
 import { Tex } from "../components/RichText";
-import { cssVar, useTheme } from "../state/theme";
+import { cssRgb, useTheme } from "../state/theme";
 import { Arrow, ArrowDefs, Figure, Segmented, Slider, clamp, fmt, linear, useSvgDrag } from "./common";
 
 interface Surface {
@@ -52,15 +52,6 @@ function grad(f: Surface["f"], x: number, y: number): [number, number] {
   return [(f(x + h, y) - f(x - h, y)) / (2 * h), (f(x, y + h) - f(x, y - h)) / (2 * h)];
 }
 
-function parseColor(c: string): [number, number, number] {
-  const m = c.match(/^#([0-9a-f]{6})$/i);
-  if (m) {
-    const n = parseInt(m[1], 16);
-    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  }
-  const r = c.match(/\d+(\.\d+)?/g);
-  return r ? [Number(r[0]), Number(r[1]), Number(r[2])] : [128, 128, 128];
-}
 
 export function GradientField({ surface: initial = "bowl", descent = true }: { surface?: keyof typeof SURFACES; descent?: boolean }) {
   const id = useId().replace(/:/g, "");
@@ -81,8 +72,8 @@ export function GradientField({ surface: initial = "bowl", descent = true }: { s
     if (!cv) return;
     const ctx = cv.getContext("2d");
     if (!ctx) return;
-    const lowC = parseColor(cssVar("--surface"));
-    const highC = parseColor(cssVar("--accent"));
+    const lowC = cssRgb("--surface");
+    const highC = cssRgb("--accent");
     const vals = new Float64Array(RES * RES);
     let lo = Infinity;
     let hi = -Infinity;

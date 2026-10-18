@@ -1,15 +1,6 @@
 import { useEffect, useRef } from "react";
-import { cssVar, useTheme } from "../state/theme";
+import { cssRgb, useTheme } from "../state/theme";
 
-function parseColor(c: string): [number, number, number] {
-  const m = c.match(/^#([0-9a-f]{6})$/i);
-  if (m) {
-    const n = parseInt(m[1], 16);
-    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  }
-  const r = c.match(/\d+(\.\d+)?/g);
-  return r ? [Number(r[0]), Number(r[1]), Number(r[2])] : [128, 128, 128];
-}
 
 /**
  * A filled contour plot of f(x, y) drawn on a canvas: darker bands are higher.
@@ -40,8 +31,8 @@ export function ContourCanvas({
   useEffect(() => {
     const ctx = ref.current?.getContext("2d");
     if (!ctx) return;
-    const low = parseColor(cssVar("--surface"));
-    const high = parseColor(cssVar("--accent"));
+    const low = cssRgb("--surface");
+    const high = cssRgb("--accent");
     const vals = new Float64Array(res * res);
     let lo = Infinity;
     let hi = -Infinity;

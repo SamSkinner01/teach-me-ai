@@ -1,0 +1,336 @@
+{
+  "title": "2-D convolution",
+  "function": "conv2d",
+  "params": [
+    {
+      "name": "image",
+      "type": "mat"
+    },
+    {
+      "name": "kernel",
+      "type": "mat"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "The output has one entry per position where the whole kernel fits inside the image.",
+    "For each output position (i, j), multiply the kernel entry-wise with the patch image[i..i+kh][j..j+kw] and add everything up.",
+    "Four nested loops: i, j over the output, u, v over the kernel. out[i][j] += image[i+u][j+v] * kernel[u][v]."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3,
+            0
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            3,
+            0,
+            1,
+            2
+          ],
+          [
+            2,
+            3,
+            0,
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            -1
+          ]
+        ]
+      ],
+      "description": "a 2×2 kernel on a 4×4 image",
+      "expected": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0,
+            0,
+            9,
+            9,
+            9
+          ],
+          [
+            0,
+            0,
+            0,
+            9,
+            9,
+            9
+          ],
+          [
+            0,
+            0,
+            0,
+            9,
+            9,
+            9
+          ],
+          [
+            0,
+            0,
+            0,
+            9,
+            9,
+            9
+          ],
+          [
+            0,
+            0,
+            0,
+            9,
+            9,
+            9
+          ],
+          [
+            0,
+            0,
+            0,
+            9,
+            9,
+            9
+          ]
+        ],
+        [
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            1,
+            0,
+            -1
+          ]
+        ]
+      ],
+      "description": "a vertical-edge detector fires where dark meets bright",
+      "expected": [
+        [
+          0.0,
+          -27.0,
+          -27.0,
+          0.0
+        ],
+        [
+          0.0,
+          -27.0,
+          -27.0,
+          0.0
+        ],
+        [
+          0.0,
+          -27.0,
+          -27.0,
+          0.0
+        ],
+        [
+          0.0,
+          -27.0,
+          -27.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          [
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          [
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          [
+            15,
+            16,
+            17,
+            18,
+            19
+          ],
+          [
+            20,
+            21,
+            22,
+            23,
+            24
+          ]
+        ],
+        [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      ],
+      "description": "a 3×3 box filter sums each neighbourhood",
+      "hidden": true,
+      "expected": [
+        [
+          54.0,
+          63.0,
+          72.0
+        ],
+        [
+          99.0,
+          108.0,
+          117.0
+        ],
+        [
+          144.0,
+          153.0,
+          162.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3
+          ]
+        ],
+        [
+          [
+            1,
+            0,
+            -1
+          ]
+        ]
+      ],
+      "description": "a single row",
+      "hidden": true,
+      "expected": [
+        [
+          -2.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            5
+          ]
+        ],
+        [
+          [
+            2
+          ]
+        ]
+      ],
+      "description": "1×1 image and kernel",
+      "hidden": true,
+      "expected": [
+        [
+          10.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      ],
+      "description": "a kernel larger than the image",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

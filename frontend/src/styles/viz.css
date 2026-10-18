@@ -1256,3 +1256,197 @@ button.mm-cell {
   border-color: var(--viz-c);
   background: color-mix(in srgb, var(--viz-c) 10%, var(--surface));
 }
+
+/* ------------------------------------------------------------------
+   Module 6: CNN figures
+   ------------------------------------------------------------------ */
+
+.array-canvas {
+  image-rendering: pixelated;
+  display: block;
+  border-radius: 3px;
+  background: #000;
+}
+.digit-picker {
+  display: inline-flex;
+  gap: 2px;
+  flex-wrap: wrap;
+}
+.digit-picker button {
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  font-family: var(--font-mono);
+  cursor: pointer;
+  color: var(--text-muted);
+}
+.digit-picker button.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 700;
+}
+.conv-grid {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.conv-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.conv-stage {
+  position: relative;
+  max-width: 100%;
+}
+.conv-window {
+  position: absolute;
+  border: 2px solid var(--viz-c);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  transition: left 0.03s linear, top 0.03s linear;
+}
+.conv-window.out {
+  border-color: var(--text);
+}
+.conv-middle {
+  min-width: 170px;
+}
+.kernel-grid,
+.patch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 52px);
+  gap: 3px;
+}
+.kernel-cell {
+  width: 52px;
+  height: 34px;
+  text-align: center;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+.kernel-cell.pos {
+  border-color: var(--viz-b);
+  background: color-mix(in srgb, var(--viz-b) 12%, var(--surface));
+}
+.kernel-cell.neg {
+  border-color: var(--viz-a);
+  background: color-mix(in srgb, var(--viz-a) 12%, var(--surface));
+}
+.patch-grid span {
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-radius: 4px;
+  background: var(--surface-2);
+}
+.conv-sum {
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.fm-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fm-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.fm-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.fm-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.fm-maps {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.fm-maps.wide {
+  gap: 6px;
+}
+.fm-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+.fm-probs {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  height: 90px;
+}
+.fm-prob {
+  width: 26px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2px;
+}
+.fm-bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  background: var(--border-strong);
+}
+.fm-prob.best .fm-bar {
+  background: var(--accent);
+}
+
+.sp-layout {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sp-grid {
+  display: grid;
+  gap: 2px;
+}
+.sp-cell {
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+}
+.sp-cell.pad {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+.sp-cell.hit {
+  background: color-mix(in srgb, var(--viz-c) 45%, var(--surface));
+  border-color: var(--viz-c);
+}
+.sp-cell.out {
+  background: var(--surface-2);
+}
+.sp-cell.out.done {
+  background: color-mix(in srgb, var(--viz-c) 18%, var(--surface));
+}
+.mm-cell.alt {
+  background: var(--surface-3);
+}

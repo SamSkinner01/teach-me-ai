@@ -1,0 +1,61 @@
+## Two knobs
+
+A convolution layer has two more settings besides the kernel size.
+
+**Padding** adds a border of zeros around the input before sliding the kernel. Without it, every convolution shrinks the image (28 → 26 → 24 …), and the pixels at the edges are covered by fewer kernel positions than those in the middle. With $p = (k - 1)/2$ (1 for a 3×3 kernel), the output is the **same size** as the input, which is why that's often called "same" padding.
+
+**Stride** is how far the kernel jumps between positions. Stride 1 visits every position; stride 2 skips every other one, roughly **halving** the output in each direction. That's a cheap way to shrink feature maps as you go deeper.
+
+<StridePaddingViz />
+
+## The output-size formula
+
+Along one axis of length $n$, with kernel size $k$, stride $s$ and padding $p$:
+
+$$
+n_{\text{out}} = \left\lfloor \frac{n + 2p - k}{s} \right\rfloor + 1
+$$
+
+The padded length is $n + 2p$. The kernel's first position is 0 and its last must leave room for all $k$ cells, which gives $\lfloor (n + 2p - k)/s \rfloor$ jumps after the first. When the division isn't exact, the leftover rows and columns at the end are simply never covered.
+
+Getting this right matters: the dense layer after the convolutions needs to know exactly how many numbers come out of them.
+
+<NumericCheck
+  id="sp-same"
+  question="A 32×32 input, a 5×5 kernel, stride 1 and padding 2. What is the output size along each axis?"
+  answer={32}
+  explain="$\lfloor (32 + 4 - 5)/1 \rfloor + 1 = 32$. Padding $(k-1)/2 = 2$ keeps the size."
+/>
+
+<NumericCheck
+  id="sp-stride2"
+  question="A 28×28 input, a 3×3 kernel, stride 2 and padding 1. What is the output size along each axis?"
+  answer={14}
+  explain="$\lfloor (28 + 2 - 3)/2 \rfloor + 1 = \lfloor 13.5 \rfloor + 1 = 14$."
+/>
+
+<KeyIdea>
+
+Padding adds zeros around the input (and $p = (k-1)/2$ keeps its size); stride sets how far the kernel jumps (stride 2 roughly halves it). The output size is $\lfloor (n + 2p - k)/s \rfloor + 1$.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="cnn-output-size">
+
+Return $\lfloor (n + 2p - k)/s \rfloor + 1$. Reject stride 0 and kernels that don't fit even with padding.
+
+</Exercise>
+
+<Exercise id="cnn-pad2d">
+
+Return the image with a border of `p` zeros on every side.
+
+</Exercise>
+
+<Exercise id="cnn-conv2d-strided">
+
+Return the convolution with the given stride and padding: pad first, then place the kernel's top-left corner at $(i \cdot s,\ j \cdot s)$ for output $(i, j)$.
+
+</Exercise>

@@ -1,0 +1,251 @@
+{
+  "title": "Convolution backward: input gradient",
+  "function": "conv2d_backward_input",
+  "params": [
+    {
+      "name": "grad_out",
+      "type": "mat"
+    },
+    {
+      "name": "kernel",
+      "type": "mat"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Input pixel (a, b) was used by every output (i, j) whose patch covers it, multiplied by kernel[a−i][b−j].",
+    "Rotating the kernel 180° (reversing both its rows and columns) turns that sum into an ordinary conv2d over a zero-padded grad_out.",
+    "k = len(kernel); flipped = reversed rows, each reversed; return conv2d(pad2d(grad_out, k − 1), flipped)"
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            -1
+          ]
+        ]
+      ],
+      "description": "one output's gradient spreads back over its 2×2 patch",
+      "expected": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          -1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "description": "a 2×2 gradient with a 2×2 kernel gives a 3×3 input gradient",
+      "expected": [
+        [
+          1.0,
+          2.0,
+          0.0
+        ],
+        [
+          3.0,
+          4.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      ],
+      "description": "overlapping contributions add up",
+      "hidden": true,
+      "expected": [
+        [
+          1.0,
+          2.0,
+          3.0,
+          2.0,
+          1.0
+        ],
+        [
+          2.0,
+          4.0,
+          6.0,
+          4.0,
+          2.0
+        ],
+        [
+          3.0,
+          6.0,
+          9.0,
+          6.0,
+          3.0
+        ],
+        [
+          2.0,
+          4.0,
+          6.0,
+          4.0,
+          2.0
+        ],
+        [
+          1.0,
+          2.0,
+          3.0,
+          2.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            -1
+          ],
+          [
+            2,
+            0.5
+          ]
+        ],
+        [
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            1,
+            0,
+            -1
+          ],
+          [
+            1,
+            0,
+            -1
+          ]
+        ]
+      ],
+      "description": "the edge kernel",
+      "hidden": true,
+      "expected": [
+        [
+          1.0,
+          -1.0,
+          -1.0,
+          1.0
+        ],
+        [
+          3.0,
+          -0.5,
+          -3.0,
+          0.5
+        ],
+        [
+          3.0,
+          -0.5,
+          -3.0,
+          0.5
+        ],
+        [
+          2.0,
+          0.5,
+          -2.0,
+          -0.5
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          [
+            1,
+            2,
+            3
+          ]
+        ]
+      ],
+      "description": "the kernel must be square",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

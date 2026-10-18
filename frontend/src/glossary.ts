@@ -1,6 +1,12 @@
 // Definitions shown when hovering a <Term> in a lesson, and on the glossary page.
 
 export const GLOSSARY: Record<string, string> = {
+  "feature map": "The output of one convolution filter: a grid showing how strongly the filter's pattern appears at each position of its input.",
+  kernel: "The small grid of weights a convolution slides across its input. Also called a filter.",
+  padding: "Extra rows and columns (usually zeros) added around an input so a convolution can be applied at the edges and keep the output larger.",
+  pooling: "Shrinking a feature map by keeping one value (the maximum or the average) per small window.",
+  channel: "One of several stacked 2-D grids in a tensor, like the red, green and blue planes of a colour image, or one feature map per filter.",
+  im2col: "A trick that copies every patch of an image into a row of a matrix, so a whole convolution becomes one matrix multiplication.",
   "dense layer":
     "A layer in which every neuron is connected to every input: z = x·Wᵀ + b. Also called a fully connected or linear layer.",
   logits: "The raw, unnormalized scores a classifier outputs, one per class, before softmax turns them into probabilities.",
@@ -111,7 +117,7 @@ export const GLOSSARY: Record<string, string> = {
   sigmoid:
     "The S-shaped function σ(x) = 1 / (1 + e⁻ˣ). It squashes any number into the range (0, 1), and its derivative is σ(x)(1 − σ(x)).",
   stride:
-    "How many elements to skip in flat memory to move one step along an axis of a tensor. For a row-major 2×3 matrix the strides are [3, 1].",
+    "Two related meanings. In memory: how many elements to skip in flat storage to move one step along a tensor axis (a row-major 2×3 matrix has strides [3, 1]). In a convolution or pooling layer: how many cells the window moves between positions (stride 2 roughly halves the output size).",
   tensor:
     "A multi-dimensional array of numbers. A scalar is a 0-D tensor, a vector is 1-D, a matrix is 2-D, and a stack of colour images is 4-D.",
   transpose: "Flipping a matrix over its diagonal so rows become columns: (Aᵀ)ᵢⱼ = Aⱼᵢ.",

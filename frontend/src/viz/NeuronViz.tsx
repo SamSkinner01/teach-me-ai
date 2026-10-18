@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Tex } from "../components/RichText";
-import { cssVar, useTheme } from "../state/theme";
+import { cssRgb, useTheme } from "../state/theme";
 import { Figure, Segmented, Slider, fmt, linear } from "./common";
 
 // ---------------------------------------------------------------------------
@@ -94,12 +94,6 @@ const DATASETS: Record<string, { label: string; points: [number, number, number]
   },
 };
 
-function hexRgb(c: string): [number, number, number] {
-  const m = c.match(/^#([0-9a-f]{6})$/i);
-  if (!m) return [128, 128, 128];
-  const n = parseInt(m[1], 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
 
 export function NeuronViz() {
   const [data, setData] = useState("separable");
@@ -117,9 +111,9 @@ export function NeuronViz() {
     const ctx = canvas.current?.getContext("2d");
     if (!ctx) return;
     const RES = 100;
-    const c0 = hexRgb(cssVar("--viz-a"));
-    const c1 = hexRgb(cssVar("--viz-b"));
-    const bg = hexRgb(cssVar("--surface"));
+    const c0 = cssRgb("--viz-a");
+    const c1 = cssRgb("--viz-b");
+    const bg = cssRgb("--surface");
     const img = ctx.createImageData(RES, RES);
     for (let j = 0; j < RES; j++) {
       for (let i = 0; i < RES; i++) {

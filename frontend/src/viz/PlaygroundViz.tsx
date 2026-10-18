@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Icon } from "../components/Icon";
-import { cssVar, useTheme } from "../state/theme";
+import { cssRgb, useTheme } from "../state/theme";
 import { Figure, Segmented, Slider, fmt, linear } from "./common";
 import { Rng } from "./random";
 
@@ -134,12 +134,6 @@ class Mlp {
   }
 }
 
-function rgb(c: string): [number, number, number] {
-  const m = c.match(/^#([0-9a-f]{6})$/i);
-  if (!m) return [128, 128, 128];
-  const n = parseInt(m[1], 16);
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-}
 
 const R = 2.4;
 const RES = 64;
@@ -160,8 +154,8 @@ export function PlaygroundViz() {
   const draw = useCallback(() => {
     const ctx = canvas.current?.getContext("2d");
     if (!ctx) return;
-    const cols = [rgb(cssVar("--viz-a")), rgb(cssVar("--viz-b")), rgb(cssVar("--viz-c"))];
-    const bg = rgb(cssVar("--surface"));
+    const cols = [cssRgb("--viz-a"), cssRgb("--viz-b"), cssRgb("--viz-c")];
+    const bg = cssRgb("--surface");
     const m = model.current;
     const h = new Float64Array(m.hidden);
     const z = new Float64Array(m.hidden);

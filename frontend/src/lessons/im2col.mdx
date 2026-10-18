@@ -1,0 +1,62 @@
+## Loops are slow
+
+Your `conv2d` is four nested loops (six with channels). It's correct, but slow: every iteration does one multiply-add with lots of index arithmetic around it. Meanwhile, **matrix multiplication** is the most heavily optimized operation in computing. Libraries like BLAS and every GPU are built to do it fast, using cache blocking, vector instructions and thousands of parallel cores.
+
+So the trick real frameworks use is to **rewrite convolution as a matrix multiplication**.
+
+## Patches become rows
+
+<Term>im2col</Term> ("image to columns") copies every patch the kernel would visit into one row of a big matrix. With a $k\times k$ kernel, each row has $k^2$ numbers, and there's one row per output position:
+
+<Im2colViz />
+
+Now every output is a row of that matrix dotted with the flattened kernel, and all of them together are a single matrix-vector product:
+
+$$
+\text{out} = \texttt{reshape}\big(\texttt{im2col}(X)\;\texttt{flatten}(K)\big)
+$$
+
+With many filters, stack the flattened filters as the columns of a matrix, and the whole layer becomes **one matrix-matrix product**. With channels, each row holds the patch from every input channel ($C \cdot k \cdot k$ numbers).
+
+## The price
+
+im2col copies each pixel up to $k^2$ times (once for every patch that contains it), so it uses much more memory than the image itself. A 3×3 convolution's patch matrix is about 9 times larger than its input. That's usually a good trade, because memory is cheaper than time, and it's the approach behind classic deep-learning libraries. (Newer ones use cleverer variants like Winograd transforms or fused GPU kernels, but the idea is the same.)
+
+<NumericCheck
+  id="im2col-rows"
+  question="im2col with a 3×3 kernel on a 28×28 image (stride 1, no padding). How many rows does the patch matrix have?"
+  answer={676}
+  explain="One row per output position: $26 \times 26 = 676$ rows, each with 9 numbers. That's 6,084 numbers for a 784-pixel image."
+/>
+
+<KeyIdea>
+
+im2col unrolls every patch into a row, so a convolution becomes a matrix product with the flattened kernels, the operation hardware is best at. The cost is memory: each pixel is copied up to $k^2$ times.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="cnn-im2col">
+
+Return the patch matrix: one row per $k\times k$ patch, in output order, each patch flattened row-major.
+
+</Exercise>
+
+<Exercise id="cnn-conv-im2col">
+
+Compute the convolution as `reshape(mat_vec(im2col(image, k), flatten(kernel)), …)`. It must match your `conv2d` exactly.
+
+<Lang only="python">
+
+In pure Python both versions are loops underneath, so don't expect a speed-up here. The payoff comes when the matrix product runs on optimized hardware, or, in the capstone, in a tight loop over contiguous memory.
+
+</Lang>
+
+</Exercise>
+
+## Module 6 complete
+
+You can now build every piece of a convolutional network: convolutions with stride and padding, multi-channel layers, pooling, and the backward pass for all of them, plus the matrix trick that makes them fast.
+
+**Next, the capstone:** load the real MNIST dataset, assemble these pieces into a CNN, train it on 60,000 images, and test it on your own handwriting.

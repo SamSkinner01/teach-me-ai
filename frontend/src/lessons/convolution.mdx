@@ -1,0 +1,65 @@
+## Dense layers waste what images know
+
+Your MLP treats a 28×28 image as 784 unrelated numbers. That throws away two things every image has:
+
+- **Locality.** Pixels near each other belong together: a stroke is a few neighbouring pixels. A dense layer connects every pixel to every neuron with equal ease, so it has to discover from data that neighbours matter.
+- **Translation.** A "7" shifted two pixels to the right is still a 7. To a dense layer it's a completely different input, because different weights see the ink.
+
+It's also expensive: one dense layer from 784 pixels to 128 neurons already has 100,000 weights.
+
+## Slide one small filter everywhere
+
+A **convolution** fixes all three problems. Instead of one weight per pixel, use a tiny grid of weights, a <Term>kernel</Term> (or filter), typically 3×3, and **slide it across the whole image**. At every position, multiply the kernel's weights with the pixels underneath and add them up:
+
+$$
+\text{out}_{ij} = \sum_{u}\sum_{v} \text{image}_{i+u,\,j+v}\; K_{uv}
+$$
+
+The result is a new image, a <Term t="feature map">feature map</Term>, that's bright wherever the kernel's pattern appears:
+
+<ConvolutionViz />
+
+Notice what the vertical-edge kernel $\begin{bmatrix} 1 & 0 & -1 \end{bmatrix}$ (stacked three times) does: it's positive where the image is brighter on the left than the right, negative where it's the other way round, and zero on flat regions. The same 9 weights detect that edge **anywhere** in the image. That's called weight sharing, and it's the whole idea.
+
+<Callout type="note" title="Convolution or cross-correlation?">
+
+Strictly speaking, the formula above is *cross-correlation*. Mathematical convolution flips the kernel first. Deep learning calls it convolution anyway, and since the kernel's weights are learned, the flip makes no difference. (It will reappear in the backward pass.)
+
+</Callout>
+
+<NumericCheck
+  id="conv-hand"
+  question="Convolve the 2×2 image $\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}$ with the 2×2 kernel $\begin{bmatrix} 1 & 0 \\ 0 & -1 \end{bmatrix}$. The output is 1×1. What is it?"
+  answer={-3}
+  explain="$1\cdot1 + 2\cdot0 + 3\cdot0 + 4\cdot(-1) = -3$."
+/>
+
+## Output size
+
+A $k \times k$ kernel fits in $n - k + 1$ positions along an axis of length $n$, so an $H \times W$ image gives an $(H - k + 1) \times (W - k + 1)$ feature map. A 3×3 kernel on a 28×28 digit gives a 26×26 map.
+
+## Learned, not designed
+
+Edge detectors like the ones above were hand-designed in classic computer vision. In a CNN the kernel weights are **parameters**, learned by gradient descent like any other weights. The network discovers which patterns are useful: early layers usually learn edge and stroke detectors much like these, and deeper layers combine them into curves, loops and whole digit parts.
+
+<Quiz
+  id="conv-params"
+  question="How many weights does one 3×3 convolution filter have (ignoring the bias), whether the image is 28×28 or 1000×1000?"
+  options={["9", "784", "One per pixel", "9 times the number of pixels"]}
+  answer={0}
+  explain="The same 9 weights are reused at every position. That's why convolutions scale to large images, and why they recognize a pattern wherever it appears."
+/>
+
+<KeyIdea>
+
+A convolution slides a small kernel across the image, taking a weighted sum of the patch under it at every position. The same few weights are shared everywhere, so a pattern is detected wherever it appears. An $n \times n$ input and $k \times k$ kernel give an $(n - k + 1) \times (n - k + 1)$ feature map.
+
+</KeyIdea>
+
+## Exercise
+
+<Exercise id="cnn-conv2d">
+
+Return the "valid" 2-D convolution (cross-correlation) of `image` with `kernel`: stride 1, no padding. Reject a kernel that doesn't fit inside the image.
+
+</Exercise>

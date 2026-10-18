@@ -1,0 +1,240 @@
+{
+  "title": "Convolution backward: kernel gradient",
+  "function": "conv2d_backward_kernel",
+  "params": [
+    {
+      "name": "image",
+      "type": "mat"
+    },
+    {
+      "name": "grad_out",
+      "type": "mat"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Kernel weight (u, v) multiplies image[i+u][j+v] when computing out[i][j], for every (i, j).",
+    "So its gradient is Σᵢⱼ grad_out[i][j]·image[i+u][j+v]: the same sum as a convolution, with grad_out as the kernel.",
+    "return conv2d(image, grad_out)"
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3,
+            0
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            3,
+            0,
+            1,
+            2
+          ],
+          [
+            2,
+            3,
+            0,
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ],
+          [
+            0,
+            0,
+            0
+          ]
+        ]
+      ],
+      "description": "a gradient on one output picks out one patch",
+      "expected": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3,
+            0
+          ],
+          [
+            0,
+            1,
+            2,
+            3
+          ],
+          [
+            3,
+            0,
+            1,
+            2
+          ],
+          [
+            2,
+            3,
+            0,
+            1
+          ]
+        ],
+        [
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ],
+          [
+            1,
+            1,
+            1
+          ]
+        ]
+      ],
+      "description": "all-ones gradient: sums of overlapping patches",
+      "expected": [
+        [
+          13.0,
+          14.0
+        ],
+        [
+          12.0,
+          13.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          [
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          [
+            10,
+            11,
+            12,
+            13,
+            14
+          ],
+          [
+            15,
+            16,
+            17,
+            18,
+            19
+          ],
+          [
+            20,
+            21,
+            22,
+            23,
+            24
+          ]
+        ],
+        [
+          [
+            1,
+            -1,
+            0
+          ],
+          [
+            0,
+            2,
+            0
+          ],
+          [
+            0.5,
+            0,
+            -1
+          ]
+        ]
+      ],
+      "description": "a general gradient",
+      "hidden": true,
+      "expected": [
+        [
+          4.0,
+          5.5,
+          7.0
+        ],
+        [
+          11.5,
+          13.0,
+          14.5
+        ],
+        [
+          19.0,
+          20.5,
+          22.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            1,
+            2,
+            3
+          ]
+        ]
+      ],
+      "description": "the gradient can't be wider than the image",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}
