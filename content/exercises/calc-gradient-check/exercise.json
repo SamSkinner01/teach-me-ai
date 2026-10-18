@@ -1,0 +1,123 @@
+{
+  "title": "Gradient check",
+  "function": "gradient_check",
+  "params": [
+    {
+      "name": "f",
+      "type": "fnv"
+    },
+    {
+      "name": "x",
+      "type": "vec"
+    },
+    {
+      "name": "analytic",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "Compute the numerical gradient of f at x, then compare it with the analytic one.",
+    "Use h = 1e-5. Your `numerical_gradient` and `relative_error` functions do all the work.",
+    "return relative_error(analytic, numerical_gradient(f, x, 1e-5))"
+  ],
+  "tolerance": {
+    "abs": 1e-06,
+    "rel": 0.001
+  },
+  "tests": [
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          0,
+          0
+        ],
+        [
+          -2,
+          8
+        ]
+      ],
+      "description": "a correct gradient gives a tiny error",
+      "expected": 3.2756020118433323e-12
+    },
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          0,
+          0
+        ],
+        [
+          2,
+          8
+        ]
+      ],
+      "description": "a sign mistake in one component is caught",
+      "expected": 0.24253562503633297
+    },
+    {
+      "args": [
+        {
+          "fn": "rosenbrock"
+        },
+        [
+          -1,
+          2
+        ],
+        [
+          396,
+          200
+        ]
+      ],
+      "description": "a correct Rosenbrock gradient",
+      "hidden": true,
+      "expected": 4.496385923647942e-11
+    },
+    {
+      "args": [
+        {
+          "fn": "mixed"
+        },
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          1,
+          -0.9899924966004454
+        ]
+      ],
+      "description": "a correct gradient involving sin",
+      "hidden": true,
+      "expected": 3.033926903396389e-12
+    },
+    {
+      "args": [
+        {
+          "fn": "mixed"
+        },
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          1,
+          0
+        ]
+      ],
+      "description": "forgetting the derivative of sin is caught",
+      "hidden": true,
+      "expected": 0.21146956581180296
+    }
+  ]
+}

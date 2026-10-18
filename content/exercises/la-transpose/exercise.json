@@ -1,0 +1,123 @@
+{
+  "title": "Transpose",
+  "function": "transpose",
+  "params": [
+    {
+      "name": "m",
+      "type": "mat"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Rows become columns: result[j][i] = m[i][j].",
+    "If m is r×c, the result is c×r. Build c empty rows first, or use nested loops over j then i.",
+    "Handle the empty matrix: with no rows there are no columns, so return an empty matrix."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4,
+            5,
+            6
+          ]
+        ]
+      ],
+      "description": "a 2×3 matrix becomes 3×2",
+      "expected": [
+        [
+          1.0,
+          4.0
+        ],
+        [
+          2.0,
+          5.0
+        ],
+        [
+          3.0,
+          6.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1
+          ]
+        ]
+      ],
+      "description": "a 1×1 matrix is its own transpose",
+      "expected": [
+        [
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "description": "a square matrix",
+      "hidden": true,
+      "expected": [
+        [
+          1.0,
+          3.0
+        ],
+        [
+          2.0,
+          4.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            7
+          ],
+          [
+            8
+          ],
+          [
+            9
+          ]
+        ]
+      ],
+      "description": "a column becomes a row",
+      "hidden": true,
+      "expected": [
+        [
+          7.0,
+          8.0,
+          9.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "the empty matrix",
+      "hidden": true,
+      "expected": []
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "title": "Central difference",
+  "function": "central_difference",
+  "params": [
+    {
+      "name": "f",
+      "type": "fn1"
+    },
+    {
+      "name": "x",
+      "type": "float"
+    },
+    {
+      "name": "h",
+      "type": "float"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "Instead of stepping only forward, step half each way: look at x + h and x − h.",
+    "The run between those two points is 2h.",
+    "(f(x + h) − f(x − h)) / (2h)"
+  ],
+  "tests": [
+    {
+      "args": [
+        {
+          "fn": "square"
+        },
+        3,
+        0.5
+      ],
+      "description": "for x², the central difference is exact even with a big step",
+      "expected": 6.0
+    },
+    {
+      "args": [
+        {
+          "fn": "sin"
+        },
+        0,
+        1e-05
+      ],
+      "description": "the slope of sin at 0 is 1",
+      "expected": 0.9999999999833332
+    },
+    {
+      "args": [
+        {
+          "fn": "exp"
+        },
+        1,
+        1e-05
+      ],
+      "description": "the slope of eˣ at 1 is e",
+      "hidden": true,
+      "expected": 2.718281828517632
+    },
+    {
+      "args": [
+        {
+          "fn": "cube"
+        },
+        2,
+        0.1
+      ],
+      "description": "x³ with a moderate step",
+      "hidden": true,
+      "expected": 12.010000000000009
+    },
+    {
+      "args": [
+        {
+          "fn": "log"
+        },
+        2,
+        1e-05
+      ],
+      "description": "the slope of ln(x) at 2 is 0.5",
+      "hidden": true,
+      "expected": 0.5000000000088267
+    },
+    {
+      "args": [
+        {
+          "fn": "poly"
+        },
+        -1,
+        0.0001
+      ],
+      "description": "a polynomial at a negative x",
+      "hidden": true,
+      "expected": -8.00000000000356
+    }
+  ]
+}

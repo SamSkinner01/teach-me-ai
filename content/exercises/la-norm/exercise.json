@@ -1,0 +1,75 @@
+{
+  "title": "Vector length (norm)",
+  "function": "norm",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "The length is the square root of the sum of squared components.",
+    "The sum of squared components is exactly v · v, and you already wrote `dot`.",
+    "Take the square root of dot(v, v)."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          3,
+          4
+        ]
+      ],
+      "description": "the classic 3-4-5 triangle",
+      "expected": 5.0
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          2
+        ]
+      ],
+      "description": "works in 3D",
+      "expected": 3.0
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "description": "the zero vector has length 0",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          -5
+        ]
+      ],
+      "description": "length is never negative",
+      "hidden": true,
+      "expected": 5.0
+    },
+    {
+      "args": [
+        [
+          1,
+          1,
+          1,
+          1
+        ]
+      ],
+      "description": "works in 4D",
+      "hidden": true,
+      "expected": 2.0
+    }
+  ]
+}

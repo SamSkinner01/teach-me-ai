@@ -1,0 +1,77 @@
+{
+  "title": "Scale a vector",
+  "function": "vec_scale",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    },
+    {
+      "name": "s",
+      "type": "float"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Multiply every component by the same number s.",
+    "Return a new vector; don't modify the input.",
+    "result[i] = s * v[i] for every i."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        2
+      ],
+      "description": "doubles every component",
+      "expected": [
+        2.0,
+        4.0,
+        6.0
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          -1
+        ],
+        -0.5
+      ],
+      "description": "a negative scalar flips direction",
+      "expected": [
+        -0.5,
+        0.5
+      ]
+    },
+    {
+      "args": [
+        [
+          4,
+          5
+        ],
+        0
+      ],
+      "description": "scaling by 0 gives the zero vector",
+      "hidden": true,
+      "expected": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "args": [
+        [],
+        3
+      ],
+      "description": "an empty vector stays empty",
+      "hidden": true,
+      "expected": []
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "title": "Add two vectors",
+  "function": "vec_add",
+  "params": [
+    {
+      "name": "a",
+      "type": "vec"
+    },
+    {
+      "name": "b",
+      "type": "vec"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Vector addition is component-wise: result[i] = a[i] + b[i].",
+    "Check the lengths first. If they differ, the operation is undefined, so raise an error before doing anything else.",
+    "Build a new vector by looping over the indices 0 … n−1 and pushing a[i] + b[i]."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ]
+      ],
+      "description": "adds matching components",
+      "expected": [
+        4.0,
+        6.0
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          -2,
+          3.5
+        ],
+        [
+          0.5,
+          2,
+          -1
+        ]
+      ],
+      "description": "works with negatives and decimals",
+      "expected": [
+        1.5,
+        0.0,
+        2.5
+      ]
+    },
+    {
+      "args": [
+        [],
+        []
+      ],
+      "description": "two empty vectors",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "vectors of different lengths must be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "title": "Identity matrix",
+  "function": "identity",
+  "params": [
+    {
+      "name": "n",
+      "type": "int"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "The identity has 1s on the diagonal (where row == column) and 0s everywhere else.",
+    "Start with an n×n matrix of zeros, then set m[i][i] = 1 for each i.",
+    "For n = 0 the result is an empty matrix (no rows)."
+  ],
+  "tests": [
+    {
+      "args": [
+        2
+      ],
+      "description": "the 2×2 identity",
+      "expected": [
+        [
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        3
+      ],
+      "description": "the 3×3 identity",
+      "expected": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        1
+      ],
+      "description": "1×1",
+      "hidden": true,
+      "expected": [
+        [
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        0
+      ],
+      "description": "n = 0 gives an empty matrix",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        5
+      ],
+      "description": "5×5",
+      "hidden": true,
+      "expected": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "title": "The sigmoid function",
+  "function": "sigmoid",
+  "params": [
+    {
+      "name": "x",
+      "type": "float"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "σ(x) = 1 / (1 + e^(−x)).",
+    "For very negative x, e^(−x) is enormous. Python's math.exp raises OverflowError past about 709; Rust and C++ return infinity, which happens to work.",
+    "A stable version: if x ≥ 0 use 1 / (1 + e^(−x)); otherwise use e^x / (1 + e^x). Both are the same function, but neither ever computes a huge exponential."
+  ],
+  "tests": [
+    {
+      "args": [
+        0
+      ],
+      "description": "σ(0) is exactly one half",
+      "expected": 0.5
+    },
+    {
+      "args": [
+        2
+      ],
+      "description": "positive inputs give values above ½",
+      "expected": 0.8807970779778823
+    },
+    {
+      "args": [
+        -2
+      ],
+      "description": "negative inputs give values below ½",
+      "hidden": true,
+      "expected": 0.11920292202211755
+    },
+    {
+      "args": [
+        1000
+      ],
+      "description": "very large inputs give 1",
+      "hidden": true,
+      "expected": 1.0
+    },
+    {
+      "args": [
+        -1000
+      ],
+      "description": "very negative inputs give 0 (watch out for overflow!)",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        0.5
+      ],
+      "description": "a small positive input",
+      "hidden": true,
+      "expected": 0.6224593312018546
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+## Chaining transformations
+
+Suppose you transform the plane with matrix $B$, and then transform the result with matrix $A$. A point $\mathbf{x}$ ends up at $A(B\mathbf{x})$. Is there a single matrix that does both steps at once?
+
+There is, and it's called the product $AB$. <Term t="matrix multiplication">Matrix multiplication</Term> is *defined* so that
+
+$$
+(AB)\,\mathbf{x} = A\,(B\,\mathbf{x})
+$$
+
+Note the order: $AB$ means "first $B$, then $A$", read right to left, like function composition $f(g(x))$.
+
+## The rule: row times column
+
+To compute $C = AB$, each entry $C_{ij}$ is the dot product of **row $i$ of $A$** with **column $j$ of $B$**:
+
+$$
+C_{ij} = \sum_{t} A_{it}\,B_{tj}
+$$
+
+$$
+\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
+\begin{bmatrix} 5 & 6 \\ 7 & 8 \end{bmatrix}
+=
+\begin{bmatrix} 1\cdot5 + 2\cdot7 & 1\cdot6 + 2\cdot8 \\ 3\cdot5 + 4\cdot7 & 3\cdot6 + 4\cdot8 \end{bmatrix}
+=
+\begin{bmatrix} 19 & 22 \\ 43 & 50 \end{bmatrix}
+$$
+
+Step through it cell by cell:
+
+<MatmulStepper />
+
+## Shapes
+
+For the row-times-column dot products to work, a row of $A$ must be as long as a column of $B$. In other words, **$A$'s column count must equal $B$'s row count**:
+
+$$
+\underbrace{A}_{n \times k}\ \underbrace{B}_{k \times m} = \underbrace{C}_{n \times m}
+$$
+
+The inner sizes must match and cancel; the outer sizes give the result's shape. Thinking in shapes like this is one of the most useful habits in deep learning. Most bugs are shape bugs.
+
+<Quiz
+  id="matmul-shapes"
+  question="Which of these products is **not** defined?"
+  options={[
+    "$(3 \\times 4)(4 \\times 2)$",
+    "$(1 \\times 5)(5 \\times 1)$",
+    "$(2 \\times 3)(2 \\times 3)$",
+    "$(4 \\times 1)(1 \\times 4)$"
+  ]}
+  answer={2}
+  explain="$(2\times3)(2\times3)$ has inner sizes 3 and 2, which don't match. The others give $3\times2$, $1\times1$ (a dot product!) and $4\times4$."
+/>
+
+<MatrixCheck
+  id="matmul-hand"
+  question="Compute $\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}\begin{bmatrix} 0 & 1 \\ 1 & 0 \end{bmatrix}$."
+  answer={[[2, 1], [4, 3]]}
+  explain="Multiplying by this matrix on the right swaps the columns of the left one. Can you see why?"
+/>
+
+## Order matters
+
+With numbers, $3 \times 5 = 5 \times 3$. With matrices, usually $AB \neq BA$. Rotating and then shearing gives a different result from shearing and then rotating. Try both in the transformer from the last lesson if you're not convinced. (Sometimes $BA$ isn't even defined when $AB$ is: try $(2\times3)(3\times4)$ the other way round.)
+
+## The identity matrix
+
+The <Term t="identity matrix">identity matrix</Term> $I$ is the "do nothing" transformation: 1s on the diagonal, 0s everywhere else.
+
+$$
+I_3 = \begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix} \qquad AI = IA = A
+$$
+
+Its columns are the basis vectors themselves, so nothing moves.
+
+## Why networks love matrix multiplication
+
+Last lesson, one layer applied to one input was a matrix-vector product. In practice networks process a **batch** of inputs at once, say 64 images. Stack them as the rows of a matrix $X$ ($64 \times 784$), and the whole layer becomes one matrix product:
+
+$$
+Z = X\,W^\mathsf{T} \qquad (64 \times 784)(784 \times 128) = (64 \times 128)
+$$
+
+That's $64 \times 784 \times 128 \approx 6.4$ million multiply-adds for one layer. Matrix multiplication is by far the most expensive thing neural networks do, which is why GPUs and libraries spend so much effort making it fast, and why your Rust or C++ version will train much faster than pure Python.
+
+<NumericCheck
+  id="matmul-cost"
+  question="Multiplying an $n \times k$ matrix by a $k \times m$ matrix takes $n \cdot k \cdot m$ multiplications. How many for a $(2 \times 3)(3 \times 4)$ product?"
+  answer={24}
+  explain="$2 \cdot 3 \cdot 4 = 24$: eight output cells, each a dot product of length 3."
+/>
+
+<KeyIdea>
+
+$(AB)_{ij}$ = row $i$ of $A$ · column $j$ of $B$. Shapes: $(n\times k)(k\times m) \to n \times m$. $AB$ means "apply $B$, then $A$", and usually $AB \ne BA$.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="la-matmul">
+
+Return $AB$. Check the inner dimensions first and signal an error if they don't match.
+
+You can write it as three nested loops (over $i$, $j$ and the summation index $t$), or reuse your library: the columns of $B$ are the rows of $B^\mathsf{T}$, so `transpose` plus `dot` does the job too. The triple loop is faster, because it doesn't build a copy of $B$.
+
+</Exercise>
+
+<Exercise id="la-identity">
+
+Return the $n \times n$ identity matrix. For $n = 0$, return an empty matrix.
+
+</Exercise>

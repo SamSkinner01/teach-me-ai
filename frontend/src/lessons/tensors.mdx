@@ -1,0 +1,151 @@
+## More than two dimensions
+
+Vectors are 1-dimensional lists and matrices are 2-dimensional grids. Keep going and you get **<Term t="tensor">tensors</Term>**: arrays with any number of axes.
+
+| Tensor | Axes | Example | Shape |
+| --- | --- | --- | --- |
+| scalar | 0 | a loss value | `[]` |
+| vector | 1 | a neuron's weights | `[784]` |
+| matrix | 2 | one grayscale image | `[28, 28]` |
+| 3-D tensor | 3 | one colour image (red, green, blue) | `[3, 32, 32]` |
+| 4-D tensor | 4 | a batch of 64 MNIST images | `[64, 1, 28, 28]` |
+
+A tensor's <Term>shape</Term> lists its size along each axis. The total number of elements is the product of the shape: a `[2, 3, 4]` tensor has $2 \cdot 3 \cdot 4 = 24$ numbers.
+
+Your CNN will be full of 4-D tensors. Its convolution filters alone have shape `[out channels, in channels, height, width]`.
+
+<NumericCheck
+  id="tensor-count"
+  question="How many numbers are in a batch of shape `[64, 1, 28, 28]`?"
+  answer={50176}
+  explain="$64 \cdot 1 \cdot 28 \cdot 28 = 50{,}176$."
+/>
+
+## Memory is flat
+
+Here's the catch: computer memory isn't a grid. It's one long line of numbered slots. Every tensor, however many axes it has, is stored as **one flat block of numbers**, and its shape is just a rule for finding things in that block.
+
+The standard rule is <Term>row-major</Term> order: lay out the last axis first. For a matrix, that means row 0 left to right, then row 1, and so on. For a `[2, 3, 4]` tensor, all of `[0, 0, :]`, then `[0, 1, :]`, … then `[1, 2, :]`. Equivalently, **the last index changes fastest**, like the digits of an odometer.
+
+## Strides
+
+How do you find element `[i, j, k]` in the flat block? Ask how far you jump in memory when each index goes up by one. That jump is the axis's <Term>stride</Term>.
+
+- Moving one step along the **last** axis moves to the next slot: stride 1.
+- Moving one step along the **second-to-last** axis skips a whole row of the last axis: stride `shape[-1]`.
+- In general, each stride is the next one multiplied by the next axis's size:
+
+$$
+\text{stride}_{\text{last}} = 1, \qquad \text{stride}_i = \text{stride}_{i+1} \times \text{shape}_{i+1}
+$$
+
+A `[2, 3, 4]` tensor has strides `[12, 4, 1]`. The flat position of any element is then a dot product of its index with the strides:
+
+$$
+\text{flat}(i, j, k) = 12i + 4j + 1k
+$$
+
+Hover over any element to see that formula at work:
+
+<StrideExplorer />
+
+<NumericCheck
+  id="stride-first"
+  question="A tensor has shape `[3, 4, 5]`. What is the stride of its first axis?"
+  answer={20}
+  explain="Strides are `[20, 5, 1]`: the last is 1, the middle is $1 \cdot 5$, the first is $5 \cdot 4 = 20$."
+/>
+
+<NumericCheck
+  id="ravel-hand"
+  question="In a `[3, 4]` matrix stored row-major, at what flat position is element `[2, 1]`?"
+  answer={9}
+  explain="Strides are `[4, 1]`, so $2\cdot4 + 1\cdot1 = 9$."
+/>
+
+## Reshaping is free
+
+Since the shape is only a way of *reading* the flat block, you can change it without moving any data, as long as the total size stays the same. A `[2, 3, 4]` tensor can be read as `[6, 4]`, `[4, 6]`, `[24]` or `[2, 12]`, and the 24 numbers stay exactly where they are.
+
+**Flattening** is the special case of reshaping to one long axis. Your CNN does exactly this: its last convolution produces a `[16, 5, 5]` tensor, which is flattened to 400 numbers before the final layer computes its dot products.
+
+<Quiz
+  id="reshape-valid"
+  question="Which of these is **not** a valid reshape of a `[2, 3, 4]` tensor?"
+  options={["`[6, 4]`", "`[24]`", "`[5, 5]`", "`[2, 2, 6]`"]}
+  answer={2}
+  explain="`[5, 5]` holds 25 elements, but the tensor has 24. Every valid reshape must have the same product."
+/>
+
+<Lang only="python">
+
+<Callout type="lang">
+
+Python lists of lists are convenient, but every inner list is a separate object somewhere in memory. Later in the course you'll store tensors the efficient way: one flat `list[float]` (or an `array('d')`) plus a shape and strides. That's exactly how NumPy and PyTorch do it.
+
+</Callout>
+
+</Lang>
+
+<Lang only="rust">
+
+<Callout type="lang">
+
+A `Vec<Vec<f64>>` is a vector of separately allocated rows scattered around the heap. That's fine for small matrices, but slow for big ones. Later in the course you'll define a `Tensor` struct holding one flat `Vec<f64>` plus a shape and strides. One allocation and contiguous memory make the CPU cache much happier.
+
+</Callout>
+
+</Lang>
+
+<Lang only="cpp">
+
+<Callout type="lang">
+
+A `std::vector<std::vector<double>>` is a vector of separately allocated rows scattered around the heap. That's fine for small matrices, but slow for big ones. Later in the course you'll define a `Tensor` class holding one flat `std::vector<double>` plus a shape and strides. One allocation and contiguous memory make the CPU cache much happier.
+
+</Callout>
+
+</Lang>
+
+<KeyIdea>
+
+A tensor is a flat block of numbers plus a shape. Row-major strides say how far to jump per axis: the last stride is 1, and each earlier stride is the next one times the next size. Flat position = index · strides. Reshaping changes the shape, not the data.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="la-strides">
+
+Return the row-major strides for `shape`. An empty shape (a scalar) has no strides, so return an empty list.
+
+<Lang only="rust">
+
+Walking backwards over indices: `for i in (0..shape.len()).rev()`.
+
+</Lang>
+<Lang only="cpp">
+
+Walking backwards with an unsigned index is a classic trap: `for (std::size_t i = n - 1; i >= 0; --i)` never stops, because a `size_t` is never negative. Use `for (std::size_t i = n; i-- > 0;)` instead.
+
+</Lang>
+
+</Exercise>
+
+<Exercise id="la-ravel-index">
+
+Return the flat position of `index` in a row-major tensor of shape `shape`. Reject an index with the wrong number of entries, and any entry that is out of range for its axis.
+
+</Exercise>
+
+<Exercise id="la-flatten">
+
+Return all the elements of the matrix `m` in row-major order.
+
+</Exercise>
+
+<Exercise id="la-reshape">
+
+Return the flat vector `v` as a `rows`×`cols` matrix, filled row by row. Element `(r, c)` is `v[r * cols + c]`. Reject sizes that don't match.
+
+</Exercise>

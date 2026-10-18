@@ -1,0 +1,127 @@
+{
+  "title": "Broadcast a bias over rows",
+  "function": "add_bias",
+  "params": [
+    {
+      "name": "m",
+      "type": "mat"
+    },
+    {
+      "name": "b",
+      "type": "vec"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Broadcasting: the vector b is 'stretched' down every row, so result[i][j] = m[i][j] + b[j].",
+    "Check that len(b) equals the number of columns.",
+    "Your `vec_add` already adds one row and b. Use it on every row."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4,
+            5,
+            6
+          ]
+        ],
+        [
+          10,
+          20,
+          30
+        ]
+      ],
+      "description": "the bias is added to every row",
+      "expected": [
+        [
+          11.0,
+          22.0,
+          33.0
+        ],
+        [
+          14.0,
+          25.0,
+          36.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            0,
+            0
+          ]
+        ],
+        [
+          1,
+          -1
+        ]
+      ],
+      "description": "a single row",
+      "expected": [
+        [
+          1.0,
+          -1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ],
+        [
+          0.5
+        ]
+      ],
+      "description": "a column of rows with a one-element bias",
+      "hidden": true,
+      "expected": [
+        [
+          1.5
+        ],
+        [
+          2.5
+        ],
+        [
+          3.5
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ]
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "the bias length must equal the number of columns",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

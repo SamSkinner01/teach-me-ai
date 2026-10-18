@@ -1,0 +1,127 @@
+## The question a network keeps asking
+
+Training a neural network comes down to one question, asked millions of times:
+
+> If I nudge this weight up a tiny bit, does the network's error go up or down, and by how much?
+
+The answer is a **<Term>derivative</Term>**. This module is about computing them: first numerically (this lesson), then exactly with a few rules, and finally for functions built out of other functions, which is what networks are.
+
+## Slopes
+
+For a straight line, the slope is rise over run: how much $y$ changes per unit change in $x$. A slope of 3 means "move right by 1, go up by 3". A curve doesn't have a single slope, but here's the key insight of calculus: **zoom in far enough on any smooth curve and it looks like a straight line**. The slope of that line is the derivative at that point.
+
+<DerivativeExplorer fn="cubic" />
+
+Try the zoom buttons: at 100×, the cubic is indistinguishable from its tangent line.
+
+## From secant to tangent
+
+To estimate the slope at $x$, take a second point a small step $h$ to the right and compute rise over run between them. The line through two points on a curve is a **secant**:
+
+$$
+\text{slope} \approx \frac{f(x + h) - f(x)}{h}
+$$
+
+As $h$ shrinks, the secant swings round into the **tangent** line, and its slope becomes the derivative:
+
+$$
+f'(x) = \lim_{h \to 0} \frac{f(x + h) - f(x)}{h}
+$$
+
+Drag the $h$ slider in the figure towards zero and watch the orange secant land on the green dashed tangent.
+
+For $f(x) = x^2$ you can take the limit by hand:
+
+$$
+\frac{(x+h)^2 - x^2}{h} = \frac{x^2 + 2xh + h^2 - x^2}{h} = 2x + h \;\xrightarrow{\;h \to 0\;}\; 2x
+$$
+
+So the derivative of $x^2$ is $2x$: at $x = 3$ the curve climbs with slope 6, and at $x = -2$ it falls with slope $-4$.
+
+<NumericCheck
+  id="fd-hand"
+  question="Estimate the slope of $f(x) = x^2$ at $x = 3$ using a forward difference with $h = 0.1$."
+  answer={6.1}
+  tolerance={1e-6}
+  explain="$\dfrac{3.1^2 - 3^2}{0.1} = \dfrac{9.61 - 9}{0.1} = 6.1$. That matches $2x + h$, with the extra $h = 0.1$ being the error."
+/>
+
+<Quiz
+  id="deriv-meaning"
+  question="The derivative of a network's error with respect to one weight is $-2.5$. What should you do to that weight to reduce the error?"
+  options={["Decrease it", "Increase it", "Nothing: the derivative is negative, so the error is already falling"]}
+  answer={1}
+  explain="A negative slope means the error goes **down** as the weight goes **up**. Moving against the sign of the derivative is the whole idea of gradient descent."
+/>
+
+## Doing it numerically
+
+The difference quotient with a small, fixed $h$ is a **finite difference**, and it works for *any* function you can evaluate. You don't need a formula. There are two common versions:
+
+$$
+\underbrace{\frac{f(x+h) - f(x)}{h}}_{\text{forward difference}}
+\qquad\qquad
+\underbrace{\frac{f(x+h) - f(x-h)}{2h}}_{\text{central difference}}
+$$
+
+The central difference looks symmetrically on both sides of $x$, and it's far more accurate: its error shrinks like $h^2$ instead of $h$. Switch the figure to "central" and compare the error readouts. For $x^2$ it's exact for *every* $h$!
+
+<Callout type="warning" title="Smaller isn't always better">
+
+Floating-point numbers have about 16 significant digits. With a tiny $h$ like $10^{-12}$, $f(x+h)$ and $f(x)$ agree in almost every digit, and subtracting them throws most of those digits away. Rounding error swamps the result. In practice $h \approx 10^{-5}$ is a good choice for central differences.
+
+</Callout>
+
+So why not compute every derivative this way? Because it's **slow** for networks. Each finite difference needs extra evaluations of the function, and you'd need one per weight. A network with a million weights would need a million forward passes for a single training step. Instead, networks use exact derivative rules (next lesson) chained together cleverly (the lesson after). Finite differences are still invaluable as a **check** that those exact derivatives are right.
+
+<KeyIdea>
+
+The derivative $f'(x)$ is the slope of the tangent line: the limit of rise over run as the run shrinks to zero. It says how fast $f$ changes when you nudge $x$. Finite differences estimate it numerically; the central version is much more accurate.
+
+</KeyIdea>
+
+## Exercises
+
+These two exercises take a **function as an argument**. The tests pass in functions like $x^2$, $\sin x$ and $e^x$.
+
+<Lang only="python">
+
+<Callout type="lang">
+
+Functions are ordinary values in Python, so you just call it: `f(x + h)`. The type hint `Callable[[float], float]` means "a function from a float to a float".
+
+</Callout>
+
+</Lang>
+
+<Lang only="rust">
+
+<Callout type="lang">
+
+`f: impl Fn(f64) -> f64` means "any function or closure that takes an `f64` and returns an `f64`". Call it like a normal function: `f(x + h)`. The tests pass closures like `|x: f64| x * x`.
+
+</Callout>
+
+</Lang>
+
+<Lang only="cpp">
+
+<Callout type="lang">
+
+`const std::function<double(double)>& f` holds any callable taking a `double` and returning a `double`, including lambdas like `[](double x) { return x * x; }`. Call it like a normal function: `f(x + h)`.
+
+</Callout>
+
+</Lang>
+
+<Exercise id="calc-forward-diff">
+
+Return the forward-difference estimate $\dfrac{f(x+h) - f(x)}{h}$.
+
+</Exercise>
+
+<Exercise id="calc-central-diff">
+
+Return the central-difference estimate $\dfrac{f(x+h) - f(x-h)}{2h}$.
+
+</Exercise>

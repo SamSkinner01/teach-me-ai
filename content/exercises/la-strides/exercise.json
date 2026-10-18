@@ -1,0 +1,99 @@
+{
+  "title": "Row-major strides",
+  "function": "strides",
+  "params": [
+    {
+      "name": "shape",
+      "type": "ivec"
+    }
+  ],
+  "returns": "ivec",
+  "library": true,
+  "hints": [
+    "The last axis always has stride 1: neighbours along it sit next to each other in memory.",
+    "Work backwards: stride[i] = stride[i + 1] × shape[i + 1].",
+    "Create a result the same length as shape, set the last entry to 1, then fill it in from right to left."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          2,
+          3
+        ]
+      ],
+      "description": "a 2×3 matrix: move 3 to go down a row, 1 to go right",
+      "expected": [
+        3,
+        1
+      ]
+    },
+    {
+      "args": [
+        [
+          2,
+          3,
+          4
+        ]
+      ],
+      "description": "a 2×3×4 tensor",
+      "expected": [
+        12,
+        4,
+        1
+      ]
+    },
+    {
+      "args": [
+        [
+          5
+        ]
+      ],
+      "description": "a 1-D vector has stride 1",
+      "hidden": true,
+      "expected": [
+        1
+      ]
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "a scalar has no axes, so no strides",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          3,
+          1,
+          2
+        ]
+      ],
+      "description": "an axis of size 1",
+      "hidden": true,
+      "expected": [
+        2,
+        2,
+        1
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          28,
+          28
+        ]
+      ],
+      "description": "one 28×28 MNIST image",
+      "hidden": true,
+      "expected": [
+        784,
+        28,
+        1
+      ]
+    }
+  ]
+}

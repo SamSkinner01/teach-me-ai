@@ -1,0 +1,87 @@
+{
+  "title": "Flatten a matrix",
+  "function": "flatten",
+  "params": [
+    {
+      "name": "m",
+      "type": "mat"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Row-major order means: all of row 0, then all of row 1, and so on.",
+    "Loop over the rows, and for each row loop over its elements, appending each to the output.",
+    "Python: `out.extend(row)`; Rust: `out.extend_from_slice(row)`; C++: `out.insert(out.end(), row.begin(), row.end())`."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ]
+      ],
+      "description": "rows are laid end to end",
+      "expected": [
+        1.0,
+        2.0,
+        3.0,
+        4.0
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2,
+            3
+          ]
+        ]
+      ],
+      "description": "a single row",
+      "expected": [
+        1.0,
+        2.0,
+        3.0
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1
+          ],
+          [
+            2
+          ],
+          [
+            3
+          ]
+        ]
+      ],
+      "description": "a single column",
+      "hidden": true,
+      "expected": [
+        1.0,
+        2.0,
+        3.0
+      ]
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "the empty matrix",
+      "hidden": true,
+      "expected": []
+    }
+  ]
+}

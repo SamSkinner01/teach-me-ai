@@ -1,0 +1,108 @@
+{
+  "title": "Dot product",
+  "function": "dot",
+  "params": [
+    {
+      "name": "a",
+      "type": "vec"
+    },
+    {
+      "name": "b",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "Multiply matching components, then add the products together.",
+    "Keep a running total: total += a[i] * b[i].",
+    "Don't forget the length check: raise an error when the lengths differ."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          4,
+          5,
+          6
+        ]
+      ],
+      "description": "1·4 + 2·5 + 3·6",
+      "expected": 32.0
+    },
+    {
+      "args": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "perpendicular vectors have dot product 0",
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          2,
+          3
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "description": "a vector dotted with itself is its squared length",
+      "hidden": true,
+      "expected": 13.0
+    },
+    {
+      "args": [
+        [],
+        []
+      ],
+      "description": "empty vectors",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          1,
+          -2,
+          0.5
+        ],
+        [
+          -3,
+          4,
+          8
+        ]
+      ],
+      "description": "mixed signs",
+      "hidden": true,
+      "expected": -7.0
+    },
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          1
+        ]
+      ],
+      "description": "different lengths must be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

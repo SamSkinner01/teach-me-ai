@@ -1,0 +1,116 @@
+{
+  "title": "Multi-index → flat index",
+  "function": "ravel_index",
+  "params": [
+    {
+      "name": "index",
+      "type": "ivec"
+    },
+    {
+      "name": "shape",
+      "type": "ivec"
+    }
+  ],
+  "returns": "int",
+  "library": true,
+  "hints": [
+    "The flat position is the sum of index[i] × stride[i] over every axis.",
+    "Your `strides` function gives you the strides; then it's a dot product of two integer lists.",
+    "Validate first: the index must have the same length as the shape, and every index[i] must be less than shape[i]."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "description": "row 1, column 2 of a 2×3 matrix",
+      "expected": 5
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          3,
+          4
+        ]
+      ],
+      "description": "the first element is always at 0",
+      "expected": 0
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          2,
+          3,
+          4
+        ]
+      ],
+      "description": "the last element of a 2×3×4 tensor",
+      "hidden": true,
+      "expected": 23
+    },
+    {
+      "args": [
+        [
+          0,
+          13,
+          27
+        ],
+        [
+          1,
+          28,
+          28
+        ]
+      ],
+      "description": "a pixel in an MNIST image",
+      "hidden": true,
+      "expected": 391
+    },
+    {
+      "args": [
+        [
+          0,
+          5
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "description": "an index past the end of an axis must be rejected",
+      "expect_error": true,
+      "hidden": true
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        [
+          2,
+          3
+        ]
+      ],
+      "description": "the index must have one entry per axis",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

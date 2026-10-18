@@ -1,0 +1,151 @@
+{
+  "title": "Reshape a vector into a matrix",
+  "function": "reshape",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    },
+    {
+      "name": "rows",
+      "type": "int"
+    },
+    {
+      "name": "cols",
+      "type": "int"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "Reshaping never moves data, it only reinterprets it. Element (r, c) is v[r * cols + c].",
+    "Check that rows × cols == len(v) first.",
+    "Build each row from the slice v[r*cols : (r+1)*cols]."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        2,
+        3
+      ],
+      "description": "six numbers into 2×3",
+      "expected": [
+        [
+          1.0,
+          2.0,
+          3.0
+        ],
+        [
+          4.0,
+          5.0,
+          6.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        3,
+        2
+      ],
+      "description": "the same six numbers into 3×2",
+      "expected": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          3.0,
+          4.0
+        ],
+        [
+          5.0,
+          6.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        4,
+        1
+      ],
+      "description": "a column vector",
+      "hidden": true,
+      "expected": [
+        [
+          1.0
+        ],
+        [
+          2.0
+        ],
+        [
+          3.0
+        ],
+        [
+          4.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        1,
+        6
+      ],
+      "description": "a row vector",
+      "hidden": true,
+      "expected": [
+        [
+          1.0,
+          2.0,
+          3.0,
+          4.0,
+          5.0,
+          6.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        2,
+        2
+      ],
+      "description": "rows × cols must equal the number of elements",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

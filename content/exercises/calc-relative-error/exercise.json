@@ -1,0 +1,112 @@
+{
+  "title": "Relative error",
+  "function": "relative_error",
+  "params": [
+    {
+      "name": "a",
+      "type": "vec"
+    },
+    {
+      "name": "b",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "relative error = ||a − b|| / (||a|| + ||b||). Dividing by the sizes makes it scale-free.",
+    "You have `vec_add`, `vec_scale` and `norm` in your library: a − b is vec_add(a, vec_scale(b, −1)).",
+    "If ||a|| + ||b|| is 0, both vectors are zero, so return 0 instead of dividing by zero."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "description": "identical vectors have zero error",
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "description": "completely different directions",
+      "expected": 0.7071067811865476
+    },
+    {
+      "args": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      "description": "two zero vectors: define the error as 0",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          3.0001
+        ]
+      ],
+      "description": "a tiny difference",
+      "hidden": true,
+      "expected": 1.3362918920665917e-05
+    },
+    {
+      "args": [
+        [
+          100,
+          200
+        ],
+        [
+          101,
+          198
+        ]
+      ],
+      "description": "large values, small relative difference",
+      "hidden": true,
+      "expected": 0.0050149641700479855
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "description": "different lengths must be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

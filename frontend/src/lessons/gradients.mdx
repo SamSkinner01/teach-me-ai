@@ -1,0 +1,99 @@
+## Many inputs, one output
+
+A network's loss doesn't depend on one weight. It depends on all of them at once, thousands or millions of numbers. So you need derivatives of functions with **many inputs**, like this one:
+
+$$
+f(x, y) = x^2 y + 3y
+$$
+
+## Partial derivatives
+
+The idea: change one input at a time. The <Term t="partial derivative">partial derivative</Term> $\partial f / \partial x$ is the ordinary derivative with respect to $x$ while you treat every other input **as a constant**:
+
+$$
+\frac{\partial f}{\partial x} = 2xy \qquad \text{(treat } y \text{ as a constant)}
+$$
+
+$$
+\frac{\partial f}{\partial y} = x^2 + 3 \qquad \text{(treat } x \text{ as a constant)}
+$$
+
+Geometrically, $\partial f / \partial x$ is the slope of the surface if you walk in the $x$ direction only, and $\partial f / \partial y$ is the slope walking in the $y$ direction only.
+
+<NumericCheck
+  id="partial-hand"
+  question="For $f(x, y) = x^2 y + 3y$, what is $\dfrac{\partial f}{\partial x}$ at the point $(2, 1)$?"
+  answer={4}
+  explain="$2xy = 2 \cdot 2 \cdot 1 = 4$."
+/>
+
+## The gradient
+
+Collect all the partial derivatives into a vector and you get the <Term>gradient</Term>, written $\nabla f$ ("nabla f" or "del f"):
+
+$$
+\nabla f(x, y) = \begin{bmatrix} \partial f / \partial x \\ \partial f / \partial y \end{bmatrix}
+$$
+
+The gradient has a beautiful geometric meaning: **it points in the direction of steepest ascent**, and its length says how steep that is. It's always perpendicular to the contour lines, the lines of equal height.
+
+<GradientField />
+
+Drag the point around each surface. The blue and purple arrows are the two partial derivatives, and the orange arrow is their sum, the gradient. Then try **Step downhill** a few times.
+
+That green dashed arrow, pointing **opposite** the gradient, is the direction of steepest *descent*. Repeatedly stepping that way is <Term>gradient descent</Term>, the algorithm that trains essentially every neural network:
+
+$$
+\mathbf{w} \leftarrow \mathbf{w} - \eta\,\nabla L(\mathbf{w})
+$$
+
+You'll build it properly in Module 4. While you're here, try the narrow valley with a big step size, and watch gradient descent zig-zag or even fly off. Choosing the step size well matters a lot.
+
+<Quiz
+  id="grad-direction"
+  question="You're at a point where $\nabla L = (3, -1)$. Which direction reduces $L$ fastest?"
+  options={["$(3, -1)$", "$(-3, 1)$", "$(1, 3)$", "$(0, 0)$"]}
+  answer={1}
+  explain="The gradient points uphill, so the steepest way down is $-\nabla L$. $(1, 3)$ is perpendicular to the gradient: walking that way keeps $L$ roughly constant, along a contour line."
+/>
+
+<MatrixCheck
+  id="grad-bowl"
+  question="For the bowl $f(x, y) = (x - 1)^2 + 2(y + 2)^2$, compute $\nabla f$ at $(0, 0)$ by hand. Enter $\partial f/\partial x$, then $\partial f/\partial y$."
+  answer={[[-2, 8]]}
+  explain="$\partial f/\partial x = 2(x - 1) = -2$ and $\partial f/\partial y = 4(y + 2) = 8$. Check it against the figure on the Bowl surface."
+/>
+
+## Computing gradients numerically
+
+Every partial derivative is an ordinary derivative along one axis, so a finite difference works for each one. To nudge only coordinate $i$, add $h$ times the **unit vector** $\mathbf{e}_i$ (all zeros except a 1 in position $i$):
+
+$$
+\frac{\partial f}{\partial x_i} \approx \frac{f(\mathbf{x} + h\,\mathbf{e}_i) - f(\mathbf{x} - h\,\mathbf{e}_i)}{2h}
+$$
+
+For $n$ inputs that's $2n$ evaluations of $f$: fine for checking a few weights, hopeless for training millions. Backpropagation gets the whole gradient for roughly the cost of *one* evaluation.
+
+<Callout type="note" title="Vector-valued functions">
+
+If a function has many inputs *and* many outputs, like a layer turning a vector into a vector, every output has its own gradient. Stacked as rows, they form a matrix called the **Jacobian**. For a linear layer $\mathbf{z} = W\mathbf{x}$, the Jacobian with respect to $\mathbf{x}$ is just $W$, which is why gradients flowing backwards through it get multiplied by $W^\mathsf{T}$. More on that in Module 5.
+
+</Callout>
+
+<KeyIdea>
+
+A partial derivative varies one input and holds the rest fixed. The gradient $\nabla f$ collects them into a vector that points straight uphill. Gradient descent steps the opposite way.
+
+</KeyIdea>
+
+## Exercise
+
+<Exercise id="calc-numerical-gradient">
+
+Return the numerical gradient of $f$ at $\mathbf{x}$, using a central difference with step $h$ along each axis. Don't modify the input vector: build perturbed copies.
+
+<Lang only="python">Copy a list with `list(x)` or `x.copy()`, then change one entry.</Lang>
+<Lang only="rust">Copy a slice into a new vector with `x.to_vec()`. Since `f` takes `&[f64]`, call it as `f(&plus)`.</Lang>
+<Lang only="cpp">Copying is just assignment: `std::vector<double> plus = x;`.</Lang>
+
+</Exercise>

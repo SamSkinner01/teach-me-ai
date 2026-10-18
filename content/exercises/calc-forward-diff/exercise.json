@@ -1,0 +1,97 @@
+{
+  "title": "Forward difference",
+  "function": "forward_difference",
+  "params": [
+    {
+      "name": "f",
+      "type": "fn1"
+    },
+    {
+      "name": "x",
+      "type": "float"
+    },
+    {
+      "name": "h",
+      "type": "float"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "The slope between two points is rise over run: (f(x + h) − f(x)) / h.",
+    "You call `f` like any other function: f(x + h).",
+    "That's the whole thing, one line."
+  ],
+  "tests": [
+    {
+      "args": [
+        {
+          "fn": "square"
+        },
+        3,
+        0.5
+      ],
+      "description": "a big step gives a rough estimate of the true slope 6",
+      "expected": 6.5
+    },
+    {
+      "args": [
+        {
+          "fn": "square"
+        },
+        3,
+        1e-05
+      ],
+      "description": "a small step gets very close to 6",
+      "expected": 6.000009999951316
+    },
+    {
+      "args": [
+        {
+          "fn": "sin"
+        },
+        0,
+        1e-06
+      ],
+      "description": "the slope of sin at 0 is 1",
+      "hidden": true,
+      "expected": 0.9999999999998334
+    },
+    {
+      "args": [
+        {
+          "fn": "exp"
+        },
+        1,
+        1e-05
+      ],
+      "description": "the slope of eˣ at 1 is e",
+      "hidden": true,
+      "expected": 2.7182954199567173
+    },
+    {
+      "args": [
+        {
+          "fn": "cube"
+        },
+        -2,
+        0.001
+      ],
+      "description": "negative x",
+      "hidden": true,
+      "expected": 11.99400099999881
+    },
+    {
+      "args": [
+        {
+          "fn": "poly"
+        },
+        1,
+        0.0001
+      ],
+      "description": "a polynomial",
+      "hidden": true,
+      "expected": 4.000300000002177
+    }
+  ]
+}

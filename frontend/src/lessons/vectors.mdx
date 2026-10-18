@@ -1,0 +1,125 @@
+## A list of numbers…
+
+A <Term>vector</Term> is an ordered list of numbers. That's the whole definition:
+
+$$
+\mathbf{v} = (3,\ 1) \qquad \mathbf{w} = (0.2,\ -1.5,\ 4,\ 7)
+$$
+
+The numbers are its **components**, written $v_1, v_2, \dots, v_n$, and how many there are is its **dimension**. $\mathbf{v}$ above is 2-dimensional; $\mathbf{w}$ is 4-dimensional. A single number on its own is called a <Term>scalar</Term>.
+
+In machine learning, almost everything is a vector:
+
+- A house might be `(square metres, bedrooms, age)`: a 3-dimensional vector.
+- An MNIST image is a vector of **784** pixel brightnesses.
+- A neuron's <Term t="weight">weights</Term> are a vector, one number per input.
+- The network's output is a vector of 10 probabilities, one per digit.
+
+## …or an arrow
+
+In two or three dimensions you can also *draw* a vector: an arrow from the origin to the point $(v_1, v_2)$. The arrow picture gives you intuition that carries over to 784 dimensions, even though nobody can picture those.
+
+<VectorPlayground mode="add" />
+
+## Adding vectors
+
+Vectors of the same dimension add **component by component**:
+
+$$
+\mathbf{a} + \mathbf{b} = (a_1 + b_1,\ a_2 + b_2,\ \dots,\ a_n + b_n)
+$$
+
+$$
+(3,\ 1) + (1,\ 2) = (4,\ 3)
+$$
+
+Geometrically, that's **tip to tail**: walk along $\mathbf{a}$, then from where you end up, walk along $\mathbf{b}$. Drag the arrows above and watch the dashed parallelogram: you reach the same corner whichever order you walk, which is why $\mathbf{a} + \mathbf{b} = \mathbf{b} + \mathbf{a}$.
+
+What's $(3, 1) + (1, 2, 5)$? It isn't anything: the operation only makes sense when the dimensions match. Your code will have to **reject** mismatched lengths instead of quietly returning something wrong. Shape errors like this are the most common bug in neural-network code, and catching them early saves hours.
+
+<MatrixCheck
+  id="vec-add-hand"
+  question="Compute $(2,\ -1,\ 0.5) + (3,\ 4,\ -0.5)$."
+  answer={[[5, 3, 0]]}
+  explain="Add matching components: $2+3$, $-1+4$, $0.5 + (-0.5)$."
+/>
+
+## Scaling a vector
+
+Multiplying a vector by a scalar $s$ multiplies every component:
+
+$$
+s\,\mathbf{v} = (s v_1,\ s v_2,\ \dots,\ s v_n) \qquad 2\,(3,\ 1) = (6,\ 2)
+$$
+
+The arrow keeps its direction but gets $s$ times longer. A scalar between 0 and 1 shrinks it, and a **negative** scalar flips it to point the opposite way.
+
+<VectorPlayground mode="scale" />
+
+<Quiz
+  id="vec-scale-neg"
+  question="What is $-\tfrac{1}{2}\,(4,\ -2)$?"
+  options={["$(2,\\ -1)$", "$(-2,\\ 1)$", "$(-2,\\ -1)$", "$(3.5,\\ -2.5)$"]}
+  answer={1}
+  explain="Multiply each component by $-\tfrac12$: $-\tfrac12 \cdot 4 = -2$ and $-\tfrac12 \cdot (-2) = 1$."
+/>
+
+## Why these two matter
+
+Adding and scaling look almost too simple, but together they're how neural networks **learn**. Training repeatedly updates a weight vector $\mathbf{w}$ with a rule that looks like this:
+
+$$
+\mathbf{w}_{\text{new}} = \mathbf{w} + (-\eta)\,\mathbf{g}
+$$
+
+Scale the gradient $\mathbf{g}$ by a small negative number, then add it to the weights. You'll meet $\mathbf{g}$ (the gradient) in Module 2 and $\eta$ (the learning rate) in Module 4, but the operations are the two you're about to write.
+
+<KeyIdea>
+
+A vector is a list of numbers, and also an arrow. Vectors of the same length add component by component (tip to tail). Multiplying by a scalar stretches, shrinks or flips the arrow.
+
+</KeyIdea>
+
+## Exercises
+
+<Lang only="python">
+
+<Callout type="lang">
+
+Build the result as a new list. A list comprehension is the idiomatic way: `[a[i] + b[i] for i in range(len(a))]`. Or start with `out = []` and `out.append(...)` in a loop. Check the lengths first and `raise ValueError(...)` if they differ.
+
+</Callout>
+
+</Lang>
+
+<Lang only="rust">
+
+<Callout type="lang">
+
+Build the result as a new `Vec<f64>`: `let mut out = Vec::with_capacity(a.len());` then `out.push(a[i] + b[i]);` in a `for i in 0..a.len()` loop. Iterators work too: `a.iter().zip(b).map(|(x, y)| x + y).collect()`. But `zip` silently stops at the shorter input, so check the lengths first with `assert_eq!(a.len(), b.len(), "…")`.
+
+</Callout>
+
+</Lang>
+
+<Lang only="cpp">
+
+<Callout type="lang">
+
+Create the result with the right size up front, `std::vector<double> out(a.size());`, and fill it in a loop over `std::size_t i`. Or start empty and `push_back`. Check `a.size() != b.size()` first and `throw std::invalid_argument("…");`.
+
+</Callout>
+
+</Lang>
+
+<Exercise id="la-vec-add">
+
+Return the component-wise sum $\mathbf{a} + \mathbf{b}$. If the two vectors have different lengths, signal an error (see the starter code for how in <LangName />).
+
+</Exercise>
+
+<Exercise id="la-vec-scale">
+
+Return $s\,\mathbf{v}$: a new vector with every component of $\mathbf{v}$ multiplied by $s$.
+
+</Exercise>

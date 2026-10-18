@@ -1,0 +1,81 @@
+## Entry by entry
+
+Not every operation on matrices is about rows and columns. Many are <Term t="element-wise">element-wise</Term>: they combine two tensors of the **same shape** one matching entry at a time. Matrix addition is one:
+
+$$
+\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} + \begin{bmatrix} 10 & 20 \\ 30 & 40 \end{bmatrix} = \begin{bmatrix} 11 & 22 \\ 33 & 44 \end{bmatrix}
+$$
+
+So is the **element-wise product**, also called the <Term t="hadamard product">Hadamard product</Term> and written $\odot$:
+
+$$
+\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \odot \begin{bmatrix} 5 & 6 \\ 7 & 8 \end{bmatrix} = \begin{bmatrix} 5 & 12 \\ 21 & 32 \end{bmatrix}
+$$
+
+Don't mix it up with matrix multiplication, which gave $\begin{bmatrix} 19 & 22 \\ 43 & 50 \end{bmatrix}$ for the same two matrices. The Hadamard product turns up all over backpropagation: when a gradient passes backwards through an activation function, it gets multiplied, entry by entry, by that function's derivative.
+
+<MatrixCheck
+  id="hadamard-hand"
+  question="Compute $\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix} \odot \begin{bmatrix} 2 & 0 \\ 1 & -1 \end{bmatrix}$."
+  answer={[[2, 0], [3, -4]]}
+  explain="Multiply matching entries: $1\cdot2$, $2\cdot0$, $3\cdot1$, $4\cdot(-1)$."
+/>
+
+## Applying a function to every entry
+
+You can also apply an ordinary one-number function to every entry. Neural networks do this after almost every layer. The most popular choice is the ReLU, $\text{relu}(x) = \max(0, x)$, which zeroes out the negative entries:
+
+$$
+\text{relu}\left(\begin{bmatrix} -1 & 2 \\ 0.5 & -3 \end{bmatrix}\right) = \begin{bmatrix} 0 & 2 \\ 0.5 & 0 \end{bmatrix}
+$$
+
+That's what turned the raw convolution outputs into the feature maps you saw in the welcome demo. You'll meet ReLU and its relatives properly in Module 5.
+
+## Broadcasting
+
+A layer computes $\mathbf{z} = W\mathbf{x} + \mathbf{b}$ for one input. For a batch of inputs stacked as rows, $Z = XW^\mathsf{T}$ is a matrix with one row per input, but there's still just *one* bias vector $\mathbf{b}$. It should be added to **every row**.
+
+<Term>Broadcasting</Term> is the rule that makes this work: when shapes don't match, a smaller tensor is **stretched** along the missing axis, as if it were copied, though no real copy is needed.
+
+<BroadcastViz />
+
+The usual broadcasting rule compares shapes starting from the **last** axis. Two sizes are compatible if they're equal, or if one of them is 1 (or missing), in which case it gets stretched. So a `[4, 3]` matrix plus a `[3]` vector works: the vector is stretched to `[4, 3]`. But `[4, 3]` plus `[4]` doesn't, because the last sizes are 3 and 4.
+
+<Quiz
+  id="broadcast-shapes"
+  question="Which of these combinations broadcasts?"
+  options={[
+    "`[4, 3]` + `[4]`",
+    "`[64, 10]` + `[10]`",
+    "`[2, 3]` + `[3, 2]`",
+    "`[5]` + `[6]`"
+  ]}
+  answer={1}
+  explain="The last sizes are 10 and 10, so the bias is stretched across all 64 rows. That's exactly a layer's bias being added to a whole batch."
+/>
+
+<KeyIdea>
+
+Element-wise operations combine matching entries of same-shaped tensors; $\odot$ is *not* matrix multiplication. Broadcasting stretches a smaller tensor along missing axes, like adding one bias vector to every row of a batch.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="la-hadamard">
+
+Return $A \odot B$, the element-wise product. Signal an error unless both matrices have exactly the same shape: the same number of rows, and matching row lengths.
+
+</Exercise>
+
+<Exercise id="la-add-bias">
+
+Return the matrix with vector $\mathbf{b}$ added to every row of $m$: `result[i][j] = m[i][j] + b[j]`. Your `vec_add` adds one row and $\mathbf{b}$, and it already rejects mismatched lengths.
+
+</Exercise>
+
+## Module 1 complete
+
+Look at what's in your library now: vector addition and scaling, dot products, lengths, matrix-vector and matrix-matrix products, transposes, identities, strides, flattening, reshaping, element-wise products and broadcasting. That's every piece of linear algebra a neural network's **forward pass** needs.
+
+What's missing is how a network **learns**: how it works out which way to adjust millions of weights to make fewer mistakes. That's calculus, and it's next.

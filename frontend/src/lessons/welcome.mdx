@@ -1,0 +1,66 @@
+Over this course you'll go from adding two arrows together to building a **convolutional neural network**, a <Term t="cnn">CNN</Term>, that reads handwritten digits. You'll write every line of it yourself, in <LangName />, using nothing but the standard library.
+
+Before any math, try the finished product. Draw a digit:
+
+<DigitDemo />
+
+## What just happened?
+
+Your drawing was shrunk to a 28×28 grid of pixels, the same format as the 70,000 handwritten digits in the <Term t="mnist">MNIST</Term> dataset. Each pixel is a number between 0 (black) and 1 (white), so the network's input is just a list of **784 numbers**.
+
+The network turned those 784 numbers into 10, one for each digit, and the biggest one is its guess. In between, it did three kinds of things:
+
+1. **Convolution.** Eight tiny 3×3 grids of numbers (*filters*) slid across the image. Each one lights up where it finds a particular pattern, like a vertical edge or a curve. You can see what they found under "What its 8 first-layer filters respond to."
+2. **Pooling.** The results were shrunk by keeping only the strongest response in each 2×2 patch, so the network cares *that* a stroke is there more than *exactly where*.
+3. **A weighted vote.** A second round of filters and pooling, then every remaining number was multiplied by a <Term t="weight">weight</Term> and added up, once per digit. That's ten <Term t="dot product">dot products</Term>.
+
+None of the roughly 5,000 numbers inside the network were written by hand. They were *learned*: the network started out random, guessed on thousands of training images, measured how wrong it was, and nudged every number a little in the direction that made it less wrong. Then it did that again, about 5,000 times.
+
+<NumericCheck
+  id="welcome-784"
+  question="An MNIST image is 28 pixels wide and 28 pixels tall. How many numbers does the network receive for one image?"
+  answer={784}
+  explain="$28 \times 28 = 784$. To a neural network, an image is just a long list of numbers."
+/>
+
+## Why so much math?
+
+Every step above is math you'll learn, and then build:
+
+| What the network does | The math behind it | Where you'll learn it |
+| --- | --- | --- |
+| Stores images, filters and weights | Vectors, matrices, tensors | Module 1 |
+| Weighted sums, layers | Dot products, matrix multiplication | Module 1 |
+| Figures out which way to nudge each weight | Derivatives, the chain rule, gradients | Module 2 |
+| Turns 10 scores into probabilities and measures how wrong they are | Softmax, cross-entropy | Module 3 |
+| Nudges the weights, over and over | Gradient descent | Module 4 |
+| Stacks it all into a learning machine | Backpropagation | Modules 5–6 |
+
+By Module 7 you'll load the real MNIST files, train your own CNN to around 99% accuracy, and test it on your own handwriting.
+
+<KeyIdea>
+
+A neural network is a big function made of simple pieces: multiply, add, and a few non-linear squashes. Learning means using calculus to adjust its numbers so it makes fewer mistakes. If you understand the pieces, nothing about it is magic.
+
+</KeyIdea>
+
+## "From scratch" means from scratch
+
+There are excellent libraries that do all of this for you: NumPy, PyTorch, `ndarray`, Eigen. You won't use any of them. You'll write your own vector and matrix functions, your own derivatives, your own random number generator, layers and training loop. Each exercise adds a tested function to **your library**, and later exercises build on the functions you've already written.
+
+It's more work, but when you're done you'll know exactly what happens inside a neural network, because you'll have written all of it.
+
+<Quiz
+  id="welcome-learned"
+  question="Where do the ~5,000 numbers inside the demo network come from?"
+  options={[
+    "A programmer chose each one by hand",
+    "They were learned by repeatedly measuring the network's mistakes on training images and adjusting the numbers to reduce them",
+    "They're random, and the network works anyway",
+    "They're copied from the pixels of the training images"
+  ]}
+  answer={1}
+  explain="Exactly. The network starts random, and training (calculus plus lots of examples) slowly tunes every number. That's what you'll build in Modules 4–7."
+/>
+
+Next up: a quick tour of how lessons and exercises work, and your first function.

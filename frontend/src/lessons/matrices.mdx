@@ -1,0 +1,134 @@
+## A grid of numbers
+
+A <Term>matrix</Term> is a rectangular grid of numbers. One with $m$ rows and $n$ columns is called an $m \times n$ matrix (rows first, always):
+
+$$
+A = \begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix} \qquad (2 \times 3)
+$$
+
+The entry in row $i$, column $j$ is written $A_{ij}$, so here $A_{12} = 2$ and $A_{21} = 4$. In code, a matrix is a list of rows, and you get that entry with `A[i][j]`. Code counts from 0, so the maths $A_{12}$ is `A[0][1]`.
+
+## Multiplying a matrix by a vector
+
+You can multiply an $m \times n$ matrix by a vector with $n$ components. The answer has $m$ components, one per row, and each one is a **dot product** of that row with the vector:
+
+$$
+\begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
+\begin{bmatrix} 5 \\ 6 \end{bmatrix}
+=
+\begin{bmatrix} (1, 2)\cdot(5, 6) \\ (3, 4)\cdot(5, 6) \end{bmatrix}
+=
+\begin{bmatrix} 17 \\ 39 \end{bmatrix}
+$$
+
+That's the **row view**, and it's how you'll compute it. The number of columns must equal the vector's length, or the dot products don't line up.
+
+<MatrixCheck
+  id="matvec-hand"
+  question="Compute $\begin{bmatrix} 2 & 0 \\ 1 & -1 \\ 0 & 3 \end{bmatrix}\begin{bmatrix} 4 \\ 5 \end{bmatrix}$. (The answer is a column, so enter one number per row.)"
+  answer={[[8], [-1], [15]]}
+  explain="Each row dotted with $(4, 5)$: $8 + 0$, $4 - 5$, $0 + 15$."
+/>
+
+## A matrix is a transformation
+
+There's a second, more geometric way to read the same product, the **column view**:
+
+$$
+\begin{bmatrix} a & b \\ c & d \end{bmatrix}\begin{bmatrix} x \\ y \end{bmatrix}
+= x\begin{bmatrix} a \\ c \end{bmatrix} + y\begin{bmatrix} b \\ d \end{bmatrix}
+$$
+
+The output is $x$ copies of the first column plus $y$ copies of the second. Now think about the two <Term t="basis vector">basis vectors</Term> $\hat\imath = (1, 0)$ and $\hat\jmath = (0, 1)$. Multiplying by the matrix sends $\hat\imath$ to the first column and $\hat\jmath$ to the second, and every other point $(x, y) = x\hat\imath + y\hat\jmath$ follows along.
+
+So a matrix is a **function that moves every point in space**, and its columns tell you exactly where the basis vectors land. Those functions are called <Term t="linear transformation">linear transformations</Term>: grid lines stay straight, parallel and evenly spaced, and the origin stays put.
+
+<MatrixTransformer />
+
+Things to try:
+
+- **Rotate 90°**: $\hat\imath$ lands on $(0, 1)$ and $\hat\jmath$ on $(-1, 0)$, so the matrix is $\begin{bmatrix} 0 & -1 \\ 1 & 0 \end{bmatrix}$.
+- **Shear**: $\hat\imath$ stays put and $\hat\jmath$ leans over. Squares become parallelograms.
+- **Reflect**: the F is mirrored, and the <Term>determinant</Term> goes negative.
+- **Squash**: drag $\hat\jmath$ onto the same line as $\hat\imath$. The whole plane collapses onto a line and the determinant becomes 0. Different points now land in the same place, so the transformation can't be undone.
+
+<Quiz
+  id="mat-columns"
+  question="A matrix sends $\hat\imath$ to $(2, 1)$ and $\hat\jmath$ to $(-1, 3)$. Which matrix is it?"
+  options={[
+    "$\\begin{bmatrix} 2 & 1 \\\\ -1 & 3 \\end{bmatrix}$",
+    "$\\begin{bmatrix} 2 & -1 \\\\ 1 & 3 \\end{bmatrix}$",
+    "$\\begin{bmatrix} 1 & 2 \\\\ 3 & -1 \\end{bmatrix}$"
+  ]}
+  answer={1}
+  explain="Where $\hat\imath$ lands is the first **column**, and where $\hat\jmath$ lands is the second."
+/>
+
+## A layer of neurons is a matrix
+
+One neuron computes a dot product $\mathbf{w}\cdot\mathbf{x}$. A **layer** of $m$ neurons, all looking at the same input, computes $m$ dot products. Stack the $m$ weight vectors as the rows of a matrix $W$, and the whole layer becomes one matrix-vector product:
+
+$$
+\mathbf{z} = W\mathbf{x} + \mathbf{b}
+$$
+
+A layer that maps 784 pixels to 64 neurons has a $64 \times 784$ weight matrix: 64 rows (one per neuron) and 784 columns (one per pixel). Each output entry is one neuron's response.
+
+<Quiz
+  id="mat-shape"
+  question="A layer's weight matrix $W$ is $10 \times 64$. What does it take as input, and what does it output?"
+  options={[
+    "A 10-vector in, a 64-vector out",
+    "A 64-vector in, a 10-vector out",
+    "A 640-vector in, a scalar out"
+  ]}
+  answer={1}
+  explain="Columns must match the input (64), and there's one output per row (10)."
+/>
+
+## The transpose
+
+The <Term>transpose</Term> $A^\mathsf{T}$ flips a matrix over its diagonal, so rows become columns:
+
+$$
+\begin{bmatrix} 1 & 2 & 3 \\ 4 & 5 & 6 \end{bmatrix}^\mathsf{T} = \begin{bmatrix} 1 & 4 \\ 2 & 5 \\ 3 & 6 \end{bmatrix}
+\qquad (A^\mathsf{T})_{ij} = A_{ji}
+$$
+
+An $m \times n$ matrix becomes $n \times m$. It looks like mere bookkeeping, but it's essential for training: when gradients flow *backwards* through a layer, they're multiplied by $W^\mathsf{T}$ instead of $W$. You'll see why in Module 5.
+
+<KeyIdea>
+
+$A\mathbf{x}$ has one entry per row of $A$: that row dotted with $\mathbf{x}$. Geometrically, a matrix is a transformation whose columns are where the basis vectors land. A neural-network layer is a matrix-vector product.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="la-mat-vec">
+
+Return the matrix-vector product $m\,\mathbf{v}$. Your `dot` already rejects mismatched lengths, so if you build each entry with it, the error check comes for free.
+
+</Exercise>
+
+<Exercise id="la-transpose">
+
+Return $m^\mathsf{T}$. If $m$ is $r \times c$, the result is $c \times r$ with `result[j][i] == m[i][j]`. The transpose of an empty matrix (no rows) is an empty matrix.
+
+<Lang only="rust">
+
+A handy way to allocate an $r \times c$ matrix of zeros: `vec![vec![0.0; c]; r]`.
+
+</Lang>
+<Lang only="cpp">
+
+A handy way to allocate an $r \times c$ matrix of zeros: `std::vector<std::vector<double>>(r, std::vector<double>(c, 0.0))`.
+
+</Lang>
+<Lang only="python">
+
+A handy way to allocate an $r \times c$ matrix of zeros: `[[0.0] * c for _ in range(r)]`. (Not `[[0.0] * c] * r`: that's $r$ references to the *same* row!)
+
+</Lang>
+
+</Exercise>

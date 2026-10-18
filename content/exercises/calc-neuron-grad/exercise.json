@@ -1,0 +1,95 @@
+{
+  "title": "Gradient of a single neuron",
+  "function": "neuron_grad",
+  "params": [
+    {
+      "name": "x",
+      "type": "float"
+    },
+    {
+      "name": "w",
+      "type": "float"
+    },
+    {
+      "name": "b",
+      "type": "float"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Name the middle step: z = w·x + b, then y = σ(z). The chain rule says ∂y/∂w = σ'(z) · ∂z/∂w.",
+    "∂z/∂w = x, ∂z/∂b = 1, and ∂z/∂x = w.",
+    "Compute s = sigmoid_derivative(w*x + b) once, then return [s*x, s, s*w]."
+  ],
+  "tests": [
+    {
+      "args": [
+        1,
+        0,
+        0
+      ],
+      "description": "z = 0, where σ' = ¼",
+      "expected": [
+        0.25,
+        0.25,
+        0.0
+      ]
+    },
+    {
+      "args": [
+        2,
+        0.5,
+        -1
+      ],
+      "description": "z = 2·0.5 − 1 = 0 again, but now x = 2",
+      "expected": [
+        0.5,
+        0.25,
+        0.125
+      ]
+    },
+    {
+      "args": [
+        -1.5,
+        2,
+        0.5
+      ],
+      "description": "a negative input",
+      "hidden": true,
+      "expected": [
+        -0.10515557481766225,
+        0.07010371654510816,
+        0.14020743309021633
+      ]
+    },
+    {
+      "args": [
+        3,
+        -1,
+        1
+      ],
+      "description": "a negative weight",
+      "hidden": true,
+      "expected": [
+        0.3149807562105195,
+        0.1049935854035065,
+        -0.1049935854035065
+      ]
+    },
+    {
+      "args": [
+        0,
+        5,
+        0
+      ],
+      "description": "x = 0 means the weight gets no gradient",
+      "hidden": true,
+      "expected": [
+        0.0,
+        0.25,
+        1.25
+      ]
+    }
+  ]
+}

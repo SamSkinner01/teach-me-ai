@@ -1,0 +1,78 @@
+/* Syntax colours for code blocks in lessons (highlight.js classes, added at build time). */
+
+.hljs-keyword,
+.hljs-built_in,
+.hljs-type {
+  color: #7c3aed;
+}
+.hljs-string,
+.hljs-char {
+  color: #15803d;
+}
+.hljs-number,
+.hljs-literal {
+  color: #c2410c;
+}
+.hljs-comment {
+  color: #8a90a2;
+  font-style: italic;
+}
+.hljs-title,
+.hljs-title.function_ {
+  color: #2563eb;
+}
+.hljs-meta,
+.hljs-attr,
+.hljs-symbol {
+  color: #b45309;
+}
+.hljs-params {
+  color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hljs-keyword,
+  :root:not([data-theme="light"]) .hljs-built_in,
+  :root:not([data-theme="light"]) .hljs-type {
+    color: #c4b5fd;
+  }
+  :root:not([data-theme="light"]) .hljs-string,
+  :root:not([data-theme="light"]) .hljs-char {
+    color: #86efac;
+  }
+  :root:not([data-theme="light"]) .hljs-number,
+  :root:not([data-theme="light"]) .hljs-literal {
+    color: #fdba74;
+  }
+  :root:not([data-theme="light"]) .hljs-title,
+  :root:not([data-theme="light"]) .hljs-title.function_ {
+    color: #93c5fd;
+  }
+  :root:not([data-theme="light"]) .hljs-meta,
+  :root:not([data-theme="light"]) .hljs-attr,
+  :root:not([data-theme="light"]) .hljs-symbol {
+    color: #fcd34d;
+  }
+}
+:root[data-theme="dark"] .hljs-keyword,
+:root[data-theme="dark"] .hljs-built_in,
+:root[data-theme="dark"] .hljs-type {
+  color: #c4b5fd;
+}
+:root[data-theme="dark"] .hljs-string,
+:root[data-theme="dark"] .hljs-char {
+  color: #86efac;
+}
+:root[data-theme="dark"] .hljs-number,
+:root[data-theme="dark"] .hljs-literal {
+  color: #fdba74;
+}
+:root[data-theme="dark"] .hljs-title,
+:root[data-theme="dark"] .hljs-title.function_ {
+  color: #93c5fd;
+}
+:root[data-theme="dark"] .hljs-meta,
+:root[data-theme="dark"] .hljs-attr,
+:root[data-theme="dark"] .hljs-symbol {
+  color: #fcd34d;
+}

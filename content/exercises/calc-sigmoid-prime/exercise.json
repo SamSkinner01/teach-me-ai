@@ -1,0 +1,57 @@
+{
+  "title": "Derivative of sigmoid",
+  "function": "sigmoid_derivative",
+  "params": [
+    {
+      "name": "x",
+      "type": "float"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "The sigmoid has a famously neat derivative: σ'(x) = σ(x) · (1 − σ(x)).",
+    "Your `sigmoid` function is in your library, so call it once and reuse the result.",
+    "s = sigmoid(x); return s * (1 - s)"
+  ],
+  "tests": [
+    {
+      "args": [
+        0
+      ],
+      "description": "the steepest point: σ'(0) = ¼",
+      "expected": 0.25
+    },
+    {
+      "args": [
+        2
+      ],
+      "description": "flatter away from 0",
+      "expected": 0.10499358540350662
+    },
+    {
+      "args": [
+        -2
+      ],
+      "description": "symmetric: σ'(−2) = σ'(2)",
+      "hidden": true,
+      "expected": 0.1049935854035065
+    },
+    {
+      "args": [
+        10
+      ],
+      "description": "almost flat far from 0",
+      "hidden": true,
+      "expected": 4.5395807735907655e-05
+    },
+    {
+      "args": [
+        -1000
+      ],
+      "description": "no overflow for very negative inputs",
+      "hidden": true,
+      "expected": 0.0
+    }
+  ]
+}

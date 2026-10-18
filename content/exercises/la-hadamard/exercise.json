@@ -1,0 +1,134 @@
+{
+  "title": "Element-wise product",
+  "function": "hadamard",
+  "params": [
+    {
+      "name": "a",
+      "type": "mat"
+    },
+    {
+      "name": "b",
+      "type": "mat"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "This is NOT matrix multiplication: result[i][j] = a[i][j] * b[i][j].",
+    "Both matrices must have the same number of rows and the same number of columns.",
+    "Nested loops over rows and columns, multiplying matching entries."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            5,
+            6
+          ],
+          [
+            7,
+            8
+          ]
+        ]
+      ],
+      "description": "multiply matching entries",
+      "expected": [
+        [
+          5.0,
+          12.0
+        ],
+        [
+          21.0,
+          32.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            0,
+            2
+          ]
+        ],
+        [
+          [
+            3,
+            3,
+            3
+          ]
+        ]
+      ],
+      "description": "a 1×3 example",
+      "expected": [
+        [
+          3.0,
+          0.0,
+          6.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            2
+          ]
+        ],
+        [
+          [
+            -0.5
+          ]
+        ]
+      ],
+      "description": "1×1 with a negative",
+      "hidden": true,
+      "expected": [
+        [
+          -1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          [
+            1,
+            2
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        [
+          [
+            1,
+            2,
+            3
+          ],
+          [
+            4,
+            5,
+            6
+          ]
+        ]
+      ],
+      "description": "shapes must match exactly",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

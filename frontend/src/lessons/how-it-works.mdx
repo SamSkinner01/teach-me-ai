@@ -1,0 +1,123 @@
+Every lesson mixes three things: **explanations**, **interactive figures** you can drag and poke at, and **exercises** where you write code. This short lesson shows you how the exercises work, and has you write your first library function.
+
+## Lessons and figures
+
+Figures marked <span className="viz-kicker">Interactive</span> respond to dragging, sliders and buttons. They're not decoration: each one is built so you can *see* the idea before you write it. Play with them until the picture makes sense.
+
+Throughout the text, <Term t="vector">underlined terms</Term> show a definition when you hover over them (or tap them). They're all collected in the [glossary](/glossary).
+
+Short checks like the one below are for you. Nothing is graded, so guess freely.
+
+<Quiz
+  id="hiw-checks"
+  question="What happens if you get a check wrong?"
+  options={["You lose progress", "Nothing. Try again until it clicks", "The lesson locks"]}
+  answer={1}
+  explain="Checks are practice. Only exercises count towards finishing a lesson."
+/>
+
+## Exercises
+
+Each exercise asks you to write **one function**. You get:
+
+- **A signature** you must keep exactly as given: the function's name, parameter types and return type. The tests call your function by that signature.
+- **Starter code** with a `TODO` where your code goes.
+- **Example tests**, shown before you run anything, so you know what's expected.
+- **Run examples** (<kbd>Ctrl</kbd>+<kbd>Enter</kbd>) runs your code against the example tests only. Use it as often as you like.
+- **Submit** (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>) runs the example tests *and* a set of hidden tests that check edge cases. Passing all of them completes the exercise.
+- **Hints**, revealed one at a time, from a gentle nudge to nearly the answer.
+- **A reference solution**, which unlocks after three submissions (or once you've passed).
+
+Your code is saved automatically as you type, so you can leave and come back.
+
+<Callout type="tip" title="Print freely">
+
+Anything your code prints shows up under "Your program printed" in the results panel. Printing intermediate values is the fastest way to find a bug.
+
+</Callout>
+
+## Your library
+
+Here's the important part. When you pass an exercise, your function joins **your library**, and every later exercise can call it. In the next module you'll write `dot` (the dot product), and a few exercises later you'll use your own `dot` to build matrix multiplication. Your matrix multiplication will become a neural-network layer, and so on, until the capstone CNN runs entirely on code you wrote.
+
+You can browse everything you've written on the [My library](/library) page. If you ever skip ahead to an exercise whose building blocks you haven't written yet, a reference version fills the gap, and the results panel tells you when that happens.
+
+## Your language
+
+<Lang only="python">
+
+<Callout type="lang">
+
+You'll write plain Python 3 with no imports from outside the standard library (`math` is fine). A few conventions:
+
+- Vectors are `list[float]`, and matrices are lists of rows: `list[list[float]]`.
+- To reject bad input, **raise an exception**, usually `ValueError`: `raise ValueError("lengths differ")`.
+- The starter code says `raise NotImplementedError`. Replace that line with your code.
+- Integers work wherever floats are expected, so returning `0` instead of `0.0` is fine.
+
+</Callout>
+
+</Lang>
+
+<Lang only="rust">
+
+<Callout type="lang">
+
+You'll write stable Rust (edition 2024) with only the standard library: no crates. A few conventions:
+
+- Vectors come in as slices, `&[f64]`, and go out as `Vec<f64>`. Matrices are `&[Vec<f64>]` in and `Vec<Vec<f64>>` out: a list of rows.
+- Indices and sizes are `usize`.
+- To reject bad input, **panic**: `panic!("lengths differ")`, or `assert_eq!(a.len(), b.len())`.
+- The starter code calls `todo!()`, which panics with "not yet implemented". Replace it with your code.
+- Keep the `pub` on your functions: it's what exports them into your library.
+- Don't write a `main` function. The tests provide their own.
+
+</Callout>
+
+</Lang>
+
+<Lang only="cpp">
+
+<Callout type="lang">
+
+You'll write C++20 with only the standard library. A few conventions:
+
+- Vectors come in as `const std::vector<double>&` (a read-only reference, so nothing gets copied) and go out as `std::vector<double>`. Matrices are `std::vector<std::vector<double>>`: a vector of rows.
+- Indices and sizes are `std::size_t`.
+- To reject bad input, **throw an exception**, usually `throw std::invalid_argument("lengths differ");`.
+- The starter code throws `std::logic_error("not implemented")`. Replace that line with your code.
+- The common standard headers (`<vector>`, `<cmath>`, `<stdexcept>`, `<functional>`, ...) are always included, but it's good practice to `#include` what you use.
+- Don't write a `main` function. The tests provide their own.
+- Out-of-range indexing with `v[i]` is undefined behaviour and may crash your program with a *segmentation fault*. If you see one, check your loop bounds.
+
+</Callout>
+
+</Lang>
+
+## A note on floating point
+
+Computers store real numbers as **floating-point** values with about 16 significant digits, so tiny rounding errors creep in: $0.1 + 0.2$ is actually $0.30000000000000004$. The tests compare your answers with a small tolerance, so you never need to round anything yourself.
+
+<Quiz
+  id="hiw-run-submit"
+  question="What's the difference between **Run examples** and **Submit**?"
+  options={[
+    "There's no difference",
+    "Run checks only the visible example tests; Submit also runs hidden edge-case tests and is what completes the exercise",
+    "Submit only checks that the code compiles"
+  ]}
+  answer={1}
+  explain="Run as often as you like while working. Submit when you think you're done."
+/>
+
+## Your first function
+
+Time to write some code. This first one is a warm-up to get used to the editor: add up all the numbers in a vector. Your answer becomes `vec_sum` in your library, and you'll use it again when you compute averages and probabilities later.
+
+<Exercise id="warmup-vec-sum">
+
+Return the sum of all the numbers in `v`. An empty vector sums to `0`.
+
+</Exercise>
+
+Once it passes, finish the lesson below and move on to the real thing: vectors.

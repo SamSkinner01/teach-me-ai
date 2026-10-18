@@ -1,0 +1,115 @@
+A neural network is a function of a function of a function: each layer feeds the next. To train it you need derivatives of such **compositions**, and the <Term>chain rule</Term> is how you get them. It's the single most important idea behind <Term>backpropagation</Term>.
+
+## Rates multiply
+
+Imagine three gears. Gear $u$ turns 3 times for every turn of gear $x$, and gear $y$ turns 2 times for every turn of $u$. How many times does $y$ turn per turn of $x$? $2 \times 3 = 6$. Rates of change multiply along a chain.
+
+That's the chain rule. If $y$ depends on $u$, and $u$ depends on $x$:
+
+$$
+\frac{dy}{dx} = \frac{dy}{du} \cdot \frac{du}{dx}
+$$
+
+Or, in function notation, for $y = f(g(x))$:
+
+$$
+\bigl(f(g(x))\bigr)' = f'\bigl(g(x)\bigr) \cdot g'(x)
+$$
+
+Differentiate the outer function (leaving the inside alone), then multiply by the derivative of the inside.
+
+## An example
+
+Take $y = (3x + 1)^2$. Name the inner part $u = 3x + 1$, so $y = u^2$:
+
+$$
+\frac{dy}{du} = 2u, \qquad \frac{du}{dx} = 3, \qquad \frac{dy}{dx} = 2u \cdot 3 = 6(3x + 1)
+$$
+
+Longer chains work the same way: multiply every link. If $y = f(g(h(x)))$, then $y' = f'(g(h(x))) \cdot g'(h(x)) \cdot h'(x)$.
+
+<NumericCheck
+  id="chain-hand"
+  question="What is the derivative of $(3x + 1)^2$ at $x = 1$?"
+  answer={24}
+  explain="$6(3 \cdot 1 + 1) = 24$."
+/>
+
+<Quiz
+  id="chain-sin"
+  question="What is the derivative of $\sin(x^2)$?"
+  options={["$\\cos(x^2)$", "$2x\\cos(x^2)$", "$\\cos(2x)$", "$2x\\sin(x^2)$"]}
+  answer={1}
+  explain="Outer: $\sin u \to \cos u$, evaluated at $u = x^2$. Inner: $x^2 \to 2x$. Multiply them."
+/>
+
+<NumericCheck
+  id="chain-exp"
+  question="What is the slope of $e^{2x}$ at $x = 0$?"
+  answer={2}
+  explain="$\frac{d}{dx} e^{2x} = e^{2x} \cdot 2$, and at $x = 0$ that's $1 \cdot 2 = 2$."
+/>
+
+## Computational graphs
+
+For anything bigger than a textbook example, it helps to draw the computation as a graph of small steps. Here's a single neuron with a squared-error <Term>loss</Term>:
+
+$$
+z = w \cdot x + b, \qquad y = \sigma(z), \qquad L = (y - t)^2
+$$
+
+The **forward pass** computes the values left to right. The **backward pass** computes how the loss $L$ changes with respect to every value in the graph, from right to left. At each node, you take the gradient arriving from the right and multiply it by that node's own **local derivative**. That's the chain rule, applied one link at a time:
+
+<ChainRuleGraph />
+
+Step through the backward pass and notice three things:
+
+1. **Each step is easy.** Every node only needs its own local derivative ($2(y-t)$ for the square, $\sigma'(z)$ for the sigmoid, $1$ for addition) and the gradient handed to it from the right.
+2. **Work is shared.** $\partial L / \partial z$ is computed once and reused for $w$, $b$ and $x$. In a real network, this sharing is what makes backpropagation cost about the same as one forward pass, instead of one forward pass per weight.
+3. **Multiplication sends each input the other one.** For $w \cdot x$, the derivative with respect to $w$ is $x$, and with respect to $x$ it's $w$.
+
+The numerical check at the last step confirms it: the chain rule gives the same answer as the finite-difference method from two lessons ago.
+
+## A neuron's gradient
+
+Writing the steps out in full, for $y = \sigma(wx + b)$ with $z = wx + b$:
+
+$$
+\frac{\partial y}{\partial w} = \sigma'(z)\cdot x, \qquad
+\frac{\partial y}{\partial b} = \sigma'(z)\cdot 1, \qquad
+\frac{\partial y}{\partial x} = \sigma'(z)\cdot w
+$$
+
+And adding the loss on top, $L = (y - t)^2$:
+
+$$
+\frac{\partial L}{\partial w} = \underbrace{2(y - t)}_{\partial L/\partial y}\cdot\underbrace{\sigma'(z)}_{\partial y/\partial z}\cdot\underbrace{x}_{\partial z/\partial w}
+$$
+
+Read the sign: if the prediction $y$ is too low ($y < t$), the gradient (for a positive input $x$) is negative, so increasing $w$ reduces the loss. Increasing $w$ pushes $z$ up, which pushes $y$ towards $t$. The math agrees with intuition.
+
+(We've written $\partial$ instead of $d$ because these functions have several inputs; that's a *partial* derivative, which the next lesson explains properly.)
+
+<KeyIdea>
+
+Chain rule: multiply the local derivatives along the chain. Draw the computation as a graph, compute values forward, then push gradients backward, each node multiplying the incoming gradient by its local derivative. That procedure is backpropagation.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="calc-neuron-grad">
+
+A neuron computes $y = \sigma(w x + b)$. Return its gradient as three numbers, in this order:
+
+$$
+\left[\frac{\partial y}{\partial w},\ \frac{\partial y}{\partial b},\ \frac{\partial y}{\partial x}\right]
+$$
+
+</Exercise>
+
+<Exercise id="calc-loss-grad">
+
+For the loss $L = \bigl(\sigma(wx + b) - t\bigr)^2$, return $\dfrac{\partial L}{\partial w}$, where $t$ is the `target` argument. Your `sigmoid` and `sigmoid_derivative` are available.
+
+</Exercise>

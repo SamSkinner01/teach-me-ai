@@ -1,0 +1,80 @@
+{
+  "title": "Sum a vector",
+  "function": "vec_sum",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "Start with a running total of 0, then visit every element and add it on.",
+    "A `for` loop over the vector visits each element exactly once.",
+    "Return the total after the loop finishes. An empty vector never enters the loop, so it returns 0."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "adds up a short vector",
+      "expected": 6.0
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "an empty vector sums to 0",
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          -1.5,
+          2.5,
+          -1
+        ]
+      ],
+      "description": "handles negative numbers",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1
+        ]
+      ],
+      "description": "ten copies of 0.1",
+      "hidden": true,
+      "expected": 0.9999999999999999
+    },
+    {
+      "args": [
+        [
+          1000000.0,
+          1,
+          -1000000.0
+        ]
+      ],
+      "description": "large and small numbers together",
+      "hidden": true,
+      "expected": 1.0
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "title": "Chain rule through a loss",
+  "function": "squared_error_grad_w",
+  "params": [
+    {
+      "name": "x",
+      "type": "float"
+    },
+    {
+      "name": "w",
+      "type": "float"
+    },
+    {
+      "name": "b",
+      "type": "float"
+    },
+    {
+      "name": "target",
+      "type": "float"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "There are three links in this chain: L = (y − t)², y = σ(z), z = w·x + b.",
+    "∂L/∂y = 2(y − t), ∂y/∂z = σ'(z), ∂z/∂w = x. Multiply them together.",
+    "z = w*x + b; y = sigmoid(z); return 2*(y − target) * sigmoid_derivative(z) * x"
+  ],
+  "tests": [
+    {
+      "args": [
+        1,
+        0,
+        0,
+        1
+      ],
+      "description": "prediction 0.5, target 1: increase w",
+      "expected": -0.25
+    },
+    {
+      "args": [
+        2,
+        0.5,
+        -1,
+        0
+      ],
+      "description": "prediction 0.5, target 0: decrease w",
+      "expected": 0.5
+    },
+    {
+      "args": [
+        1.5,
+        -0.4,
+        0.2,
+        0.3
+      ],
+      "description": "a general case",
+      "hidden": true,
+      "expected": 0.07302413500260466
+    },
+    {
+      "args": [
+        0,
+        2,
+        0,
+        0.5
+      ],
+      "description": "prediction equals target, so the gradient is 0",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        -2,
+        1,
+        1,
+        1
+      ],
+      "description": "a negative input",
+      "hidden": true,
+      "expected": 0.5749393618288605
+    }
+  ]
+}

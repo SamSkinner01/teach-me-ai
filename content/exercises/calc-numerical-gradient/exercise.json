@@ -1,0 +1,121 @@
+{
+  "title": "Numerical gradient",
+  "function": "numerical_gradient",
+  "params": [
+    {
+      "name": "f",
+      "type": "fnv"
+    },
+    {
+      "name": "x",
+      "type": "vec"
+    },
+    {
+      "name": "h",
+      "type": "float"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "A partial derivative is an ordinary derivative along one axis, with every other coordinate held fixed.",
+    "For each i: make a copy of x with x[i] increased by h, another with x[i] decreased by h, and take the central difference of f at those two points.",
+    "Don't modify the caller's x. Work on copies (Python: list(x), Rust: x.to_vec(), C++: copy the vector)."
+  ],
+  "tests": [
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          0,
+          0
+        ],
+        1e-05
+      ],
+      "description": "the bowl slopes down toward (1, −2)",
+      "expected": [
+        -2.0000000000131024,
+        8.00000000005241
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "sum_squares"
+        },
+        [
+          1,
+          2,
+          3
+        ],
+        1e-05
+      ],
+      "description": "the gradient of Σxᵢ² is 2x",
+      "expected": [
+        2.0000000000131024,
+        4.000000000026205,
+        6.000000000039306
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "rosenbrock"
+        },
+        [
+          1,
+          1
+        ],
+        1e-05
+      ],
+      "description": "(1, 1) is the bottom of the Rosenbrock valley",
+      "hidden": true,
+      "expected": [
+        4.000004782974596e-08,
+        1.1102252745564225e-14
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "mixed"
+        },
+        [
+          2,
+          3,
+          0
+        ],
+        1e-05
+      ],
+      "description": "a function of three variables",
+      "hidden": true,
+      "expected": [
+        3.000000000064062,
+        2.0000000000131024,
+        0.9999999999621422
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "linear"
+        },
+        [
+          5,
+          -2,
+          7
+        ],
+        1e-05
+      ],
+      "description": "a linear function has a constant gradient",
+      "hidden": true,
+      "expected": [
+        1.9999999999242843,
+        -3.0000000002416978,
+        0.5000000001587068
+      ]
+    }
+  ]
+}

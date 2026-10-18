@@ -1,0 +1,125 @@
+Finite differences estimate derivatives. For most functions you can also get them **exactly**, with a short list of rules. Exact derivatives are what make training fast: one formula instead of a million extra function evaluations.
+
+## The rules you need
+
+| Function | Derivative | Example |
+| --- | --- | --- |
+| a constant $c$ | $0$ | $\frac{d}{dx}\,7 = 0$ |
+| $x^n$ | $n\,x^{n-1}$ | $\frac{d}{dx}\,x^3 = 3x^2$ |
+| $c \cdot f(x)$ | $c \cdot f'(x)$ | $\frac{d}{dx}\,5x^2 = 10x$ |
+| $f(x) + g(x)$ | $f'(x) + g'(x)$ | $\frac{d}{dx}\,(x^2 + x) = 2x + 1$ |
+| $f(x)\,g(x)$ | $f'(x)\,g(x) + f(x)\,g'(x)$ | $\frac{d}{dx}\,x\,e^x = e^x + x\,e^x$ |
+| $e^x$ | $e^x$ | its own slope, everywhere |
+| $\ln x$ | $1/x$ | |
+| $\sin x$ | $\cos x$ | |
+
+The first four let you differentiate any polynomial term by term:
+
+$$
+\frac{d}{dx}\left(3x^2 - 2x + 1\right) = 3 \cdot 2x - 2 \cdot 1 + 0 = 6x - 2
+$$
+
+<NumericCheck
+  id="rules-poly"
+  question="What is the slope of $f(x) = 3x^2 - 2x + 1$ at $x = 2$?"
+  answer={10}
+  explain="$f'(x) = 6x - 2$, so $f'(2) = 12 - 2 = 10$."
+/>
+
+<Quiz
+  id="rules-power"
+  question="What is the derivative of $x^5 - 4x$?"
+  options={["$5x^4$", "$5x^4 - 4$", "$x^4 - 4$", "$5x^6 - 4x^2$"]}
+  answer={1}
+  explain="Power rule on each term: $5x^4$, and $-4x$ becomes $-4$."
+/>
+
+## The sigmoid
+
+Here's the first function in this course that comes straight from neural networks. The <Term>sigmoid</Term>, written $\sigma$, squashes any number into the range between 0 and 1:
+
+$$
+\sigma(x) = \frac{1}{1 + e^{-x}}
+$$
+
+Large positive inputs give values near 1, large negative inputs give values near 0, and $\sigma(0) = \tfrac12$. That makes it a natural way to turn a neuron's raw score into something like a probability ("how sure am I that this is a 3?"). It's a classic <Term t="activation function">activation function</Term>.
+
+<DerivativeExplorer fn="sigmoid" choose={false} showDerivative />
+
+## Its derivative
+
+The sigmoid has a famously tidy derivative. Write $\sigma(x) = (1 + e^{-x})^{-1}$, apply the power rule to the outer part, and multiply by the derivative of the inner part (that's the chain rule, which the next lesson explains properly):
+
+$$
+\sigma'(x) = -\left(1 + e^{-x}\right)^{-2} \cdot \left(-e^{-x}\right) = \frac{e^{-x}}{\left(1 + e^{-x}\right)^2}
+$$
+
+A bit of algebra turns that into
+
+$$
+\boxed{\;\sigma'(x) = \sigma(x)\,\bigl(1 - \sigma(x)\bigr)\;}
+$$
+
+which is very convenient: once you've computed $\sigma(x)$ in the forward pass, the derivative costs one multiplication.
+
+Look at the lower plot in the figure. The slope peaks at $\tfrac14$ when $x = 0$ and fades towards zero on both sides. When a neuron's input is far from zero, the sigmoid is nearly **flat**, its derivative is nearly 0, and gradient-based learning barely moves that neuron. This is called *saturation* (or the *vanishing gradient* problem), and it's a big reason modern networks prefer ReLU for hidden layers. You'll still use the sigmoid's ideas when you build softmax in Module 3.
+
+<NumericCheck
+  id="sigmoid-prime-09"
+  question="For some input, $\sigma(x) = 0.9$. What is $\sigma'(x)$ there?"
+  answer={0.09}
+  tolerance={1e-6}
+  explain="$0.9 \times (1 - 0.9) = 0.09$. No need to know $x$ itself!"
+/>
+
+## Overflow
+
+In theory $\sigma(-1000)$ is a perfectly reasonable number, almost exactly 0. But computing it directly means evaluating $e^{1000}$, which is far larger than the biggest floating-point number (about $1.8 \times 10^{308}$).
+
+<Lang only="python">
+
+<Callout type="warning" title="Python raises on overflow">
+
+`math.exp(1000)` raises `OverflowError: math range error`, so a naive `1 / (1 + math.exp(-x))` crashes for very negative `x`. The hidden tests check for this.
+
+</Callout>
+
+</Lang>
+
+<Lang not="python">
+
+<Callout type="note" title="Infinity to the rescue (this time)">
+
+In <LangName />, `exp(1000.0)` quietly returns infinity, and `1 / (1 + ∞)` is exactly 0, so the naive formula happens to work. Other formulas aren't so lucky (`∞ / ∞` is NaN), so it's still worth knowing the stable version below.
+
+</Callout>
+
+</Lang>
+
+The fix: the two expressions below are the *same* function (multiply the top and bottom of the first by $e^x$ to get the second), but each one is only safe on one side:
+
+$$
+\sigma(x) = \frac{1}{1 + e^{-x}} \;\;\text{(use when } x \ge 0\text{)} \qquad \sigma(x) = \frac{e^{x}}{1 + e^{x}} \;\;\text{(use when } x < 0\text{)}
+$$
+
+In each case the exponent is never positive, so $e^{\text{something}}$ stays between 0 and 1 and never overflows. Numerically stable formulas like this one come up again with softmax.
+
+<KeyIdea>
+
+A handful of rules give exact derivatives. The sigmoid $\sigma(x) = 1/(1+e^{-x})$ squashes numbers into $(0, 1)$, and its derivative is $\sigma(x)(1-\sigma(x))$, at most $\tfrac14$, and tiny when $|x|$ is large.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="calc-sigmoid">
+
+Return $\sigma(x)$. It must work for very large and very negative inputs too.
+
+</Exercise>
+
+<Exercise id="calc-sigmoid-prime">
+
+Return $\sigma'(x)$, using your `sigmoid` and the identity $\sigma'(x) = \sigma(x)(1 - \sigma(x))$.
+
+</Exercise>

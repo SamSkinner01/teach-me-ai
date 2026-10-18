@@ -1,0 +1,102 @@
+## Silent bugs
+
+You now have two ways to get a gradient:
+
+- **Analytic**: derive a formula with the derivative rules and the chain rule. Fast and exact, *if* you got it right.
+- **Numerical**: finite differences. Slow, slightly approximate, but almost impossible to get wrong.
+
+Hand-derived gradients are notoriously easy to get wrong: a dropped factor of 2, a flipped sign, a forgotten chain-rule link. Worse, a network with a buggy gradient usually doesn't crash. It just trains badly, or slowly, and you have no idea why.
+
+The fix is the <Term t="gradient check">gradient check</Term>: compute both versions and compare them. If they agree, your analytic gradient is almost certainly correct. You'll gradient-check every layer you write in Modules 5 and 6.
+
+## How to compare two gradients
+
+Comparing gradients with a plain difference is misleading. A difference of $0.01$ is a disaster if the gradient is about $0.02$, and nothing if it's about $1000$. Instead, use the **relative error**, which divides by the sizes of the vectors:
+
+$$
+\text{relative error} = \frac{\|\mathbf{a} - \mathbf{n}\|}{\|\mathbf{a}\| + \|\mathbf{n}\|}
+$$
+
+where $\mathbf{a}$ is the analytic gradient and $\mathbf{n}$ the numerical one. It's 0 when they're identical, and at most 1. (If both are zero vectors, call the error 0.)
+
+As a rule of thumb, with 64-bit floats and $h \approx 10^{-5}$:
+
+| Relative error | Verdict |
+| --- | --- |
+| below $10^{-7}$ | 🎉 correct |
+| $10^{-7}$ to $10^{-4}$ | suspicious: check for kinks (like ReLU at 0) |
+| above $10^{-4}$ | almost certainly a bug |
+
+<NumericCheck
+  id="relerr-hand"
+  question="What is the relative error between $(1, 0)$ and $(0, 1)$? (Round to 3 decimals.)"
+  answer={0.707}
+  tolerance={1e-3}
+  explain="$\|(1, -1)\| / (1 + 1) = \sqrt{2}/2 \approx 0.707$. That's huge: the two vectors point in completely different directions."
+/>
+
+## A worked example
+
+The Rosenbrock function is a classic test for optimizers, with a long curved valley:
+
+$$
+f(x, y) = (1 - x)^2 + 100\,(y - x^2)^2
+$$
+
+With the chain rule:
+
+$$
+\frac{\partial f}{\partial x} = -2(1 - x) - 400\,x\,(y - x^2), \qquad
+\frac{\partial f}{\partial y} = 200\,(y - x^2)
+$$
+
+At $(-1, 2)$ that gives $\nabla f = (396, 200)$. A numerical gradient with $h = 10^{-5}$ gives the same thing to about 9 digits, for a relative error around $10^{-11}$. Correct.
+
+Now suppose you'd forgotten the factor of 2 in the second term and written $-200\,x\,(y - x^2)$. You'd get $\nabla f = (196, 200)$, a relative error of about $0.28$. Caught immediately.
+
+<Quiz
+  id="relerr-verdict"
+  question="Your gradient check reports a relative error of $0.31$. What's the most likely explanation?"
+  options={[
+    "Floating-point rounding: errors like that are normal",
+    "The step $h$ is too small",
+    "The analytic gradient has a bug, such as a wrong sign or a missing factor",
+    "The function is too large"
+  ]}
+  answer={2}
+  explain="Rounding errors are around $10^{-10}$ or smaller. An error of $0.31$ means the two gradients really disagree."
+/>
+
+<Callout type="tip" title="Gradient checking in practice">
+
+- Use 64-bit floats (`double` / `f64`). 32-bit floats are too imprecise for finite differences.
+- For a big network, don't check every weight (that's $2n$ forward passes). Check a few dozen at random.
+- Turn gradient checking off once you're confident: it's a debugging tool, not part of training.
+
+</Callout>
+
+<KeyIdea>
+
+Never trust a hand-derived gradient until it has passed a gradient check: compare it with a numerical gradient using the relative error $\|\mathbf{a} - \mathbf{n}\| / (\|\mathbf{a}\| + \|\mathbf{n}\|)$.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="calc-relative-error">
+
+Return $\dfrac{\|\mathbf{a} - \mathbf{b}\|}{\|\mathbf{a}\| + \|\mathbf{b}\|}$, or $0$ if both vectors are zero. Signal an error if the lengths differ. Build $\mathbf{a} - \mathbf{b}$ from functions already in your library.
+
+</Exercise>
+
+<Exercise id="calc-gradient-check">
+
+Return the relative error between the hand-derived gradient `analytic` and the numerical gradient of $f$ at $\mathbf{x}$, using $h = 10^{-5}$. This one is short, because your library does the work.
+
+</Exercise>
+
+## Module 2 complete
+
+You can now differentiate by hand, check derivatives numerically, push gradients backwards through a computational graph, and verify the results. That's the calculus engine behind every neural network.
+
+**Coming next:** Module 3 turns a network's raw scores into probabilities (softmax), measures how wrong they are (cross-entropy), and builds the random number generator you'll use to initialize weights. Modules 4–7 follow: gradient descent, your first neural network, convolutions, and the MNIST capstone.
