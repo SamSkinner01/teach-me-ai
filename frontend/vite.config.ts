@@ -21,16 +21,19 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      // Monaco's ESM sources, for importing individual editor features.
-      "monaco-esm": fileURLToPath(new URL("./node_modules/monaco-editor/esm/vs", import.meta.url)),
+      // Monaco's ESM sources, for importing individual editor features. The "~"
+      // matters: Vite treats any specifier starting with a letter (like
+      // "monaco-esm/...") as an npm package and pre-bundles it in dev, which
+      // breaks the editor worker's `?worker` import (and `optimizeDeps.exclude`
+      // doesn't apply to aliases). A "~" specifier is never pre-bundled.
+      "~monaco": fileURLToPath(new URL("./node_modules/monaco-editor/esm/vs", import.meta.url)),
     },
   },
-  // Monaco is imported file-by-file through the alias above. Letting the dev
-  // server pre-bundle it means it gets discovered (and re-bundled) mid-session
-  // the first time an exercise loads, which breaks its `?worker` import and
-  // blanked the app. Serve it as plain ES modules instead, as the build does.
+  // Lessons are .mdx, which the dev server's dependency scanner can't read, so
+  // packages imported only from lessons would be discovered mid-session (forcing
+  // a re-bundle and reload). Pre-bundle them at startup instead.
   optimizeDeps: {
-    exclude: ["monaco-esm", "monaco-editor"],
+    include: ["@mdx-js/react"],
   },
   server: {
     proxy: { "/api": "http://127.0.0.1:8000" },

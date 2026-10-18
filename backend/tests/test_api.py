@@ -245,3 +245,14 @@ def test_code_size_limit(python_learner):
 
 def test_unknown_api_route_is_404(client):
     assert client.get("/api/nope").status_code == 404
+
+
+def test_index_html_is_not_cached(tmp_path):
+    static = tmp_path / "dist"
+    (static / "assets").mkdir(parents=True)
+    (static / "index.html").write_text("<!doctype html><title>t</title>")
+    app = create_app(make_settings(tmp_path, static_dir=static), sandbox=LocalSandbox())
+    with TestClient(app) as c:
+        r = c.get("/learn/vectors")
+        assert r.status_code == 200 and "<title>t</title>" in r.text
+        assert r.headers["cache-control"] == "no-cache"

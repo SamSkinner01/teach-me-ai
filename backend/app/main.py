@@ -528,6 +528,8 @@ def create_app(settings: Settings | None = None, sandbox: Sandbox | None = None)
             candidate = (static_dir / path).resolve()
             if path and candidate.is_file() and static_dir in candidate.parents:
                 return FileResponse(candidate)
-            return FileResponse(static_dir / "index.html")
+            # index.html names the current build's hashed files, so it must never
+            # be served from cache after a redeploy. (The hashed assets can be.)
+            return FileResponse(static_dir / "index.html", headers={"Cache-Control": "no-cache"})
 
     return app
