@@ -1,0 +1,135 @@
+{
+  "title": "IDX header",
+  "function": "idx_dims",
+  "params": [
+    {
+      "name": "data",
+      "type": "bytes"
+    }
+  ],
+  "returns": "ivec",
+  "library": true,
+  "hints": [
+    "Check bytes 0, 1 and 2 first, then read d = data[3].",
+    "The sizes are at offsets 4, 8, 12, …: read_u32_be(data, 4 + 4·i).",
+    "Finally compare len(data) with 4 + 4·d + the product of the sizes."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          3,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          3,
+          0,
+          51,
+          102,
+          153,
+          204,
+          255,
+          255,
+          0,
+          128,
+          64,
+          32,
+          16
+        ]
+      ],
+      "description": "2 images of 2×3 pixels",
+      "expected": [
+        2,
+        2,
+        3
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          1,
+          0,
+          0,
+          0,
+          3,
+          7,
+          2,
+          1
+        ]
+      ],
+      "description": "3 labels",
+      "expected": [
+        3
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          9,
+          1,
+          0,
+          0,
+          0,
+          1,
+          5
+        ]
+      ],
+      "description": "type 0x09 (signed bytes) isn't supported",
+      "expect_error": true,
+      "hidden": true
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          1,
+          0,
+          0,
+          0,
+          5,
+          1,
+          2
+        ]
+      ],
+      "description": "claims 5 labels but has 2: truncated",
+      "expect_error": true,
+      "hidden": true
+    },
+    {
+      "args": [
+        [
+          1,
+          0,
+          8,
+          1,
+          0,
+          0,
+          0,
+          1,
+          5
+        ]
+      ],
+      "description": "the first magic byte must be 0",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

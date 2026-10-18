@@ -35,6 +35,10 @@ class Exercise:
     starters: dict[str, str]
     solutions: dict[str, str]
     lesson_id: str = ""
+    # "function" (graded against tests) or "training" (a long run graded on test accuracy)
+    kind: str = "function"
+    # For training exercises: per-language defaults, limits and pass threshold.
+    training: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     def spec(self) -> dict[str, Any]:
         return {
@@ -172,6 +176,13 @@ def _load_exercise(directory: Path, ex_id: str, require_expected: bool) -> Exerc
             if not path.exists():
                 raise CourseError(f"{ex_id}: missing {path.name}")
             target[lang] = path.read_text(encoding="utf-8")
+    kind = data.get("kind", "function")
+    if kind not in ("function", "training"):
+        raise CourseError(f"{ex_id}: unknown kind {kind!r}")
+    if kind == "training":
+        missing = [lang for lang in EXTENSIONS if lang not in data.get("training", {})]
+        if missing:
+            raise CourseError(f"{ex_id}: training settings missing for {', '.join(missing)}")
     for i, test in enumerate(data["tests"]):
         if len(test["args"]) != len(data["params"]):
             raise CourseError(f"{ex_id}: test {i} has {len(test['args'])} args, expected {len(data['params'])}")
@@ -190,4 +201,6 @@ def _load_exercise(directory: Path, ex_id: str, require_expected: bool) -> Exerc
         time_limit=float(data.get("time_limit", 10)),
         starters=starters,
         solutions=solutions,
+        kind=kind,
+        training=data.get("training", {}),
     )

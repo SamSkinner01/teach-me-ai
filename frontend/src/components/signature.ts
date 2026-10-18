@@ -9,6 +9,8 @@ const PY: Record<string, string> = {
   ivec: "list[int]",
   fn1: "Callable[[float], float]",
   fnv: "Callable[[list[float]], float]",
+  str: "str",
+  bytes: "bytes",
 };
 
 const RS_PARAM: Record<string, string> = {
@@ -20,6 +22,8 @@ const RS_PARAM: Record<string, string> = {
   ivec: "&[usize]",
   fn1: "impl Fn(f64) -> f64",
   fnv: "impl Fn(&[f64]) -> f64",
+  str: "&str",
+  bytes: "&[u8]",
 };
 
 const RS_RET: Record<string, string> = {
@@ -40,6 +44,8 @@ const CPP_PARAM: Record<string, string> = {
   ivec: "const std::vector<std::size_t>&",
   fn1: "const std::function<double(double)>&",
   fnv: "const std::function<double(const std::vector<double>&)>&",
+  str: "const std::string&",
+  bytes: "const std::vector<std::uint8_t>&",
 };
 
 const CPP_RET: Record<string, string> = {

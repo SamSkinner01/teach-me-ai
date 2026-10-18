@@ -1,5 +1,7 @@
 // Typed client for the backend API (see backend/app/main.py).
 
+import type { ModelFile } from "./viz/cnn";
+
 export type Language = "python" | "rust" | "cpp";
 
 export const LANGUAGE_NAMES: Record<Language, string> = {
@@ -80,9 +82,23 @@ export interface LibrarySignature {
   lesson_id: string;
 }
 
+export interface TrainingConfig {
+  train_limit: number;
+  max_train_limit: number;
+  test_limit: number;
+  epochs: number;
+  max_epochs: number;
+  lr: number;
+  batch_size: number;
+  threshold: number;
+  time_limit: number;
+}
+
 export interface ExerciseData {
   id: string;
   title: string;
+  kind: "function" | "training";
+  training: TrainingConfig | null;
   lesson_id: string;
   language: Language;
   function: string;
@@ -156,6 +172,72 @@ export interface LibraryFunction {
   passed_at: string | null;
 }
 
+export interface TrainingParams {
+  train_limit: number;
+  epochs: number;
+  lr: number;
+  batch_size: number;
+  seed: number;
+}
+
+export type RunStatus = "queued" | "running" | "succeeded" | "failed" | "cancelled";
+
+/** [epoch, step, total_steps, loss, accuracy, batches averaged, seconds since start] */
+export type ProgressPoint = [number, number, number, number | null, number | null, number, number];
+
+export interface TrainingResult {
+  outcome: string;
+  compile_output: string;
+  detail: string;
+  stdout: string;
+  stderr: string;
+  time_ms: number;
+  returned: unknown;
+  notes: string[];
+}
+
+export interface TrainingRun {
+  id: number;
+  status: RunStatus;
+  params: TrainingParams;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+  queue_position: number | null;
+  elapsed: number | null;
+  /** Index of the first point in `points`; 0 means `points` is the whole curve. */
+  points_from: number;
+  points: ProgressPoint[];
+  passed: boolean;
+  accuracy: number | null;
+  message: string;
+  result: TrainingResult | null;
+  has_model: boolean;
+  has_predictions: boolean;
+}
+
+export interface RunSummary {
+  id: number;
+  status: RunStatus;
+  passed: boolean;
+  accuracy: number | null;
+  params: TrainingParams;
+  message: string;
+  created_at: string;
+  finished_at: string | null;
+  has_model: boolean;
+}
+
+export interface TrainingOverview {
+  language: Language;
+  config: TrainingConfig;
+  available: boolean;
+  runs: RunSummary[];
+  active_run_id: number | null;
+}
+
+export const TERMINAL: RunStatus[] = ["succeeded", "failed", "cancelled"];
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -214,4 +296,18 @@ export const api = {
   submissions: (id: string) => request<Submission[]>("GET", `/exercises/${id}/submissions`),
   solution: (id: string) => request<{ code: string }>("GET", `/exercises/${id}/solution`),
   library: () => request<{ language: Language; functions: LibraryFunction[] }>("GET", "/library"),
+
+  trainingOverview: (id: string) => request<TrainingOverview>("GET", `/training/${id}`),
+  startTraining: (id: string, code: string, params: TrainingParams) =>
+    request<TrainingRun>("POST", `/training/${id}/runs`, { code, ...params }),
+  trainingRun: (runId: number, since = 0) => request<TrainingRun>("GET", `/training/runs/${runId}?since=${since}`),
+  cancelTraining: (runId: number) => request<{ ok: boolean }>("POST", `/training/runs/${runId}/cancel`),
+  trainingModel: (runId: number) => request<ModelFile>("GET", `/training/runs/${runId}/model`),
+  trainingPredictions: (runId: number) =>
+    request<{ predicted: number[]; actual: number[] }>("GET", `/training/runs/${runId}/predictions`),
+  mnistImages: (ids: number[]) =>
+    request<{ images: Record<string, string>; labels: Record<string, number> }>(
+      "GET",
+      `/mnist/test-images?ids=${ids.join(",")}`,
+    ),
 };

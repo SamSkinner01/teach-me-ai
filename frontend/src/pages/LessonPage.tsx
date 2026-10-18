@@ -148,7 +148,7 @@ export default function LessonPage() {
           {state.completed ? (
             <div className="lesson-done">
               <span className="badge badge-success">
-                <Icon name="check" size={12} /> Lesson complete
+                <Icon name="check" size={12} /> {next ? "Lesson complete" : "Course complete. Congratulations!"}
               </span>
               {next && !next.module.coming_soon ? (
                 <Link to={`/learn/${next.lesson.id}`} className="btn btn-primary">
@@ -179,7 +179,11 @@ export default function LessonPage() {
               <div>
                 <strong>{lesson.exercises.length ? "All exercises passed." : "Done reading?"}</strong>
                 <p className="small muted">
-                  {next && !next.module.coming_soon ? `Next up: ${next.lesson.title}.` : "That's the end of the available lessons."}
+                  {next && !next.module.coming_soon
+                    ? `Next up: ${next.lesson.title}.`
+                    : next
+                      ? "That's the end of the available lessons."
+                      : "That's the last lesson of the course."}
                 </p>
               </div>
               <button className="btn btn-primary btn-lg" onClick={complete} disabled={completing}>

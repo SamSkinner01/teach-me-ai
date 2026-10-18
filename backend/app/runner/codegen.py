@@ -14,10 +14,13 @@ Supported types:
     ivec                   1-D list of non-negative ints (shapes, indices)
     fn1                    a function float -> float, given by name (see FN1)
     fnv                    a function vec -> float, given by name (see FNV)
+    str                    a string (input only), e.g. a file path
+    bytes                  raw bytes 0..255 (input only), e.g. the contents of a file
 """
 
 from __future__ import annotations
 
+import json
 import math
 import re
 from dataclasses import dataclass, field
@@ -82,7 +85,7 @@ FNV: dict[str, dict[str, str]] = {
     },
 }
 
-TYPES = ("float", "int", "bool", "vec", "mat", "ivec", "fn1", "fnv")
+TYPES = ("float", "int", "bool", "vec", "mat", "ivec", "fn1", "fnv", "str", "bytes")
 
 
 @dataclass
@@ -146,6 +149,10 @@ def _py_literal(type_: str, value: Any) -> str:
         return f"(lambda x: {FN1[value['fn']]['python']})"
     if type_ == "fnv":
         return f"(lambda x: {FNV[value['fn']]['python']})"
+    if type_ == "str":
+        return json.dumps(str(value))
+    if type_ == "bytes":
+        return "bytes([" + ", ".join(str(int(b)) for b in value) + "])"
     raise ValueError(f"unknown type {type_}")
 
 
@@ -178,6 +185,11 @@ def _rs_literal(type_: str, value: Any) -> str:
         return f"|x: f64| -> f64 {{ {FN1[value['fn']]['rust']} }}"
     if type_ == "fnv":
         return f"|x: &[f64]| -> f64 {{ {FNV[value['fn']]['rust']} }}"
+    if type_ == "str":
+        return json.dumps(str(value))
+    if type_ == "bytes":
+        items = ", ".join(f"{int(b)}" for b in value)
+        return f"&{{ let v: Vec<u8> = vec![{items}]; v }}"
     raise ValueError(f"unknown type {type_}")
 
 
@@ -208,6 +220,10 @@ def _cpp_literal(type_: str, value: Any) -> str:
         return f"[](double x) -> double {{ return {FN1[value['fn']]['cpp']}; }}"
     if type_ == "fnv":
         return f"[](const std::vector<double>& x) -> double {{ return {FNV[value['fn']]['cpp']}; }}"
+    if type_ == "str":
+        return f"std::string({json.dumps(str(value))})"
+    if type_ == "bytes":
+        return "std::vector<std::uint8_t>{" + ", ".join(f"{int(b)}" for b in value) + "}"
     raise ValueError(f"unknown type {type_}")
 
 
@@ -271,6 +287,7 @@ def _load(path, ns, quiet):
 
 
 _ns = {"__name__": "__main__", "__builtins__": __builtins__}
+__SDK__
 _where = "library"
 try:
     for _path in __LIB_FILES__:
@@ -304,7 +321,39 @@ for _i, _make_args in _CASES:
 '''
 
 
-def _python_job(spec, cases, solution, library) -> Job:
+_PY_SDK = r'''
+# Training SDK: progress, weights and predictions go to the results pipe.
+import time as _time
+_progress = {"last": None, "n": 0, "loss": 0.0, "accuracy": 0.0}
+
+
+def report_progress(epoch, step, total_steps, loss, accuracy):
+    # Sent at most every 0.1 s (plus the first and last step), averaged over the
+    # steps in between, so calling this on every mini-batch is fine.
+    p = _progress
+    p["n"] += 1
+    p["loss"] += float(loss)
+    p["accuracy"] += float(accuracy)
+    now = _time.monotonic()
+    if step <= 1 or step >= total_steps or p["last"] is None or now - p["last"] >= 0.1:
+        _emit({"kind": "progress", "epoch": int(epoch), "step": int(step), "total_steps": int(total_steps),
+               "loss": p["loss"] / p["n"], "accuracy": p["accuracy"] / p["n"], "batches": p["n"]})
+        p.update(last=now, n=0, loss=0.0, accuracy=0.0)
+
+
+def save_tensor(name, shape, data):
+    _emit({"kind": "tensor", "name": str(name), "shape": [int(s) for s in shape], "data": [float(x) for x in data]})
+
+
+def report_predictions(predicted):
+    _emit({"kind": "predictions", "values": [int(p) for p in predicted]})
+
+
+_ns.update(report_progress=report_progress, save_tensor=save_tensor, report_predictions=report_predictions)
+'''
+
+
+def _python_job(spec, cases, solution, library, sdk=False) -> Job:
     files: dict[str, str] = {"solution.py": solution}
     lib_files = []
     for entry in library:
@@ -320,7 +369,8 @@ def _python_job(spec, cases, solution, library) -> Job:
     case_lines.append("]")
 
     harness = (
-        _PY_HARNESS.replace("__LIB_FILES__", repr(lib_files))
+        _PY_HARNESS.replace("__SDK__", _PY_SDK if sdk else "")
+        .replace("__LIB_FILES__", repr(lib_files))
         .replace("__FUNC__", repr(spec["function"]))
         .replace("__CASES__", "\n".join(case_lines))
     )
@@ -367,21 +417,31 @@ mod __tmai {
         pub static LAST_PANIC: RefCell<Option<String>> = RefCell::new(None);
     }
 
-    pub struct Out {
-        file: Box<dyn Write>,
+    // fd 3 is the results pipe set up by the sandbox driver. One shared writer,
+    // so the training SDK and the test harness can both use it.
+    fn results() -> &'static std::sync::Mutex<std::fs::File> {
+        static FILE: std::sync::OnceLock<std::sync::Mutex<std::fs::File>> = std::sync::OnceLock::new();
+        FILE.get_or_init(|| {
+            use std::os::fd::FromRawFd;
+            std::sync::Mutex::new(unsafe { std::fs::File::from_raw_fd(3) })
+        })
     }
+
+    pub fn emit(line: String) {
+        let mut f = results().lock().unwrap_or_else(|e| e.into_inner());
+        let _ = writeln!(f, "{}", line);
+        let _ = f.flush();
+    }
+
+    pub struct Out;
 
     impl Out {
         pub fn new() -> Out {
-            use std::os::fd::FromRawFd;
-            // fd 3 is the results pipe set up by the sandbox driver.
-            let file = unsafe { std::fs::File::from_raw_fd(3) };
-            Out { file: Box::new(file) }
+            Out
         }
 
         pub fn ok(&mut self, case: usize, value: String) {
-            let _ = writeln!(self.file, "{{\"kind\":\"case\",\"case\":{},\"status\":\"ok\",\"value\":{}}}", case, value);
-            let _ = self.file.flush();
+            emit(format!("{{\"kind\":\"case\",\"case\":{},\"status\":\"ok\",\"value\":{}}}", case, value));
         }
 
         pub fn err(&mut self, case: usize, payload: Box<dyn std::any::Any + Send>) {
@@ -393,14 +453,12 @@ mod __tmai {
                 "panic".to_string()
             };
             let location = LAST_PANIC.with(|p| p.borrow_mut().take()).unwrap_or_default();
-            let _ = writeln!(
-                self.file,
+            emit(format!(
                 "{{\"kind\":\"case\",\"case\":{},\"status\":\"error\",\"error_type\":\"panic\",\"message\":{},\"detail\":{}}}",
                 case,
                 esc(&msg),
                 esc(&location)
-            );
-            let _ = self.file.flush();
+            ));
         }
     }
 
@@ -465,7 +523,44 @@ mod __tmai {
 '''
 
 
-def _rust_job(spec, cases, solution, library) -> Job:
+_RS_SDK = r'''
+// Training SDK: progress, weights and predictions go to the results pipe.
+pub fn report_progress(epoch: usize, step: usize, total_steps: usize, loss: f64, accuracy: f64) {
+    // Sent at most every 0.1 s (plus the first and last step), averaged over the
+    // steps in between, so calling this on every mini-batch is fine.
+    static STATE: std::sync::Mutex<Option<(std::time::Instant, usize, f64, f64)>> = std::sync::Mutex::new(None);
+    let mut state = STATE.lock().unwrap_or_else(|e| e.into_inner());
+    let now = std::time::Instant::now();
+    let (last, n, sum_loss, sum_acc) = state.get_or_insert((now, 0, 0.0, 0.0));
+    *n += 1;
+    *sum_loss += loss;
+    *sum_acc += accuracy;
+    if step <= 1 || step >= total_steps || now.duration_since(*last).as_secs_f64() >= 0.1 {
+        __tmai::emit(format!(
+            "{{\"kind\":\"progress\",\"epoch\":{},\"step\":{},\"total_steps\":{},\"loss\":{},\"accuracy\":{},\"batches\":{}}}",
+            epoch, step, total_steps, __tmai::f64_(*sum_loss / *n as f64), __tmai::f64_(*sum_acc / *n as f64), *n
+        ));
+        *last = now;
+        *n = 0;
+        *sum_loss = 0.0;
+        *sum_acc = 0.0;
+    }
+}
+
+pub fn save_tensor(name: &str, shape: &[usize], data: &[f64]) {
+    __tmai::emit(format!(
+        "{{\"kind\":\"tensor\",\"name\":{},\"shape\":{},\"data\":{}}}",
+        __tmai::esc(name), __tmai::ivec_(shape), __tmai::vec_(data)
+    ));
+}
+
+pub fn report_predictions(predicted: &[usize]) {
+    __tmai::emit(format!("{{\"kind\":\"predictions\",\"values\":{}}}", __tmai::ivec_(predicted)));
+}
+'''
+
+
+def _rust_job(spec, cases, solution, library, sdk=False) -> Job:
     files: dict[str, str] = {"solution.rs": solution}
     head = [
         "#![allow(unused, dead_code, non_snake_case, non_camel_case_types, unused_imports, unused_mut, unused_variables)]",
@@ -478,6 +573,8 @@ def _rust_job(spec, cases, solution, library) -> Job:
         head.append(f'mod __lib_{name} {{ use super::*; include!("{path}"); }}')
         head.append(f"pub use __lib_{name}::*;")
     head.append("")
+    if sdk:
+        head.append(_RS_SDK)
     head.append('include!("solution.rs");')
 
     ret = spec["returns"]
@@ -647,9 +744,52 @@ inline void err(int c, const std::string& type, const std::string& msg) {
 '''
 
 
-def _cpp_job(spec, cases, solution, library) -> Job:
+_CPP_SDK = r'''
+#include <chrono>
+
+// Training SDK: progress, weights and predictions go to the results pipe.
+inline void report_progress(std::size_t epoch, std::size_t step, std::size_t total_steps, double loss, double accuracy) {
+    // Sent at most every 0.1 s (plus the first and last step), averaged over the
+    // steps in between, so calling this on every mini-batch is fine.
+    static auto last = std::chrono::steady_clock::now();
+    static std::size_t n = 0;
+    static double sum_loss = 0.0, sum_acc = 0.0;
+    ++n;
+    sum_loss += loss;
+    sum_acc += accuracy;
+    auto now = std::chrono::steady_clock::now();
+    if (step <= 1 || step >= total_steps || std::chrono::duration<double>(now - last).count() >= 0.1) {
+        std::fprintf(tmai_::out,
+                     "{\"kind\":\"progress\",\"epoch\":%zu,\"step\":%zu,\"total_steps\":%zu,\"loss\":%s,\"accuracy\":%s,\"batches\":%zu}\n",
+                     epoch, step, total_steps, tmai_::f64(sum_loss / n).c_str(), tmai_::f64(sum_acc / n).c_str(), n);
+        std::fflush(tmai_::out);
+        last = now;
+        n = 0;
+        sum_loss = sum_acc = 0.0;
+    }
+}
+
+inline void save_tensor(const std::string& name, const std::vector<std::size_t>& shape, const std::vector<double>& data) {
+    std::string line = "{\"kind\":\"tensor\",\"name\":" + tmai_::esc(name) + ",\"shape\":" + tmai_::ivec(shape) +
+                       ",\"data\":" + tmai_::vec(data) + "}\n";
+    std::fputs(line.c_str(), tmai_::out);
+    std::fflush(tmai_::out);
+}
+
+inline void report_predictions(const std::vector<std::size_t>& predicted) {
+    std::string line = "{\"kind\":\"predictions\",\"values\":" + tmai_::ivec(predicted) + "}\n";
+    std::fputs(line.c_str(), tmai_::out);
+    std::fflush(tmai_::out);
+}
+'''
+
+
+def _cpp_job(spec, cases, solution, library, sdk=False) -> Job:
     files: dict[str, str] = {"solution.cpp": solution, "prelude.hpp": CPP_PRELUDE}
-    head = ['#include "prelude.hpp"']
+    # The support code (and SDK) come first so the learner's code can call them.
+    head = ['#include "prelude.hpp"', _CPP_SUPPORT]
+    if sdk:
+        head.append(_CPP_SDK)
     for entry in library:
         path = f"lib/{ident(entry.exercise_id)}.cpp"
         files[path] = entry.code
@@ -673,7 +813,7 @@ def _cpp_job(spec, cases, solution, library) -> Job:
     body.append("    return 0;")
     body.append("}")
 
-    files["main.cpp"] = "\n".join(head) + "\n" + _CPP_SUPPORT + "\n" + "\n".join(body) + "\n"
+    files["main.cpp"] = "\n".join(head) + "\n" + "\n".join(body) + "\n"
     steps = [
         {
             "name": "compile",
@@ -699,8 +839,12 @@ def build_job(
     cases: list[tuple[int, list[Any]]],
     solution: str,
     library: list[LibraryEntry],
+    sdk: bool = False,
 ) -> Job:
     """Create the sandbox job that runs ``cases`` against ``solution``.
+
+    With ``sdk``, the training helpers (report_progress, save_tensor,
+    report_predictions) are defined for the learner's code to call.
 
     ``cases`` is a list of (test index, argument list) pairs; the index is
     echoed back in each result so the host can match results to tests.
@@ -712,4 +856,4 @@ def build_job(
             raise ValueError(f"unsupported parameter type {p['type']!r}")
     if spec["returns"] not in _RS_TYPES:
         raise ValueError(f"unsupported return type {spec['returns']!r}")
-    return _BUILDERS[language](spec, cases, solution, library)
+    return _BUILDERS[language](spec, cases, solution, library, sdk)

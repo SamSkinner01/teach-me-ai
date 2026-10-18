@@ -349,14 +349,61 @@
     {
       "id": "capstone",
       "title": "Capstone: MNIST CNN",
-      "summary": "Load the real dataset, train your own CNN to about 99%, and test it on your own handwriting.",
-      "coming_soon": true,
-      "planned": [
-        "Parsing the IDX format",
-        "Batching & normalization",
-        "Training your CNN",
-        "Evaluation & the confusion matrix",
-        "Draw a digit with your own model"
+      "summary": "Load the real dataset, train your own CNN on it, evaluate it, and test it on your own handwriting.",
+      "lessons": [
+        {
+          "id": "idx-format",
+          "title": "Parsing the MNIST files",
+          "summary": "Raw bytes to images: big-endian integers and the IDX file format.",
+          "exercises": [
+            "cap-u32",
+            "cap-idx-dims",
+            "cap-idx-images",
+            "cap-idx-labels"
+          ]
+        },
+        {
+          "id": "preparing-data",
+          "title": "Preparing the data",
+          "summary": "Standardizing pixels and pulling out mini-batches.",
+          "exercises": [
+            "cap-standardize",
+            "cap-gather-rows",
+            "cap-gather-labels"
+          ]
+        },
+        {
+          "id": "cnn-model",
+          "title": "Assembling the CNN",
+          "summary": "Your Module 6 pieces combined into one network's forward and backward pass.",
+          "exercises": [
+            "cap-cnn-forward",
+            "cap-cnn-gradients"
+          ]
+        },
+        {
+          "id": "training-cnn",
+          "title": "Training your CNN",
+          "summary": "Write the training loop, run it on 60,000 real images, and watch it learn.",
+          "exercises": [
+            "cap-train"
+          ]
+        },
+        {
+          "id": "evaluation",
+          "title": "Evaluation & the confusion matrix",
+          "summary": "How good is it really, and what does it get wrong?",
+          "exercises": [
+            "cap-confusion",
+            "cap-class-accuracy"
+          ]
+        },
+        {
+          "id": "your-model",
+          "title": "Your model, your handwriting",
+          "summary": "Draw a digit and watch the network you built read it.",
+          "exercises": []
+        }
       ]
     }
   ]

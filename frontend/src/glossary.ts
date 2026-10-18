@@ -1,6 +1,21 @@
 // Definitions shown when hovering a <Term> in a lesson, and on the glossary page.
 
 export const GLOSSARY: Record<string, string> = {
+  byte: "The basic unit of computer memory and files: 8 bits, so a whole number from 0 to 255. Each MNIST pixel and label is one byte.",
+  "big-endian":
+    "Storing a multi-byte number with its most significant byte first, the way we write digits. IDX files use it; most CPUs store numbers the other way round (little-endian).",
+  "magic number": "A fixed sequence of bytes at the start of a file that identifies its format, such as 0, 0, 8, d for IDX files or 0x1f 0x8b for gzip.",
+  standardization:
+    "Rescaling data to mean 0 and standard deviation 1 with x′ = (x − μ) / σ, using the μ and σ of the training set for all data.",
+  hyperparameter:
+    "A setting you choose rather than learn, such as the learning rate, batch size, number of epochs or network size.",
+  overfitting:
+    "When a model learns its training examples too specifically (memorizing them) and does noticeably worse on new data. The sign is a large gap between training and test accuracy.",
+  "test set": "Examples held back from training and used only to measure how well a model works on data it has never seen.",
+  "confusion matrix":
+    "A table of a classifier's predictions: row i, column j counts the examples of class i predicted as class j. The diagonal holds the correct predictions.",
+  "distribution shift":
+    "When the data a model is used on differs from the data it was trained on, such as new handwriting styles. Test-set accuracy no longer predicts how well it will do.",
   "feature map": "The output of one convolution filter: a grid showing how strongly the filter's pattern appears at each position of its input.",
   kernel: "The small grid of weights a convolution slides across its input. Also called a filter.",
   padding: "Extra rows and columns (usually zeros) added around an input so a convolution can be applied at the edges and keep the output larger.",

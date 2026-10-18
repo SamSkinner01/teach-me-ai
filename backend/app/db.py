@@ -6,7 +6,7 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA = """
 CREATE TABLE users (
@@ -65,6 +65,34 @@ CREATE TABLE completions (
 """
 
 
+# Applied in order to bring an older database up to SCHEMA_VERSION.
+MIGRATIONS = {
+    2: """
+-- Capstone training runs. Live progress is kept in memory while a run is
+-- going; this row gets the final (downsampled) curve, predictions and weights.
+CREATE TABLE training_runs (
+    id          INTEGER PRIMARY KEY,
+    track_id    INTEGER NOT NULL REFERENCES tracks(id) ON DELETE CASCADE,
+    exercise_id TEXT NOT NULL,
+    code        TEXT NOT NULL,
+    params      TEXT NOT NULL,          -- JSON hyperparameters
+    status      TEXT NOT NULL,          -- queued | running | succeeded | failed | cancelled
+    passed      INTEGER NOT NULL DEFAULT 0,
+    accuracy    REAL,
+    message     TEXT NOT NULL DEFAULT '',
+    result      TEXT,                   -- JSON: compiler output, stdout/stderr, error detail
+    progress    TEXT,                   -- JSON list of [epoch, step, total_steps, loss, accuracy, batches, seconds]
+    predictions TEXT,                   -- JSON list, one label per test image
+    model       TEXT,                   -- JSON "tmai-cnn-v1" model for the browser
+    created_at  TEXT NOT NULL,
+    started_at  TEXT,
+    finished_at TEXT
+);
+CREATE INDEX training_runs_by_exercise ON training_runs (track_id, exercise_id, id);
+""",
+}
+
+
 def now() -> str:
     return datetime.now(UTC).isoformat(timespec="seconds")
 
@@ -83,11 +111,15 @@ def init(path: Path) -> None:
     try:
         conn.execute("PRAGMA journal_mode = WAL")
         version = conn.execute("PRAGMA user_version").fetchone()[0]
+        if version > SCHEMA_VERSION:
+            raise RuntimeError(f"database schema {version} is newer than this app ({SCHEMA_VERSION})")
         if version == 0:
             conn.executescript(SCHEMA)
+            version = 1
+        for target in range(version + 1, SCHEMA_VERSION + 1):
+            conn.executescript(MIGRATIONS[target])
+        if version != SCHEMA_VERSION:
             conn.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
-            conn.commit()
-        elif version > SCHEMA_VERSION:
-            raise RuntimeError(f"database schema {version} is newer than this app ({SCHEMA_VERSION})")
+        conn.commit()
     finally:
         conn.close()

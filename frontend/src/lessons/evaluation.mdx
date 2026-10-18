@@ -1,0 +1,56 @@
+## One number isn't enough
+
+Your network scored well on the test set. But accuracy is a single number, and it hides the question that matters next: **which** images does it get wrong, and what does it mistake them for?
+
+A <Term t="confusion matrix">confusion matrix</Term> answers both. It's a 10 × 10 table of counts: row $i$, column $j$ holds how many test images of the digit $i$ the network called $j$. A perfect classifier puts every image on the diagonal. Here's yours, from your best training run:
+
+<ConfusionMatrixViz />
+
+Some things to look for:
+
+- **The biggest off-diagonal cells.** They're usually digits that look alike when written quickly. For the reference solution's run, the largest were 7s read as 2s, 9s read as 7s, 4s read as 9s, and 3s and 5s read as 8s.
+- **Whether the matrix is symmetric.** It usually isn't. The reference network called 11 fours "9" but only 6 nines "4".
+- **The images themselves.** Click a cell and look at the gallery. Many mistakes are digits a person would also hesitate over, and a few test images look mislabelled. Others reveal a real weakness, like a slanted 1 read as a 7.
+
+<Exercise id="cap-confusion">
+
+Count the (actual, predicted) pairs into a `classes × classes` matrix, rows indexed by the true class.
+
+</Exercise>
+
+## Per-class accuracy
+
+Dividing each diagonal entry by its row total gives the accuracy for each digit separately: of all the real 5s, what fraction did the network call a 5? (In classification jargon this is the **recall** of each class. Dividing by the column total instead gives **precision**: of everything the network called a 5, what fraction really were 5s?)
+
+<Quiz
+  id="eval-constant"
+  question="A broken classifier predicts “1” for every image. The MNIST test set has 1,135 ones out of 10,000 images. What are its overall accuracy and its per-class accuracies?"
+  options={[
+    "Overall 10%, and 10% for every class",
+    "Overall 11.35%, with 100% for the digit 1 and 0% for every other digit",
+    "Overall 0%, since it never learned anything",
+    "Overall 100% for the digit 1, so 100% overall"
+  ]}
+  answer={1}
+  explain="It gets exactly the 1,135 ones right: 11.35% overall. Per class, that's 100% for 1 and 0% for the other nine, which is exactly what the collapsed η = 0.5 run in the previous lesson did. The per-class view makes the failure obvious at a glance."
+/>
+
+Per-class numbers matter most when classes are imbalanced. If 0.1% of transactions are fraudulent, a model that never flags anything is 99.9% accurate, and completely useless.
+
+<Exercise id="cap-class-accuracy">
+
+Return the accuracy of each class from a confusion matrix. A class with no examples gets 0.
+
+</Exercise>
+
+## Keep the test set honest
+
+The test set only measures how well your network **generalizes** if your choices never depend on it. If you try fifty settings and keep whichever scores best on the test images, you've slowly fitted the test set too, and the score becomes optimistic.
+
+The usual fix is a third split. Hold out part of the training data as a **validation set**, tune your hyperparameters on that, and look at the test set only at the very end. (Here the course has fixed most choices for you, so the test score is a fair one.)
+
+<KeyIdea>
+
+Accuracy says how often a classifier is right. The confusion matrix shows what it gets wrong and what it mistakes it for, and per-class accuracy shows whether every class is handled well, not just the common ones.
+
+</KeyIdea>

@@ -1,0 +1,182 @@
+{
+  "title": "IDX images",
+  "function": "idx_images",
+  "params": [
+    {
+      "name": "data",
+      "type": "bytes"
+    },
+    {
+      "name": "limit",
+      "type": "int"
+    }
+  ],
+  "returns": "mat",
+  "library": true,
+  "hints": [
+    "idx_dims validates the file and gives you [count, rows, cols].",
+    "The pixels start right after the header, at offset 4 + 4·3 = 16. Image i occupies bytes 16 + i·rows·cols onwards.",
+    "Each pixel becomes byte / 255.0."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          3,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          3,
+          0,
+          51,
+          102,
+          153,
+          204,
+          255,
+          255,
+          0,
+          128,
+          64,
+          32,
+          16
+        ],
+        10
+      ],
+      "description": "both 2×3 images, scaled to [0, 1]",
+      "expected": [
+        [
+          0.0,
+          0.2,
+          0.4,
+          0.6,
+          0.8,
+          1.0
+        ],
+        [
+          1.0,
+          0.0,
+          0.5019607843137255,
+          0.25098039215686274,
+          0.12549019607843137,
+          0.06274509803921569
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          3,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          3,
+          0,
+          51,
+          102,
+          153,
+          204,
+          255,
+          255,
+          0,
+          128,
+          64,
+          32,
+          16
+        ],
+        1
+      ],
+      "description": "just the first image",
+      "expected": [
+        [
+          0.0,
+          0.2,
+          0.4,
+          0.6,
+          0.8,
+          1.0
+        ]
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          3,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          3,
+          0,
+          51,
+          102,
+          153,
+          204,
+          255,
+          255,
+          0,
+          128,
+          64,
+          32,
+          16
+        ],
+        0
+      ],
+      "description": "limit 0: no images",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          1,
+          0,
+          0,
+          0,
+          3,
+          7,
+          2,
+          1
+        ],
+        5
+      ],
+      "description": "a label file isn't an image file",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

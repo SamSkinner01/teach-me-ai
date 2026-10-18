@@ -1,0 +1,106 @@
+{
+  "title": "Big-endian integers",
+  "function": "read_u32_be",
+  "params": [
+    {
+      "name": "data",
+      "type": "bytes"
+    },
+    {
+      "name": "offset",
+      "type": "int"
+    }
+  ],
+  "returns": "int",
+  "library": true,
+  "hints": [
+    "Each byte is a base-256 digit, and the first byte is the most significant.",
+    "value = data[o]·256³ + data[o+1]·256² + data[o+2]·256 + data[o+3]; with shifts: (b0 << 24) | (b1 << 16) | (b2 << 8) | b3.",
+    "In Rust and C++, convert each byte to a wider type (usize / std::size_t) before shifting, or the bits fall off the top of a u8."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          0,
+          0,
+          8,
+          3
+        ],
+        0
+      ],
+      "description": "the IDX magic number for an image file",
+      "expected": 2051
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          39,
+          16
+        ],
+        0
+      ],
+      "description": "10,000: the number of MNIST test images",
+      "expected": 10000
+    },
+    {
+      "args": [
+        [
+          9,
+          9,
+          0,
+          0,
+          234,
+          96
+        ],
+        2
+      ],
+      "description": "60,000, starting at offset 2",
+      "hidden": true,
+      "expected": 60000
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        0
+      ],
+      "description": "every byte matters",
+      "hidden": true,
+      "expected": 16909060
+    },
+    {
+      "args": [
+        [
+          255,
+          255,
+          255,
+          255
+        ],
+        0
+      ],
+      "description": "the largest 32-bit value",
+      "hidden": true,
+      "expected": 4294967295
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          1
+        ],
+        0
+      ],
+      "description": "only 3 bytes left",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

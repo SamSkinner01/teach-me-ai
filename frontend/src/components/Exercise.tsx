@@ -12,7 +12,7 @@ const CodeEditor = lazy(() => import("../editor/CodeEditor"));
 
 type SaveState = "saved" | "dirty" | "saving" | "error";
 
-function EditorFallback({ height = 300 }: { height?: number }) {
+export function EditorFallback({ height = 300 }: { height?: number }) {
   return (
     <div className="code-editor editor-loading" style={{ height }}>
       <span className="spinner" />
@@ -20,7 +20,7 @@ function EditorFallback({ height = 300 }: { height?: number }) {
   );
 }
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -41,7 +41,7 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
   );
 }
 
-function timeAgo(iso: string): string {
+export function timeAgo(iso: string): string {
   const s = (Date.now() - new Date(iso).getTime()) / 1000;
   if (s < 60) return "just now";
   if (s < 3600) return `${Math.floor(s / 60)} min ago`;
