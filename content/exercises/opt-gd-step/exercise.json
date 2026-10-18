@@ -1,0 +1,100 @@
+{
+  "title": "One gradient-descent step",
+  "function": "gd_step",
+  "params": [
+    {
+      "name": "w",
+      "type": "vec"
+    },
+    {
+      "name": "grad",
+      "type": "vec"
+    },
+    {
+      "name": "lr",
+      "type": "float"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Gradient descent moves each weight a little in the direction opposite to its gradient.",
+    "w_new = w − lr · grad.",
+    "vec_add(w, vec_scale(grad, −lr)). Your vec_add already rejects mismatched lengths."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          0.5,
+          -1
+        ],
+        0.1
+      ],
+      "description": "move against the gradient",
+      "expected": [
+        0.95,
+        2.1
+      ]
+    },
+    {
+      "args": [
+        [
+          3,
+          3
+        ],
+        [
+          0,
+          0
+        ],
+        0.5
+      ],
+      "description": "a zero gradient means no movement",
+      "expected": [
+        3.0,
+        3.0
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          2,
+          3
+        ],
+        1.0
+      ],
+      "description": "learning rate 1",
+      "hidden": true,
+      "expected": [
+        -1.0,
+        -2.0,
+        -3.0
+      ]
+    },
+    {
+      "args": [
+        [
+          1
+        ],
+        [
+          1,
+          2
+        ],
+        0.1
+      ],
+      "description": "weights and gradient must match",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

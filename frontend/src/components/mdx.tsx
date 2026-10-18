@@ -10,8 +10,10 @@ import { DerivativeExplorer } from "../viz/DerivativeExplorer";
 import { DigitDemo } from "../viz/DigitDemo";
 import { GradientField } from "../viz/GradientField";
 import { InitViz, NormalViz } from "../viz/InitViz";
+import { LineFitViz } from "../viz/LineFitViz";
 import { MatmulStepper } from "../viz/MatmulStepper";
 import { MatrixTransformer } from "../viz/MatrixTransformer";
+import { LearningRateViz, MomentumViz } from "../viz/OptimizerViz";
 import { RngQuality, XorshiftViz } from "../viz/RngViz";
 import { SamplingViz } from "../viz/SamplingViz";
 import { SoftmaxViz } from "../viz/SoftmaxViz";
@@ -61,6 +63,9 @@ const figures = {
   RngQuality,
   NormalViz,
   InitViz,
+  LineFitViz,
+  LearningRateViz,
+  MomentumViz,
 };
 
 export const mdxComponents: MDXComponents = {

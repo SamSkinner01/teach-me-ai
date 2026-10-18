@@ -1043,3 +1043,82 @@ button.mm-cell {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* ------------------------------------------------------------------
+   Module 4: optimization figures
+   ------------------------------------------------------------------ */
+
+.fit-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .fit-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .fit-grid .viz-readout {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 600px) {
+  .fit-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.fit-contour {
+  max-width: 300px;
+}
+.fit-contour .gf-overlay {
+  cursor: pointer;
+}
+.residual {
+  stroke: var(--danger);
+  stroke-width: 1.5;
+  opacity: 0.75;
+}
+.fit-line {
+  stroke: var(--viz-c);
+  stroke-width: 2.5;
+}
+.data-dot {
+  fill: var(--viz-a);
+  stroke: var(--surface);
+  stroke-width: 1.5;
+}
+.lr-dot {
+  fill: var(--viz-b);
+}
+.lr-warning {
+  fill: var(--danger);
+  font-weight: 700;
+  font-size: 14px;
+  font-family: var(--font-sans);
+}
+.lr-verdict {
+  grid-column: span 2;
+}
+.path-gd,
+.path-mom {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.path-gd {
+  stroke: var(--viz-b);
+}
+.path-mom {
+  stroke: var(--viz-c);
+}
+.path-goal {
+  fill: var(--surface);
+  stroke: var(--text);
+  stroke-width: 2;
+}
+.path-end-gd {
+  fill: var(--viz-b);
+}
+.path-end-mom {
+  fill: var(--viz-c);
+}

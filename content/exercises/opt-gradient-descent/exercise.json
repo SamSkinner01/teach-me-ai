@@ -1,0 +1,128 @@
+{
+  "title": "Gradient descent",
+  "function": "gradient_descent",
+  "params": [
+    {
+      "name": "f",
+      "type": "fnv"
+    },
+    {
+      "name": "x0",
+      "type": "vec"
+    },
+    {
+      "name": "lr",
+      "type": "float"
+    },
+    {
+      "name": "steps",
+      "type": "int"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Start from x0. Repeat `steps` times: compute the gradient at the current point, then take one step against it.",
+    "Your `numerical_gradient` (with h = 1e-5) gives the gradient, and your `gd_step` takes the step.",
+    "x = x0; for each step: x = gd_step(x, numerical_gradient(f, x, 1e-5), lr); return x."
+  ],
+  "tolerance": {
+    "abs": 1e-07,
+    "rel": 1e-06
+  },
+  "tests": [
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          0,
+          0
+        ],
+        0.1,
+        100
+      ],
+      "description": "rolls down to the bottom of the bowl at (1, −2)",
+      "expected": [
+        0.9999999997962964,
+        -2.0
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          0,
+          0
+        ],
+        0.1,
+        1
+      ],
+      "description": "just one step",
+      "expected": [
+        0.20000000000131024,
+        -0.800000000005241
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "sum_squares"
+        },
+        [
+          3,
+          -4
+        ],
+        0.25,
+        20
+      ],
+      "description": "towards the origin",
+      "hidden": true,
+      "expected": [
+        2.8610229491226444e-06,
+        -3.814697265644808e-06
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "valley"
+        },
+        [
+          5,
+          1
+        ],
+        0.2,
+        50
+      ],
+      "description": "a narrow valley: fast in one direction, slow in the other",
+      "hidden": true,
+      "expected": [
+        0.6494289676116327,
+        -2.864375403199447e-14
+      ]
+    },
+    {
+      "args": [
+        {
+          "fn": "bowl"
+        },
+        [
+          2,
+          2
+        ],
+        0.1,
+        0
+      ],
+      "description": "zero steps returns the starting point",
+      "hidden": true,
+      "expected": [
+        2.0,
+        2.0
+      ]
+    }
+  ]
+}

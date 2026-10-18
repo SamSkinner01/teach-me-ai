@@ -1,0 +1,73 @@
+## Full-batch is expensive
+
+To take one step of gradient descent you need the gradient of the loss, which is an average over **every** training example. For MNIST that means running all 60,000 images through the network, and back, just to move the weights once. Training needs thousands of steps.
+
+## Estimate the gradient instead
+
+The loss is an average, so its gradient is an average too:
+
+$$
+\nabla L = \frac{1}{n}\sum_{i=1}^{n} \nabla \ell_i
+$$
+
+The average over a small random sample, a <Term>mini-batch</Term> of say 64 examples, is a decent **estimate** of the average over all of them, like the sample mean from Module 3. It's noisy, but on average it points the right way, and it costs 1,000 times less to compute. That's <Term t="stochastic gradient descent">stochastic gradient descent</Term> (SGD): take many cheap, noisy steps instead of a few expensive, exact ones.
+
+<LineFitViz mode="sgd" />
+
+Smaller batches mean noisier steps but more of them per epoch. In practice, batches of 32 to 256 are typical. A bit of noise is even helpful: it can bounce the weights out of poor flat spots that full-batch gradient descent would settle into.
+
+<NumericCheck
+  id="sgd-steps"
+  question="MNIST has 60,000 training images. With a batch size of 64 (and a smaller last batch), how many update steps make up one epoch?"
+  answer={938}
+  explain="$60{,}000 / 64 = 937.5$, so 937 full batches plus one batch of 32: 938 steps per epoch, versus 1 step per epoch for full-batch gradient descent."
+/>
+
+## Shuffling
+
+If the batches always contained the same examples in the same order, the noise wouldn't be random anymore. Worse, if the data were sorted (all the 0s first, then the 1s…), each batch would see only one digit and the network would lurch from one class to the next. So training **shuffles** the data at the start of every epoch.
+
+The right way to shuffle is the <Term t="fisher-yates shuffle">Fisher–Yates shuffle</Term>:
+
+```text
+for i from n−1 down to 1:
+    j = a random integer between 0 and i (inclusive)
+    swap items i and j
+```
+
+Every one of the $n!$ possible orders is equally likely. A tempting shortcut, swapping each item with a random position anywhere in the list, looks similar but is **biased**: some orders come up noticeably more often than others.
+
+With your own `xorshift32` generating the random $j$, every language produces exactly the same shuffle for the same seed.
+
+<Quiz
+  id="sgd-shuffle"
+  question="Why reshuffle the training data every epoch, instead of shuffling once at the start?"
+  options={[
+    "It makes each epoch faster",
+    "So each epoch sees different mini-batches, which keeps the gradient noise random rather than repeating the same pattern",
+    "It isn't necessary; shuffling once is equivalent",
+    "To change which examples are in the training set"
+  ]}
+  answer={1}
+  explain="Fresh batches each epoch mean the estimate errors don't line up the same way every time, so they average out."
+/>
+
+<KeyIdea>
+
+SGD estimates the gradient from a small random mini-batch: noisy but cheap, so you can take many more steps. Each epoch, shuffle the data (Fisher–Yates) and walk through it one batch at a time.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="opt-shuffle">
+
+Return a Fisher–Yates shuffle of $0, 1, \dots, n-1$, using `xorshift32` exactly as described in the starter code: for each $i$ from $n-1$ down to 1, advance the state, set $j$ = state mod $(i + 1)$, and swap.
+
+</Exercise>
+
+<Exercise id="opt-sgd">
+
+Fit $\hat y = wx + b$ with mini-batch SGD. Epoch $e$ (starting from 0) walks through the order `shuffled_indices(seed + e, n)` in consecutive batches of `batch_size`, and updates $w$ and $b$ after every batch. Return $[w, b]$.
+
+</Exercise>

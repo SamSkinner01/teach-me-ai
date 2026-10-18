@@ -68,6 +68,12 @@ FNV: dict[str, dict[str, str]] = {
         "rust": "x[0] * x[1] + x[2].sin()",
         "cpp": "x[0] * x[1] + std::sin(x[2])",
     },
+    "valley": {
+        "label": "f(x, y) = 0.1x² + 2y²",
+        "python": "0.1 * x[0] * x[0] + 2.0 * x[1] * x[1]",
+        "rust": "0.1 * x[0] * x[0] + 2.0 * x[1] * x[1]",
+        "cpp": "0.1 * x[0] * x[0] + 2.0 * x[1] * x[1]",
+    },
     "linear": {
         "label": "f(x) = 2x₀ − 3x₁ + 0.5x₂",
         "python": "2.0 * x[0] - 3.0 * x[1] + 0.5 * x[2]",

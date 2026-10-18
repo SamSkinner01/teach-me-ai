@@ -1,0 +1,98 @@
+{
+  "title": "Gradient of MSE",
+  "function": "mse_grad",
+  "params": [
+    {
+      "name": "pred",
+      "type": "vec"
+    },
+    {
+      "name": "target",
+      "type": "vec"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Differentiate (1/n) Σ (pⱼ − tⱼ)² with respect to one prediction pᵢ: only the i-th term depends on it.",
+    "∂L/∂pᵢ = (2/n)(pᵢ − tᵢ).",
+    "Return vec_scale(vec_add(pred, vec_scale(target, −1)), 2 / n), after checking the lengths."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "description": "the gradient points from the target towards the prediction",
+      "expected": [
+        1.0,
+        2.0
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "perfect predictions have zero gradient",
+      "expected": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          -1,
+          1,
+          -1
+        ]
+      ],
+      "description": "four predictions",
+      "hidden": true,
+      "expected": [
+        -0.5,
+        0.5,
+        -0.5,
+        0.5
+      ]
+    },
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          1
+        ]
+      ],
+      "description": "one target per prediction",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

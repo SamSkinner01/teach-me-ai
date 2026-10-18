@@ -1,0 +1,87 @@
+## Learning is minimizing
+
+Every part of the course so far has been building up to one idea. A model has adjustable numbers (its **weights**), a dataset of examples with the right answers, and a **loss**: a single number that measures how wrong the model's answers are. Training means **finding the weights that make the loss as small as possible**.
+
+$$
+\mathbf{w}^\ast = \arg\min_{\mathbf{w}}\ L(\mathbf{w}), \qquad L(\mathbf{w}) = \frac{1}{n}\sum_{i=1}^{n} \ell\big(\text{model}_{\mathbf{w}}(x_i),\ y_i\big)
+$$
+
+The total loss is the average of a per-example loss $\ell$ over the dataset. This module is about *how* to do the minimizing. This lesson is about what to minimize.
+
+## Two losses for two jobs
+
+**Classification** (which digit is this?) uses the <Term t="cross-entropy">cross-entropy</Term> loss from Module 3: $-\ln$ of the probability given to the right class.
+
+**Regression** (predict a number, like a house price) usually uses the <Term t="mean squared error">mean squared error</Term>:
+
+$$
+\text{MSE} = \frac{1}{n}\sum_{i=1}^{n}\big(\hat y_i - y_i\big)^2
+$$
+
+where $\hat y_i$ is the prediction and $y_i$ the true value. Squaring makes every error count positively and punishes big errors much more than small ones (an error of 10 costs 100 times as much as an error of 1). It's also smooth everywhere, which makes it easy to differentiate. An alternative, the mean *absolute* error $\frac1n\sum|\hat y_i - y_i|$, is less sensitive to outliers but has a kink at 0.
+
+<NumericCheck
+  id="mse-hand"
+  question="Predictions $(3, 5)$, targets $(2, 7)$. What is the MSE?"
+  answer={2.5}
+  explain="Errors $1$ and $-2$; squares $1$ and $4$; average $2.5$."
+/>
+
+## The loss landscape
+
+Here's the simplest possible model: a straight line $\hat y = wx + b$, with two weights. For every choice of $(w, b)$ there's an MSE, so the loss is a function of two variables: a **surface** over the $(w, b)$ plane. Finding the best line means finding the lowest point of that surface.
+
+<LineFitViz mode="explore" />
+
+Try to find the best line by hand. Notice how the loss surface is a long, tilted bowl: changing the slope $w$ matters much more than changing $b$. That shape is about to cause trouble.
+
+## The gradient of the loss
+
+To go downhill you need the gradient. Start with how the loss changes with each **prediction**. Only the $i$-th term of the sum contains $\hat y_i$:
+
+$$
+\frac{\partial\,\text{MSE}}{\partial \hat y_i} = \frac{2}{n}\big(\hat y_i - y_i\big)
+$$
+
+Positive when the prediction is too high (so lowering it helps), negative when it's too low. Then the chain rule takes you from predictions to weights. For the line, $\partial \hat y_i/\partial w = x_i$ and $\partial \hat y_i/\partial b = 1$, so with $g_i = \frac{2}{n}(\hat y_i - y_i)$:
+
+$$
+\frac{\partial L}{\partial w} = \sum_i g_i\, x_i = \mathbf{g}\cdot\mathbf{x}, \qquad \frac{\partial L}{\partial b} = \sum_i g_i
+$$
+
+A dot product and a sum. Every model you build from here on works the same way: the gradient of the loss with respect to the outputs, pushed back through the model with the chain rule.
+
+<NumericCheck
+  id="mse-grad-hand"
+  question="One prediction $\hat y = 3$ with target $y = 1$. What is $\partial\,\text{MSE}/\partial \hat y$?"
+  answer={4}
+  explain="$\frac{2}{1}(3 - 1) = 4$."
+/>
+
+<Quiz
+  id="loss-choice"
+  question="A network predicts which of 10 digits an image shows. Which loss should it use?"
+  options={["Mean squared error on the digit value (0–9)", "Cross-entropy on the 10 class probabilities", "Mean absolute error on the digit value"]}
+  answer={1}
+  explain="Digits are categories, not quantities: predicting 4 when the answer is 9 isn't “more wrong” than predicting 8. Cross-entropy on class probabilities treats every wrong class fairly."
+/>
+
+<KeyIdea>
+
+Training minimizes a loss: an average of per-example errors. Mean squared error is the default for regression; cross-entropy for classification. The gradient of MSE with respect to the predictions is $\frac{2}{n}(\hat{\mathbf{y}} - \mathbf{y})$, and the chain rule carries it to the weights.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="opt-mse">
+
+Return the mean squared error between `pred` and `target`. Reject vectors of different (or zero) length.
+
+</Exercise>
+
+<Exercise id="opt-mse-grad">
+
+Return $\frac{2}{n}(\hat y_i - y_i)$ for every $i$. Reject vectors of different (or zero) length.
+
+</Exercise>

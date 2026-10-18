@@ -192,13 +192,45 @@
     {
       "id": "optimization",
       "title": "Optimization",
-      "summary": "Walking downhill on a loss surface, one gradient step at a time.",
-      "coming_soon": true,
-      "planned": [
-        "Loss functions",
-        "Gradient descent & learning rates",
-        "Stochastic gradient descent & mini-batches",
-        "Momentum"
+      "summary": "Walking downhill on a loss surface, one gradient step at a time: the loop that trains every network.",
+      "lessons": [
+        {
+          "id": "loss-functions",
+          "title": "Loss functions",
+          "summary": "Turning \"how wrong is the model?\" into one number you can minimize.",
+          "exercises": [
+            "opt-mse",
+            "opt-mse-grad"
+          ]
+        },
+        {
+          "id": "gradient-descent",
+          "title": "Gradient descent & learning rates",
+          "summary": "Step downhill, repeat. Your first learning algorithm, and the one setting that makes or breaks it.",
+          "exercises": [
+            "opt-gd-step",
+            "opt-gradient-descent",
+            "opt-fit-line"
+          ]
+        },
+        {
+          "id": "sgd",
+          "title": "Stochastic gradient descent & mini-batches",
+          "summary": "Why networks learn from a few examples at a time, in a shuffled order.",
+          "exercises": [
+            "opt-shuffle",
+            "opt-sgd"
+          ]
+        },
+        {
+          "id": "momentum",
+          "title": "Momentum",
+          "summary": "Giving gradient descent some inertia so it rolls through narrow valleys instead of zig-zagging.",
+          "exercises": [
+            "opt-momentum-step",
+            "opt-momentum"
+          ]
+        }
       ]
     },
     {

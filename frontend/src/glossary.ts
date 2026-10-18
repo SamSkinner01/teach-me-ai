@@ -1,6 +1,19 @@
 // Definitions shown when hovering a <Term> in a lesson, and on the glossary page.
 
 export const GLOSSARY: Record<string, string> = {
+  epoch: "One full pass through the training data. Training usually runs for many epochs.",
+  "learning rate":
+    "The step size η in gradient descent, w ← w − η∇L. Too small and training crawls; too large and it oscillates or blows up.",
+  "mean squared error":
+    "The standard regression loss: the average of the squared differences between predictions and targets, (1/n) Σ (ŷᵢ − yᵢ)².",
+  "mini-batch":
+    "A small random subset of the training data (often 32–256 examples) used to estimate the gradient for one update step.",
+  momentum:
+    "A gradient-descent variant that keeps a decaying running sum of past gradients (a velocity) and steps along it, which speeds up progress along consistent directions and damps oscillation.",
+  "stochastic gradient descent":
+    "Gradient descent where each step uses the gradient on a random mini-batch instead of the whole dataset: noisier steps, but far cheaper ones.",
+  "fisher-yates shuffle":
+    "The standard algorithm for shuffling a list uniformly at random: walk from the end, swapping each position with a random earlier (or the same) position.",
   "box-muller transform":
     "A way to turn two independent uniform random numbers u₁, u₂ into two independent standard normal ones: r = √(−2 ln u₁), θ = 2πu₂, then r·cos θ and r·sin θ.",
   "cross-entropy":

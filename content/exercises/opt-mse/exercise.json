@@ -1,0 +1,99 @@
+{
+  "title": "Mean squared error",
+  "function": "mse_loss",
+  "params": [
+    {
+      "name": "pred",
+      "type": "vec"
+    },
+    {
+      "name": "target",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "MSE = (1/n) Σ (predᵢ − targetᵢ)².",
+    "Check the lengths match, then sum the squared differences and divide by n.",
+    "With your library: d = vec_add(pred, vec_scale(target, −1)); return dot(d, d) / n."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3
+        ],
+        [
+          1,
+          2,
+          3
+        ]
+      ],
+      "description": "perfect predictions have zero loss",
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          2,
+          4
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "description": "errors of 1 and 2: (1 + 4) / 2",
+      "expected": 2.5
+    },
+    {
+      "args": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          1,
+          -1,
+          1,
+          -1
+        ]
+      ],
+      "description": "the sign of an error doesn't matter",
+      "hidden": true,
+      "expected": 1.0
+    },
+    {
+      "args": [
+        [
+          2.5
+        ],
+        [
+          0.5
+        ]
+      ],
+      "description": "a single prediction",
+      "hidden": true,
+      "expected": 4.0
+    },
+    {
+      "args": [
+        [
+          1,
+          2
+        ],
+        [
+          1
+        ]
+      ],
+      "description": "one target per prediction",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}
