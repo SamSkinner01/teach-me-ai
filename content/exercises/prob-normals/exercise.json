@@ -1,0 +1,82 @@
+{
+  "title": "Normal random numbers (Box–Muller)",
+  "function": "random_normals",
+  "params": [
+    {
+      "name": "seed",
+      "type": "int"
+    },
+    {
+      "name": "n",
+      "type": "int"
+    }
+  ],
+  "returns": "vec",
+  "library": true,
+  "hints": [
+    "Each pair of uniforms (u₁, u₂) becomes two normals: r = √(−2 ln u₁), θ = 2π u₂, then r·cos θ and r·sin θ.",
+    "Generate 2·⌈n/2⌉ uniforms in one call to `random_uniforms(seed, …)`, use them in consecutive pairs (u[0], u[1]), (u[2], u[3]), …, and drop the last normal if n is odd.",
+    "Your `random_uniforms` already validates the seed, and never returns exactly 0, so ln u₁ is always finite."
+  ],
+  "tests": [
+    {
+      "args": [
+        2463534242,
+        4
+      ],
+      "description": "two Box–Muller pairs",
+      "expected": [
+        -1.6455093556075222,
+        -0.924431987362357,
+        -1.185461226979586,
+        0.24522960848372194
+      ]
+    },
+    {
+      "args": [
+        42,
+        3
+      ],
+      "description": "an odd count: generate two pairs, keep three numbers",
+      "expected": [
+        -1.8404491768878464,
+        -2.9126882475996063,
+        1.2259084896854708
+      ]
+    },
+    {
+      "args": [
+        12345,
+        6
+      ],
+      "description": "three pairs",
+      "hidden": true,
+      "expected": [
+        -0.5618647421287533,
+        0.434851293980376,
+        -0.8826335880605546,
+        0.25465156476854794,
+        0.17235003228156404,
+        -1.8829258720864717
+      ]
+    },
+    {
+      "args": [
+        42,
+        0
+      ],
+      "description": "zero numbers",
+      "hidden": true,
+      "expected": []
+    },
+    {
+      "args": [
+        0,
+        2
+      ],
+      "description": "seed 0 must still be rejected",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

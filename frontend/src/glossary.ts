@@ -1,6 +1,41 @@
 // Definitions shown when hovering a <Term> in a lesson, and on the glossary page.
 
 export const GLOSSARY: Record<string, string> = {
+  "box-muller transform":
+    "A way to turn two independent uniform random numbers u₁, u₂ into two independent standard normal ones: r = √(−2 ln u₁), θ = 2πu₂, then r·cos θ and r·sin θ.",
+  "cross-entropy":
+    "The standard loss for classifiers: −ln of the probability the model gave to the correct class. It's 0 for a perfect, confident prediction and grows without limit as that probability approaches 0.",
+  "expected value":
+    "The probability-weighted average of a random variable's values, E[X] = Σ xᵢ pᵢ. It's what the average of many samples settles towards.",
+  "fan-in": "The number of inputs feeding into a neuron (for a layer with weight matrix W, the number of columns).",
+  "he initialization":
+    "Drawing initial weights from a normal distribution with variance 2 / fan-in. It keeps the spread of activations steady through layers of ReLUs.",
+  "law of large numbers":
+    "The average of many independent samples of a random variable gets closer and closer to its expected value as the number of samples grows.",
+  likelihood:
+    "How probable the observed data is under a model with particular parameters. Training by maximum likelihood means choosing the parameters that make the data most probable.",
+  "log-sum-exp":
+    "ln(Σ eˣⁱ), computed stably as m + ln Σ e^(xᵢ − m) where m is the largest xᵢ. It appears whenever you take the log of a softmax.",
+  logit: "A raw, unnormalized score output by a classifier, before softmax turns the scores into probabilities.",
+  "normal distribution":
+    "The bell-shaped distribution N(μ, σ²), with mean μ and standard deviation σ. About 68% of samples fall within one σ of the mean, and 95% within two.",
+  "one-hot":
+    "A vector of zeros with a single 1 marking one category, for example the label 3 out of 10 classes is (0, 0, 0, 1, 0, 0, 0, 0, 0, 0).",
+  "probability distribution":
+    "A description of which values a random variable can take and how likely each one is. For a discrete variable, a list of values and probabilities that are non-negative and sum to 1.",
+  "pseudo-random number generator":
+    "A deterministic algorithm whose outputs look random. Starting it from the same seed always reproduces the same sequence, which makes experiments repeatable.",
+  "random variable": "A number whose value is decided by chance, such as the result of rolling a die.",
+  seed: "The starting state of a pseudo-random number generator. The same seed always produces the same sequence of numbers.",
+  softmax:
+    "The function that turns a vector of scores z into probabilities: softmax(z)ᵢ = e^zᵢ / Σⱼ e^zⱼ. Every output is positive, they sum to 1, and larger scores get larger probabilities.",
+  "standard deviation":
+    "The square root of the variance. It measures spread in the same units as the data itself.",
+  variance:
+    "The average squared distance of a random variable from its mean, Var[X] = E[(X − μ)²]. Larger variance means more spread.",
+  "vanishing gradient":
+    "When gradients get multiplied by small factors layer after layer, so they shrink towards zero and the early layers of a deep network barely learn.",
+  xor: "Exclusive or: a bitwise operation that outputs 1 where its two inputs differ and 0 where they match.",
   "activation function":
     "A non-linear function applied to a neuron's output, such as sigmoid or ReLU. Without it, stacking layers would collapse into a single linear transformation.",
   backpropagation:

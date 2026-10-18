@@ -2,7 +2,7 @@
 
 An interactive web app that teaches the math behind AI from first principles (linear algebra, then calculus) and has learners implement every piece themselves, in **Python, Rust or C++**, on the way to building a convolutional neural network for MNIST. See [`TEACH-ME-AI.md`](TEACH-ME-AI.md) for the full feature plan.
 
-**What's built so far:** modules 0–2 (Orientation, Linear Algebra, Calculus): 13 lessons, 24 exercises in all three languages, 10 interactive visualizations, and a draw-a-digit demo backed by a small CNN that runs in the browser. Modules 3–7 appear on the roadmap as "coming soon".
+**What's built so far:** modules 0–3 (Orientation, Linear Algebra, Calculus, Probability & Statistics): 18 lessons, 36 exercises in all three languages, 16 interactive visualizations, and a draw-a-digit demo backed by a small CNN that runs in the browser. Modules 4–7 appear on the roadmap as "coming soon".
 
 ## How it fits together
 

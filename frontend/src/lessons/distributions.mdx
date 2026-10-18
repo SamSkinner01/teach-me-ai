@@ -1,0 +1,129 @@
+## Why probability?
+
+So far everything has been exact: a dot product has one right answer. But neural networks live in an uncertain world:
+
+- A classifier doesn't say "that's a 7". It says "I'm 92% sure it's a 7, 5% sure it's a 1, …" Its outputs are **probabilities**.
+- Training measures how much probability the network gave to the right answers, and pushes that up.
+- Training is full of deliberate randomness: random starting weights, data shuffled into a random order every pass.
+
+This module builds the probability you need for all three, starting with the basics.
+
+## Random variables and distributions
+
+A <Term>random variable</Term> is a number decided by chance, like the result of rolling a die. Its <Term>probability distribution</Term> says which values it can take and how likely each one is:
+
+| value $x$ | 1 | 2 | 3 | 4 | 5 | 6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| probability $p(x)$ | $\tfrac16$ | $\tfrac16$ | $\tfrac16$ | $\tfrac16$ | $\tfrac16$ | $\tfrac16$ |
+
+Two rules every distribution obeys: probabilities are never negative, and they **sum to 1** (something has to happen).
+
+## Expected value
+
+If you rolled that die forever, what would the average roll be? Weight each value by how often it happens:
+
+$$
+\mathbb{E}[X] = \sum_i x_i\, p_i = 1\cdot\tfrac16 + 2\cdot\tfrac16 + \dots + 6\cdot\tfrac16 = 3.5
+$$
+
+That's the <Term t="expected value">expected value</Term> (or mean) of $X$, usually written $\mu$. Notice you can never actually roll a 3.5: the expected value is a long-run average, not a likely outcome.
+
+Look at the formula again: $\sum_i x_i p_i$ is a **dot product** of the values with the probabilities. Your `dot` will do the work.
+
+<NumericCheck
+  id="ev-bet"
+  question="A game pays 10 with probability 0.1 and 0 otherwise. What is the expected payout?"
+  answer={1}
+  explain="$10 \cdot 0.1 + 0 \cdot 0.9 = 1$. On average you win 1 per game, though no single game ever pays exactly 1."
+/>
+
+## Samples settle down
+
+In practice you rarely know the true distribution. You have **samples**: actual rolls, or actual training images. The **sample mean** is just their average, $\bar{x} = \frac1n\sum_i x_i$. The <Term t="law of large numbers">law of large numbers</Term> says that as $n$ grows, the sample mean closes in on the expected value. Try it:
+
+<SamplingViz />
+
+With 10 rolls, the frequencies are all over the place. With 10,000 they hug the true probabilities. The same thing happens when a network measures its error on a large batch of examples: the average over the batch is a good estimate of the average over *all* possible images.
+
+## Variance and standard deviation
+
+Two distributions can have the same mean and look completely different. A die that always lands on 3 or 4 and one that always lands on 1 or 6 both average 3.5. The <Term>variance</Term> measures **spread**: the average squared distance from the mean,
+
+$$
+\mathrm{Var}[X] = \mathbb{E}\big[(X - \mu)^2\big]
+$$
+
+For data, the same idea: average the squared deviations from the sample mean. Squaring makes every deviation count positively, and big deviations count a lot. The <Term t="standard deviation">standard deviation</Term> $\sigma = \sqrt{\mathrm{Var}[X]}$ brings it back to the original units.
+
+<NumericCheck
+  id="var-two"
+  question="What is the variance of the data $\{2, 4\}$?"
+  answer={1}
+  explain="The mean is 3, the deviations are $-1$ and $+1$, and the average of their squares is $\tfrac{1 + 1}{2} = 1$."
+/>
+
+<Quiz
+  id="var-shift"
+  question="You add 5 to every number in a dataset. What happens to its variance?"
+  options={["It goes up by 5", "It goes up by 25", "It doesn't change", "It doubles"]}
+  answer={2}
+  explain="The mean also moves up by 5, so every deviation $x - \mu$ is unchanged. Shifting data moves it without spreading it. (Multiplying by $c$ multiplies the variance by $c^2$.)"
+/>
+
+<Callout type="note" title="n or n − 1?">
+
+You may have seen variance computed by dividing by $n - 1$ instead of $n$. That version, the *sample* variance with Bessel's correction, is a slightly better estimate of the true variance when $n$ is small. In this course we divide by $n$ (the *population* variance), which is what deep-learning code uses.
+
+</Callout>
+
+## Where this shows up in AI
+
+- **Normalizing inputs.** The demo network in lesson 0 didn't see raw pixel values. It saw $(x - 0.1307)/0.3081$, where $0.1307$ and $0.3081$ are the mean and standard deviation of all MNIST pixels. Centring and scaling inputs like this makes training much easier.
+- **Weight initialization.** Starting weights are drawn with a carefully chosen variance. Too big or too small and a deep network can't learn at all. That's the last lesson of this module.
+- **Measuring a model.** Accuracy and loss are averages over many examples: sample means.
+
+<KeyIdea>
+
+A distribution lists values and their probabilities (non-negative, summing to 1). The expected value $\sum x_i p_i$ is the long-run average, and sample means converge to it. Variance, the mean squared distance from the mean, measures spread; its square root is the standard deviation.
+
+</KeyIdea>
+
+## Exercises
+
+<Lang only="rust">
+
+<Callout type="lang">
+
+Dividing a sum by a count means mixing `f64` and `usize`, which Rust won't do implicitly. Convert explicitly: `total / v.len() as f64`.
+
+</Callout>
+
+</Lang>
+
+<Lang only="cpp">
+
+<Callout type="lang">
+
+`v.size()` is an unsigned integer. Dividing a `double` by it works, but convert explicitly, `static_cast<double>(v.size())`, so it's obvious that no integer division is happening.
+
+</Callout>
+
+</Lang>
+
+<Exercise id="prob-mean">
+
+Return the mean of `v`. An empty vector has no mean: signal an error.
+
+</Exercise>
+
+<Exercise id="prob-variance">
+
+Return the population variance of `v`: the average of $(x - \bar{x})^2$ over every element.
+
+</Exercise>
+
+<Exercise id="prob-expected-value">
+
+Return the expected value of a random variable that takes `values[i]` with probability `probs[i]`. Reject inputs that aren't a valid distribution: mismatched lengths, a negative probability, or probabilities that don't sum to 1 (allow a tolerance of $10^{-9}$ for rounding).
+
+</Exercise>

@@ -1,0 +1,120 @@
+## The bell curve
+
+Uniform numbers spread evenly between 0 and 1. For initializing weights you'll want a different shape: the <Term t="normal distribution">normal distribution</Term>, the famous bell curve. Values cluster around a mean $\mu$, and become rarer the further out you go:
+
+$$
+p(x) = \frac{1}{\sigma\sqrt{2\pi}}\,e^{-\frac{(x-\mu)^2}{2\sigma^2}}
+$$
+
+It's written $\mathcal{N}(\mu, \sigma^2)$. About 68% of samples land within one standard deviation $\sigma$ of the mean, 95% within two, and 99.7% within three. The **standard** normal $\mathcal{N}(0, 1)$ has mean 0 and standard deviation 1, and any other normal is just a stretched and shifted copy: if $z \sim \mathcal{N}(0, 1)$, then $\mu + \sigma z \sim \mathcal{N}(\mu, \sigma^2)$.
+
+Normals show up everywhere because adding up many small independent random effects tends to produce one (the *central limit theorem*). For us, what matters is that it's the standard way to draw random starting weights.
+
+## From uniform to normal: Box–Muller
+
+Your generator makes uniform numbers. The <Term t="box-muller transform">Box–Muller transform</Term> (1958) turns two independent uniforms $u_1, u_2$ into two independent standard normals:
+
+$$
+r = \sqrt{-2\ln u_1}, \qquad \theta = 2\pi u_2, \qquad z_1 = r\cos\theta, \qquad z_2 = r\sin\theta
+$$
+
+Here's the intuition. A pair of independent standard normals, plotted as a point in the plane, is a round cloud: the direction is equally likely to be anything, so $\theta$ is just a uniform angle. The distance from the origin has its own distribution, and $\sqrt{-2\ln u_1}$ is exactly the formula that turns a uniform number into a distance with that distribution. Since $u_1$ is never exactly 0, the logarithm is always finite.
+
+<NormalViz />
+
+<NumericCheck
+  id="bm-radius"
+  question="For $u_1 = e^{-2} \approx 0.135$, what radius $r$ does Box–Muller produce?"
+  answer={2}
+  explain="$r = \sqrt{-2\ln e^{-2}} = \sqrt{4} = 2$."
+/>
+
+## Why not start every weight at zero?
+
+It seems natural to start with all weights at zero, or all equal. It doesn't work. If every neuron in a layer starts with the same weights, they all compute the same output and receive the same gradient, so they all update identically, and stay identical forever. A layer of 100 neurons would act like a single neuron. Random initialization **breaks the symmetry**, so different neurons can learn different features.
+
+<Quiz
+  id="init-zero"
+  question="Every weight in a hidden layer starts at exactly 0.5. What happens during training?"
+  options={[
+    "It trains normally, just a little slower",
+    "Every neuron in the layer stays identical to the others, so the layer is no better than one neuron",
+    "The gradients are all zero, so nothing ever changes",
+    "The network diverges"
+  ]}
+  answer={1}
+  explain="Identical neurons get identical gradients, so they make identical updates. Randomness is what lets them specialize."
+/>
+
+## How big should the random weights be?
+
+Random, yes, but drawn with what standard deviation? Think about one neuron with $n$ inputs:
+
+$$
+z = w_1 x_1 + w_2 x_2 + \dots + w_n x_n
+$$
+
+If the weights and inputs are independent with mean 0, the variances of the terms add up:
+
+$$
+\mathrm{Var}[z] = n \cdot \mathrm{Var}[w] \cdot \mathrm{Var}[x]
+$$
+
+So each layer multiplies the variance of the signal by $n \cdot \mathrm{Var}[w]$. In a deep network that factor gets applied over and over:
+
+- If $n\,\mathrm{Var}[w] < 1$, the signal shrinks geometrically and **vanishes**. Gradients flowing backwards shrink the same way (the <Term t="vanishing gradient">vanishing gradient</Term> problem), so the early layers barely learn.
+- If $n\,\mathrm{Var}[w] > 1$, the signal grows geometrically and **explodes**, or with tanh, everything saturates at $\pm 1$, where the gradient is zero.
+- If $n\,\mathrm{Var}[w] = 1$, the signal keeps its size all the way through.
+
+That gives **Xavier** (or LeCun) initialization: $\mathrm{Var}[w] = 1/n$, i.e. $\sigma = \sqrt{1/n}$. Here $n$ is the layer's <Term t="fan-in">fan-in</Term>, its number of inputs.
+
+ReLU needs one more correction: it zeroes every negative input, roughly half of them, which halves the variance at every layer. To compensate, double the weight variance. That's <Term t="he initialization">He initialization</Term> (Kaiming He et al., 2015), the standard choice for ReLU networks like your CNN:
+
+$$
+w \sim \mathcal{N}\!\left(0,\ \frac{2}{n}\right) \qquad \sigma = \sqrt{\frac{2}{n}}
+$$
+
+See it happen in a 10-layer network:
+
+<InitViz />
+
+<NumericCheck
+  id="init-he-784"
+  question="A ReLU layer takes a flattened MNIST image (784 inputs). What standard deviation does He initialization use for its weights? (3 decimals)"
+  answer={0.0505}
+  tolerance={2e-3}
+  explain="$\sqrt{2/784} = \sqrt{0.00255} \approx 0.0505$."
+/>
+
+<NumericCheck
+  id="init-var"
+  question="A neuron has 100 inputs with variance 1, and its weights have variance 0.01. What is the variance of its output $z$?"
+  answer={1}
+  explain="$n \cdot \mathrm{Var}[w] \cdot \mathrm{Var}[x] = 100 \cdot 0.01 \cdot 1 = 1$. That's Xavier initialization keeping the signal at the same size."
+/>
+
+<KeyIdea>
+
+Box–Muller turns pairs of uniforms into standard normals. Weights start random to break symmetry, with variance chosen so that $n \cdot \mathrm{Var}[w]$ keeps the signal's size steady through the layers: $1/n$ (Xavier) for tanh, $2/n$ (He) for ReLU.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="prob-normals">
+
+Return `n` standard-normal numbers using Box–Muller on uniforms from `random_uniforms(seed, …)`. Use the uniforms in consecutive pairs, produce $r\cos\theta$ then $r\sin\theta$ from each pair, and drop the last number if `n` is odd. (The order matters: it's what makes your weights match everyone else's.)
+
+</Exercise>
+
+<Exercise id="prob-he-init">
+
+Return a He-initialized weight matrix with `fan_out` rows (one per neuron) and `fan_in` columns (one per input): standard normals from `random_normals(seed, fan_out · fan_in)`, multiplied by $\sqrt{2/\text{fan\_in}}$, filled in row by row.
+
+</Exercise>
+
+## Module 3 complete
+
+Your library can now turn scores into probabilities, measure how wrong they are, compute the gradient that fixes them, and produce reproducible random weights: all the probability a classifier needs.
+
+**Coming next:** Module 4, Optimization, puts it all in motion: loss functions, gradient descent, learning rates, mini-batches and momentum, the loop that actually trains a network.

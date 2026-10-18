@@ -1,0 +1,71 @@
+{
+  "title": "Mean",
+  "function": "mean",
+  "params": [
+    {
+      "name": "v",
+      "type": "vec"
+    }
+  ],
+  "returns": "float",
+  "library": true,
+  "hints": [
+    "The mean is the sum divided by how many numbers there are.",
+    "`vec_sum` from your library does the adding. Watch out for integer division in C++ and Rust: convert the length to a floating-point number first.",
+    "Check for an empty vector before dividing, since dividing by zero is meaningless here."
+  ],
+  "tests": [
+    {
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ]
+      ],
+      "description": "the average of 1, 2, 3, 4",
+      "expected": 2.5
+    },
+    {
+      "args": [
+        [
+          5
+        ]
+      ],
+      "description": "one number is its own mean",
+      "expected": 5.0
+    },
+    {
+      "args": [
+        [
+          -1,
+          1
+        ]
+      ],
+      "description": "positives and negatives cancel",
+      "hidden": true,
+      "expected": 0.0
+    },
+    {
+      "args": [
+        [
+          0.1,
+          0.2,
+          0.3
+        ]
+      ],
+      "description": "decimals",
+      "hidden": true,
+      "expected": 0.20000000000000004
+    },
+    {
+      "args": [
+        []
+      ],
+      "description": "an empty vector has no mean",
+      "expect_error": true,
+      "hidden": true
+    }
+  ]
+}

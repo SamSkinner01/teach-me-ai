@@ -5,11 +5,16 @@ import type { AnchorHTMLAttributes } from "react";
 import { Link } from "react-router-dom";
 import { BroadcastViz } from "../viz/BroadcastViz";
 import { ChainRuleGraph } from "../viz/ChainRuleGraph";
+import { CrossEntropyTrainer, LogLossCurve } from "../viz/CrossEntropyViz";
 import { DerivativeExplorer } from "../viz/DerivativeExplorer";
 import { DigitDemo } from "../viz/DigitDemo";
 import { GradientField } from "../viz/GradientField";
+import { InitViz, NormalViz } from "../viz/InitViz";
 import { MatmulStepper } from "../viz/MatmulStepper";
 import { MatrixTransformer } from "../viz/MatrixTransformer";
+import { RngQuality, XorshiftViz } from "../viz/RngViz";
+import { SamplingViz } from "../viz/SamplingViz";
+import { SoftmaxViz } from "../viz/SoftmaxViz";
 import { StrideExplorer } from "../viz/StrideExplorer";
 import { VectorPlayground } from "../viz/VectorPlayground";
 import { MatrixCheck, NumericCheck, Quiz } from "./Checks";
@@ -49,4 +54,12 @@ export const mdxComponents: MDXComponents = {
   ChainRuleGraph,
   GradientField,
   DigitDemo,
+  SamplingViz,
+  SoftmaxViz,
+  LogLossCurve,
+  CrossEntropyTrainer,
+  XorshiftViz,
+  RngQuality,
+  NormalViz,
+  InitViz,
 };

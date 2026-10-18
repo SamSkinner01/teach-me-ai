@@ -1,0 +1,112 @@
+## How wrong is a probability?
+
+Your classifier looks at an image of a 3 and outputs probabilities. How should you score that prediction?
+
+Only one number really matters: the probability $p$ it gave to the **correct** class. If $p = 0.99$, great. If $p = 0.02$, terrible. A good loss should be near 0 when $p$ is near 1, and huge when $p$ is near 0. The standard choice is
+
+$$
+L = -\ln p
+$$
+
+<LogLossCurve />
+
+That's the <Term t="cross-entropy">cross-entropy loss</Term> for one example. Averaged over a batch of examples, it's the loss nearly every classifier is trained with, including your CNN. The rest of this lesson explains where it comes from, how to compute it safely, and its gradient, which turns out to be one of the nicest results in deep learning.
+
+<NumericCheck
+  id="ce-uniform"
+  question="A digit classifier that knows nothing gives every class probability $0.1$. What is its loss on any image? (3 decimals)"
+  answer={2.303}
+  tolerance={1e-3}
+  explain="$-\ln 0.1 = \ln 10 \approx 2.303$. A freshly initialized network's loss starts close to this. If yours starts much higher, something's off."
+/>
+
+## Where it comes from: maximum likelihood
+
+Suppose your dataset has examples $1, \dots, N$ with correct labels $y_1, \dots, y_N$, and the model gives each correct label probability $p_{y_1}, \dots, p_{y_N}$. If the examples are independent, the probability the model assigns to **all** of the correct answers at once, its <Term>likelihood</Term>, is the product:
+
+$$
+\text{likelihood} = p_{y_1} \cdot p_{y_2} \cdots p_{y_N}
+$$
+
+A good model makes the real data likely, so you choose the weights that **maximize the likelihood**. Two practical problems: a product of 60,000 numbers below 1 underflows to 0, and products are awkward to differentiate. Logarithms fix both, since they turn products into sums, and because $\ln$ only ever increases, maximizing the log of something is the same as maximizing the thing itself:
+
+$$
+\ln(\text{likelihood}) = \sum_{i=1}^{N} \ln p_{y_i}
+$$
+
+Optimizers like to *minimize*, so flip the sign and average. That's exactly the cross-entropy loss:
+
+$$
+L = -\frac{1}{N}\sum_{i=1}^{N} \ln p_{y_i}
+$$
+
+So minimizing cross-entropy *is* maximum-likelihood training. (The name comes from information theory: $H(\mathbf{p}, \mathbf{q}) = -\sum_k p_k \ln q_k$ compares a true distribution $\mathbf{p}$ with a predicted one $\mathbf{q}$. When the truth is a <Term t="one-hot">one-hot</Term> vector, every term but one vanishes, leaving $-\ln q_y$.)
+
+## Computing it from logits, safely
+
+The model outputs logits $\mathbf{z}$, and $p_y = \mathrm{softmax}(\mathbf{z})_y$. Computing the softmax and then taking $-\ln$ of it is risky: if $p_y$ underflows to exactly 0, the loss becomes $-\ln 0 = \infty$. Instead, simplify the formula first:
+
+$$
+-\ln \frac{e^{z_y}}{\sum_j e^{z_j}} = -z_y + \ln \sum_j e^{z_j}
+$$
+
+The second term is called <Term>log-sum-exp</Term>, and it has the same overflow problem as softmax, with the same fix. Pull out the largest value $m$:
+
+$$
+\ln \sum_j e^{z_j} = m + \ln \sum_j e^{z_j - m}
+$$
+
+Every exponent is now $\le 0$, and the biggest term is exactly $e^0 = 1$, so the sum is at least 1 and its log is never $-\infty$. With logits $(1000, 0)$ and the true class being the second one, this correctly gives a loss of $1000$ instead of $\infty$.
+
+## The gradient: p − y
+
+To train, you need $\partial L / \partial z_k$ for every logit. Differentiate the two terms separately:
+
+- $\dfrac{\partial}{\partial z_k} \ln \sum_j e^{z_j} = \dfrac{e^{z_k}}{\sum_j e^{z_j}} = p_k$ (chain rule: the derivative of $\ln u$ is $1/u$, and the derivative of the sum with respect to $z_k$ is $e^{z_k}$)
+- $\dfrac{\partial}{\partial z_k}(-z_y)$ is $-1$ when $k = y$ and $0$ otherwise.
+
+Together:
+
+$$
+\boxed{\;\frac{\partial L}{\partial \mathbf{z}} = \mathbf{p} - \mathbf{y}\;}
+$$
+
+where $\mathbf{y}$ is the one-hot vector of the true label. All the exponentials and logarithms cancel down to "predicted minus actual". Every wrong class gets a positive gradient equal to its probability, so gradient descent pushes its score **down**. The correct class gets $p_y - 1$, which is negative, so its score is pushed **up**, harder the more wrong the model is.
+
+<CrossEntropyTrainer />
+
+<MatrixCheck
+  id="ce-grad-hand"
+  question="The logits are $(0, 0, 0)$ and the correct class is the middle one. What is $\partial L/\partial \mathbf{z}$? (Fractions like `1/3` are fine.)"
+  answer={[[0.3333333333333333, -0.6666666666666666, 0.3333333333333333]]}
+  tolerance={2e-3}
+  explain="Softmax gives $(\tfrac13, \tfrac13, \tfrac13)$; subtracting the one-hot $(0, 1, 0)$ gives $(\tfrac13, -\tfrac23, \tfrac13)$. Notice it sums to zero."
+/>
+
+<KeyIdea>
+
+Cross-entropy loss $-\ln p_y$ is maximum-likelihood training in disguise. Compute it from logits as $\text{logsumexp}(\mathbf{z}) - z_y$, which never overflows. Its gradient with respect to the logits is simply $\mathbf{p} - \mathbf{y}$.
+
+</KeyIdea>
+
+## Exercises
+
+<Exercise id="prob-log-sum-exp">
+
+Return $\ln \sum_i e^{v_i}$, computed stably by factoring out the maximum. Reject an empty vector.
+
+</Exercise>
+
+<Exercise id="prob-cross-entropy">
+
+Return the cross-entropy loss $-\ln \mathrm{softmax}(\mathbf{z})_{\text{label}}$, computed as $\text{logsumexp}(\mathbf{z}) - z_{\text{label}}$. Reject a label that isn't a valid class index.
+
+</Exercise>
+
+<Exercise id="prob-ce-grad">
+
+Return $\partial L / \partial \mathbf{z} = \mathrm{softmax}(\mathbf{z}) - \text{onehot}(\text{label})$. Reject an invalid label.
+
+</Exercise>
+
+This pair, `cross_entropy_loss` and `cross_entropy_grad`, is exactly what your CNN's final layer will use in the capstone.
